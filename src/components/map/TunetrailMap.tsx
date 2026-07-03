@@ -23,12 +23,22 @@ export function TunetrailMap({
   onSelectFestival: (festival: Festival) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
   const [mapInstance, setMapInstance] = useState<MapLibreMap | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   );
+
+  useEffect(() => {
+    if (!bgCanvasRef.current) return;
+    const noise = createFractalNoiseCanvas(1024, "#1F162B", "#9F3D66");
+    const ctx = bgCanvasRef.current.getContext("2d")!;
+    bgCanvasRef.current.width = noise.width;
+    bgCanvasRef.current.height = noise.height;
+    ctx.drawImage(noise, 0, 0);
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -45,11 +55,6 @@ export function TunetrailMap({
 
     mapRef.current = map;
     map.on("load", () => {
-      const noise = createFractalNoiseCanvas(512, "#1F162B", "#9F3D66");
-      const noiseData = noise.getContext("2d")!.getImageData(0, 0, noise.width, noise.height);
-      map.addImage("bg-noise", noiseData);
-      map.setPaintProperty("background", "background-pattern", "bg-noise");
-
       map.fitBounds([NORWAY_SW, NORWAY_NE], {
         padding: { top: 100, bottom: 420, left: 30, right: 30 },
         animate: false,
@@ -120,8 +125,14 @@ export function TunetrailMap({
   }, [mapInstance, festivals, radiusKm, searchQuery, userLocation, onSelectFestival]);
 
   return (
-    <div className="relative h-full w-full">
-      <div ref={containerRef} className="h-full w-full" />
+    <div className="relative h-full w-full overflow-hidden">
+      <canvas
+        ref={bgCanvasRef}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <div className="absolute inset-0">
+        <div ref={containerRef} className="h-full w-full" />
+      </div>
     </div>
   );
 }

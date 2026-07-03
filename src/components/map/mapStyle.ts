@@ -17,7 +17,7 @@ export const nightGlowStyle: StyleSpecification = {
     {
       id: "background",
       type: "background",
-      paint: { "background-color": BG },
+      paint: { "background-color": BG, "background-opacity": 0 },
     },
     {
       id: "water",
@@ -34,14 +34,26 @@ export const nightGlowStyle: StyleSpecification = {
       paint: { "fill-color": "#2b2038", "fill-opacity": 0.3 },
     },
     {
+      id: "coastline-glow-xwide",
+      type: "line",
+      source: "openmaptiles",
+      "source-layer": "water",
+      paint: {
+        "line-color": OUTER_GLOW,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 14, 8, 36],
+        "line-opacity": 0.45,
+        "line-blur": 18,
+      },
+    },
+    {
       id: "coastline-glow-wide",
       type: "line",
       source: "openmaptiles",
       "source-layer": "water",
       paint: {
         "line-color": OUTER_GLOW,
-        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 6, 8, 18],
-        "line-opacity": 0.4,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 8, 8, 24],
+        "line-opacity": 0.6,
         "line-blur": 10,
       },
     },
@@ -52,8 +64,8 @@ export const nightGlowStyle: StyleSpecification = {
       "source-layer": "water",
       paint: {
         "line-color": OUTER_GLOW,
-        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 2, 8, 5],
-        "line-opacity": 0.65,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 3, 8, 7],
+        "line-opacity": 0.85,
         "line-blur": 3,
       },
     },
@@ -64,8 +76,21 @@ export const nightGlowStyle: StyleSpecification = {
       "source-layer": "water",
       paint: {
         "line-color": NEON,
-        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.8, 8, 1.8],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1, 8, 2.2],
         "line-opacity": 1,
+      },
+    },
+    {
+      id: "boundary-country-glow-wide",
+      type: "line",
+      source: "openmaptiles",
+      "source-layer": "boundary",
+      filter: ["<=", ["get", "admin_level"], 2],
+      paint: {
+        "line-color": OUTER_GLOW,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 10, 8, 22],
+        "line-opacity": 0.4,
+        "line-blur": 12,
       },
     },
     {
@@ -76,8 +101,8 @@ export const nightGlowStyle: StyleSpecification = {
       filter: ["<=", ["get", "admin_level"], 2],
       paint: {
         "line-color": OUTER_GLOW,
-        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 4, 8, 10],
-        "line-opacity": 0.35,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 6, 8, 14],
+        "line-opacity": 0.55,
         "line-blur": 5,
       },
     },

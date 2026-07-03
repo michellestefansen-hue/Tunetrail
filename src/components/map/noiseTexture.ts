@@ -43,7 +43,7 @@ function upscaleGrid(grid: number[][], gridSize: number, targetSize: number): Ui
   return bctx.getImageData(0, 0, targetSize, targetSize).data;
 }
 
-/** Large-scale multi-octave value noise, blended between two colors. */
+/** Turbulent multi-octave fractal noise, blended between two colors with boosted contrast. */
 export function createFractalNoiseCanvas(
   size: number,
   colorA: string,
@@ -52,9 +52,16 @@ export function createFractalNoiseCanvas(
   const [r1, g1, b1] = hexToRgb(colorA);
   const [r2, g2, b2] = hexToRgb(colorB);
 
-  const octave1 = upscaleGrid(randomGrid(3), 3, size);
-  const octave2 = upscaleGrid(randomGrid(6), 6, size);
-  const octave3 = upscaleGrid(randomGrid(12), 12, size);
+  const octaves = [
+    { grid: 3, weight: 0.26 },
+    { grid: 6, weight: 0.24 },
+    { grid: 12, weight: 0.2 },
+    { grid: 24, weight: 0.16 },
+    { grid: 48, weight: 0.14 },
+  ].map(({ grid, weight }) => ({
+    data: upscaleGrid(randomGrid(grid), grid, size),
+    weight,
+  }));
 
   const out = document.createElement("canvas");
   out.width = size;
@@ -62,9 +69,18 @@ export function createFractalNoiseCanvas(
   const octx = out.getContext("2d")!;
   const outData = octx.createImageData(size, size);
 
+  const contrast = 2.1;
+
   for (let i = 0; i < size * size; i++) {
     const idx = i * 4;
-    const v = (octave1[idx] * 0.55 + octave2[idx] * 0.3 + octave3[idx] * 0.15) / 255;
+    let v = 0;
+    for (const octave of octaves) {
+      v += (octave.data[idx] / 255) * octave.weight;
+    }
+    // Punch up contrast around the midpoint, like turbulent cloud noise.
+    v = 0.5 + (v - 0.5) * contrast;
+    v = Math.min(1, Math.max(0, v));
+
     outData.data[idx] = r1 + (r2 - r1) * v;
     outData.data[idx + 1] = g1 + (g2 - g1) * v;
     outData.data[idx + 2] = b1 + (b2 - b1) * v;

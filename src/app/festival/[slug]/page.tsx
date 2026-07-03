@@ -63,15 +63,16 @@ export default async function FestivalPage({
           <ArrowLeftIcon className="h-4 w-4" />
           Kart
         </Link>
+
+        {festival.category && (
+          <span className="absolute right-4 top-[calc(env(safe-area-inset-top)+16px)] rounded-full bg-[#FF4E50] px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-white shadow-md">
+            {festival.category}
+          </span>
+        )}
       </div>
 
       <div className="mx-auto -mt-8 max-w-2xl rounded-t-3xl bg-[#FFF9F0] px-5 pt-6">
-        {festival.category && (
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#FF4E50]">
-            {festival.category}
-          </p>
-        )}
-        <h1 className="mt-1 text-3xl">{festival.name}</h1>
+        <h1 className="text-3xl">{festival.name}</h1>
 
         <p className="mt-2 flex items-center gap-1.5 text-sm text-stone-500">
           <MapPinIcon className="h-4 w-4 text-[#FF2D78]" />

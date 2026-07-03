@@ -43,16 +43,16 @@ export default async function FestivalPage({
 
   return (
     <div className="min-h-dvh bg-[#FFF9F0] pb-16">
-      <div className="relative h-64 w-full sm:h-80">
+      <div className="relative h-72 w-full sm:h-96">
         {festival.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={festival.image_url}
             alt={festival.name}
-            className="h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-purple-600 to-[#FF4E50]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-[#FF4E50]" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#FFF9F0] via-black/10 to-black/30" />
 
@@ -64,17 +64,18 @@ export default async function FestivalPage({
           Kart
         </Link>
 
-        {festival.category && (
-          <span className="absolute right-4 top-[calc(env(safe-area-inset-top)+16px)] rounded-full bg-[#FF4E50] px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-white shadow-md">
-            {festival.category}
-          </span>
-        )}
+        <div className="absolute inset-x-0 bottom-0 px-5 pb-6">
+          {festival.category && (
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#FF4E50]">
+              {festival.category}
+            </p>
+          )}
+          <h1 className="mt-1 text-3xl">{festival.name}</h1>
+        </div>
       </div>
 
-      <div className="mx-auto -mt-8 max-w-2xl rounded-t-3xl bg-[#FFF9F0] px-5 pt-6">
-        <h1 className="text-3xl">{festival.name}</h1>
-
-        <p className="mt-2 flex items-center gap-1.5 text-sm text-stone-500">
+      <div className="mx-auto max-w-2xl rounded-t-3xl bg-[#FFF9F0] px-5 pt-6">
+        <p className="flex items-center gap-1.5 text-sm text-stone-500">
           <MapPinIcon className="h-4 w-4 text-[#FF2D78]" />
           {festival.venue_name ?? festival.city}
           {festival.region ? `, ${festival.region}` : ""}

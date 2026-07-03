@@ -87,7 +87,7 @@ function FestivalList({
               key={festival.id}
               type="button"
               onClick={() => onSelect(festival)}
-              className="flex items-center gap-3 rounded-2xl bg-white p-2.5 text-left shadow-sm transition-transform active:scale-[0.98]"
+              className="flex items-center gap-3 rounded-2xl bg-white p-2.5 text-left shadow-[0_8px_30px_rgba(45,26,18,0.18)] transition-transform active:scale-[0.98]"
             >
               <FestivalThumbnail
                 festival={festival}

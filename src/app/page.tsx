@@ -72,8 +72,12 @@ export default function Home() {
 
   const center = positionMode === "manual" ? manualLocation : searchLocation;
 
+  // Once the search text resolves to a real place, filter purely by radius
+  // from that point instead of also requiring the text to match name/city.
+  const effectiveQuery = searchLocation ? "" : query;
+
   const visibleFestivals = filterFestivals(festivals, {
-    query,
+    query: effectiveQuery,
     center,
     radiusKm,
     dateFrom,

@@ -20,6 +20,15 @@ export type FestivalCategory =
   | "Folk & Vise"
   | "Blandet/Flersjanger";
 
+export const FESTIVAL_CATEGORIES: FestivalCategory[] = [
+  "Rock & Metal",
+  "Pop & Mainstream",
+  "Elektronisk & Dans",
+  "Hip-Hop & R&B",
+  "Folk & Vise",
+  "Blandet/Flersjanger",
+];
+
 export type Festival = {
   id: string;
   name: string;
@@ -80,6 +89,7 @@ export type FestivalFilters = {
   radiusKm?: number | null;
   dateFrom?: string | null; // 'YYYY-MM-DD'
   dateTo?: string | null;
+  categories?: FestivalCategory[] | null;
 };
 
 export function filterFestivals(festivals: Festival[], filters: FestivalFilters): Festival[] {
@@ -97,6 +107,10 @@ export function filterFestivals(festivals: Festival[], filters: FestivalFilters)
         .join(" ")
         .toLowerCase();
       if (!haystack.includes(query)) return false;
+    }
+
+    if (filters.categories && filters.categories.length > 0) {
+      if (!festival.category || !filters.categories.includes(festival.category)) return false;
     }
 
     if (filters.radiusKm && filters.center) {

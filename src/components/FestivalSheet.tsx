@@ -192,6 +192,11 @@ function FestivalList({
                 <p className="truncate text-xs text-stone-500">
                   {dateRangeLabel(festival)} • {festival.venue_name ?? festival.city}
                 </p>
+                {festival.category && (
+                  <p className="mt-1 truncate text-[11px] font-medium text-[#FF4E50]">
+                    {festival.category}
+                  </p>
+                )}
               </div>
               {ticket && (
                 <span className="shrink-0 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-4 py-2 text-xs font-semibold text-white">

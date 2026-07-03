@@ -5,7 +5,12 @@ import { useEffect, useState } from "react";
 import { SearchOverlay } from "@/components/SearchOverlay";
 import { FilterPanel } from "@/components/FilterPanel";
 import { FestivalSheet } from "@/components/FestivalSheet";
-import { fetchFestivals, filterFestivals, type Festival } from "@/lib/festivals";
+import {
+  fetchFestivals,
+  filterFestivals,
+  type Festival,
+  type FestivalCategory,
+} from "@/lib/festivals";
 
 const TunetrailMap = dynamic(
   () => import("@/components/map/TunetrailMap").then((m) => m.TunetrailMap),
@@ -26,6 +31,7 @@ export default function Home() {
 
   const [dateFrom, setDateFrom] = useState<string | null>(null);
   const [dateTo, setDateTo] = useState<string | null>(null);
+  const [categories, setCategories] = useState<FestivalCategory[]>([]);
 
   useEffect(() => {
     fetchFestivals()
@@ -41,6 +47,7 @@ export default function Home() {
     radiusKm,
     dateFrom,
     dateTo,
+    categories,
   });
 
   const handleUseGpsPosition = () => {
@@ -95,6 +102,8 @@ export default function Home() {
           dateTo={dateTo}
           onDateFromChange={setDateFrom}
           onDateToChange={setDateTo}
+          categories={categories}
+          onCategoriesChange={setCategories}
         />
       )}
 

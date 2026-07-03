@@ -54,7 +54,7 @@ function FestivalList({
 }) {
   return (
     <div className="flex max-h-[calc(46vh-24px)] flex-col overflow-y-auto px-5 pb-6 pt-3">
-      <h2 className="text-2xl font-bold text-[#FF2D78]">Upcoming Festivals</h2>
+      <h2 className="text-2xl">Upcoming Festivals</h2>
       <p className="mt-1 text-sm text-stone-500">
         Opplev magien fra den norske sommernatten
       </p>
@@ -73,7 +73,7 @@ function FestivalList({
                 className={`h-16 w-16 shrink-0 rounded-xl bg-gradient-to-br ${gradientFor(festival.id)}`}
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-[#FF2D78]">{festival.name}</p>
+                <p className="truncate font-heading text-[#2D1A12]">{festival.name}</p>
                 <p className="truncate text-xs text-stone-500">
                   {dateRangeLabel(festival)} • {festival.venue_name ?? festival.city}
                 </p>
@@ -119,7 +119,7 @@ function FestivalDetail({
 
       <div className={`mt-3 h-24 w-full rounded-2xl bg-gradient-to-br ${gradientFor(festival.id)}`} />
 
-      <h2 className="mt-3 text-2xl font-bold text-[#FF2D78]">{festival.name}</h2>
+      <h2 className="mt-3 text-2xl">{festival.name}</h2>
       <p className="text-sm text-stone-500">
         {festival.venue_name ?? festival.city}, {festival.region}
       </p>

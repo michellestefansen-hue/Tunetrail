@@ -23,11 +23,10 @@ export default function Home() {
   const [festivals, setFestivals] = useState<Festival[]>([]);
   const [query, setQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [radiusKm, setRadiusKm] = useState<number | null>(null);
+  const [radiusKm, setRadiusKm] = useState<number | null>(200);
 
-  const [gpsLocation, setGpsLocation] = useState<[number, number] | null>(null);
   const [manualLocation, setManualLocation] = useState<[number, number] | null>(null);
-  const [positionMode, setPositionMode] = useState<"gps" | "manual" | null>(null);
+  const [positionMode, setPositionMode] = useState<"manual" | null>(null);
   const [pickingLocation, setPickingLocation] = useState(false);
 
   const [dateFrom, setDateFrom] = useState<string | null>(null);
@@ -71,12 +70,7 @@ export default function Home() {
     };
   }, [query]);
 
-  const center =
-    positionMode === "manual"
-      ? manualLocation
-      : positionMode === "gps"
-        ? gpsLocation
-        : searchLocation;
+  const center = positionMode === "manual" ? manualLocation : searchLocation;
 
   const visibleFestivals = filterFestivals(festivals, {
     query,
@@ -90,27 +84,12 @@ export default function Home() {
   const handleQueryChange = (value: string) => {
     setQuery(value);
     if (value.trim()) {
-      setRadiusKm(null);
       setPositionMode(null);
-      setGpsLocation(null);
       setManualLocation(null);
       setDateFrom(null);
       setDateTo(null);
       setCategories([]);
     }
-  };
-
-  const handleUseGpsPosition = () => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setGpsLocation([pos.coords.longitude, pos.coords.latitude]);
-        setPositionMode("gps");
-        setPickingLocation(false);
-        setQuery("");
-      },
-      () => setGpsLocation(null),
-    );
   };
 
   const handleStartPickingLocation = () => {
@@ -153,7 +132,6 @@ export default function Home() {
           onRadiusChange={setRadiusKm}
           hasCenter={center !== null}
           positionMode={positionMode}
-          onUseGpsPosition={handleUseGpsPosition}
           onStartPickingLocation={handleStartPickingLocation}
           pickingLocation={pickingLocation}
           dateFrom={dateFrom}

@@ -9,7 +9,6 @@ export function FilterPanel({
   onRadiusChange,
   hasCenter,
   positionMode,
-  onUseGpsPosition,
   onStartPickingLocation,
   pickingLocation,
   dateFrom,
@@ -22,8 +21,7 @@ export function FilterPanel({
   radiusKm: number | null;
   onRadiusChange: (value: number | null) => void;
   hasCenter: boolean;
-  positionMode: "gps" | "manual" | null;
-  onUseGpsPosition: () => void;
+  positionMode: "manual" | null;
   onStartPickingLocation: () => void;
   pickingLocation: boolean;
   dateFrom: string | null;
@@ -67,30 +65,17 @@ export function FilterPanel({
             className="mt-3 w-full accent-[#FF2D78]"
           />
 
-          <div className="mt-3 flex gap-2">
-            <button
-              type="button"
-              onClick={onUseGpsPosition}
-              className={`flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                positionMode === "gps"
-                  ? "bg-[#FF2D78] text-white"
-                  : "bg-white/10 text-white/70 hover:bg-white/20"
-              }`}
-            >
-              Min posisjon
-            </button>
-            <button
-              type="button"
-              onClick={onStartPickingLocation}
-              className={`flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                positionMode === "manual"
-                  ? "bg-[#FF2D78] text-white"
-                  : "bg-white/10 text-white/70 hover:bg-white/20"
-              }`}
-            >
-              Velg på kartet
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onStartPickingLocation}
+            className={`mt-3 w-full rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              positionMode === "manual"
+                ? "bg-[#FF2D78] text-white"
+                : "bg-white/10 text-white/70 hover:bg-white/20"
+            }`}
+          >
+            Velg på kartet
+          </button>
 
           {pickingLocation && (
             <p className="mt-2 text-xs text-[#FEE3CA]">
@@ -99,7 +84,7 @@ export function FilterPanel({
           )}
           {!hasCenter && !pickingLocation && (
             <p className="mt-2 text-xs text-white/50">
-              Velg posisjonen din for å filtrere på avstand.
+              Søk på et sted eller velg posisjon på kartet for å filtrere på avstand.
             </p>
           )}
         </div>

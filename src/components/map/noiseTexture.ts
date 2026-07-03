@@ -15,35 +15,44 @@ function randomGrid(gridSize: number): number[][] {
   return grid;
 }
 
-function upscaleGrid(grid: number[][], gridSize: number, targetSize: number): Uint8ClampedArray {
-  const small = document.createElement("canvas");
-  small.width = gridSize;
-  small.height = gridSize;
-  const sctx = small.getContext("2d")!;
-  const imgData = sctx.createImageData(gridSize, gridSize);
-  for (let y = 0; y < gridSize; y++) {
-    for (let x = 0; x < gridSize; x++) {
-      const v = Math.floor(grid[y][x] * 255);
-      const idx = (y * gridSize + x) * 4;
-      imgData.data[idx] = v;
-      imgData.data[idx + 1] = v;
-      imgData.data[idx + 2] = v;
-      imgData.data[idx + 3] = 255;
-    }
-  }
-  sctx.putImageData(imgData, 0, 0);
-
-  const big = document.createElement("canvas");
-  big.width = targetSize;
-  big.height = targetSize;
-  const bctx = big.getContext("2d")!;
-  bctx.imageSmoothingEnabled = true;
-  bctx.imageSmoothingQuality = "high";
-  bctx.drawImage(small, 0, 0, targetSize, targetSize);
-  return bctx.getImageData(0, 0, targetSize, targetSize).data;
+function smoothstep(t: number): number {
+  return t * t * (3 - 2 * t);
 }
 
-/** Turbulent multi-octave fractal noise, blended between two colors with boosted contrast. */
+/**
+ * Bilinear-interpolates a random grid up to `targetSize`, wrapping indices at
+ * the edges so the result tiles seamlessly (value at x=targetSize matches x=0).
+ */
+function upscaleWrapped(grid: number[][], gridSize: number, targetSize: number): Float32Array {
+  const out = new Float32Array(targetSize * targetSize);
+
+  for (let y = 0; y < targetSize; y++) {
+    const gy = (y / targetSize) * gridSize;
+    const gy0 = Math.floor(gy) % gridSize;
+    const gy1 = (gy0 + 1) % gridSize;
+    const sy = smoothstep(gy - Math.floor(gy));
+
+    for (let x = 0; x < targetSize; x++) {
+      const gx = (x / targetSize) * gridSize;
+      const gx0 = Math.floor(gx) % gridSize;
+      const gx1 = (gx0 + 1) % gridSize;
+      const sx = smoothstep(gx - Math.floor(gx));
+
+      const v00 = grid[gy0][gx0];
+      const v10 = grid[gy0][gx1];
+      const v01 = grid[gy1][gx0];
+      const v11 = grid[gy1][gx1];
+
+      const top = v00 + (v10 - v00) * sx;
+      const bottom = v01 + (v11 - v01) * sx;
+      out[y * targetSize + x] = top + (bottom - top) * sy;
+    }
+  }
+
+  return out;
+}
+
+/** Seamlessly tileable multi-octave fractal noise, blended between two colors. */
 export function createFractalNoiseCanvas(
   size: number,
   colorA: string,
@@ -53,13 +62,13 @@ export function createFractalNoiseCanvas(
   const [r2, g2, b2] = hexToRgb(colorB);
 
   const octaves = [
-    { grid: 3, weight: 0.26 },
-    { grid: 6, weight: 0.24 },
-    { grid: 12, weight: 0.2 },
-    { grid: 24, weight: 0.16 },
-    { grid: 48, weight: 0.14 },
+    { grid: 4, weight: 0.26 },
+    { grid: 8, weight: 0.24 },
+    { grid: 16, weight: 0.2 },
+    { grid: 32, weight: 0.16 },
+    { grid: 64, weight: 0.14 },
   ].map(({ grid, weight }) => ({
-    data: upscaleGrid(randomGrid(grid), grid, size),
+    data: upscaleWrapped(randomGrid(grid), grid, size),
     weight,
   }));
 
@@ -72,15 +81,14 @@ export function createFractalNoiseCanvas(
   const contrast = 2.1;
 
   for (let i = 0; i < size * size; i++) {
-    const idx = i * 4;
     let v = 0;
     for (const octave of octaves) {
-      v += (octave.data[idx] / 255) * octave.weight;
+      v += octave.data[i] * octave.weight;
     }
-    // Punch up contrast around the midpoint, like turbulent cloud noise.
     v = 0.5 + (v - 0.5) * contrast;
     v = Math.min(1, Math.max(0, v));
 
+    const idx = i * 4;
     outData.data[idx] = r1 + (r2 - r1) * v;
     outData.data[idx + 1] = g1 + (g2 - g1) * v;
     outData.data[idx + 2] = b1 + (b2 - b1) * v;

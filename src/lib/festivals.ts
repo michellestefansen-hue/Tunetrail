@@ -77,7 +77,18 @@ export function filterFestivals(festivals: Festival[], filters: FestivalFilters)
   const query = filters.query?.trim().toLowerCase() ?? "";
 
   return festivals.filter((festival) => {
-    if (query && !festival.name.toLowerCase().includes(query)) return false;
+    if (query) {
+      const haystack = [
+        festival.name,
+        festival.city,
+        festival.region,
+        festival.venue_name,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      if (!haystack.includes(query)) return false;
+    }
 
     if (filters.radiusKm && filters.center) {
       const d = distanceKm(

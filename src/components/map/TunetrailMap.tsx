@@ -6,29 +6,28 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { nightGlowStyle } from "./mapStyle";
 import { createFractalNoiseCanvas } from "./noiseTexture";
 import type { Festival } from "@/lib/festivals";
-import { distanceKm } from "@/lib/festivals";
 
 const NORWAY_SW: [number, number] = [3.0, 57.5];
 const NORWAY_NE: [number, number] = [17.5, 69.5];
 
 export function TunetrailMap({
   festivals,
-  radiusKm,
-  searchQuery,
+  centerMarker,
+  pickingLocation,
+  onPickLocation,
   onSelectFestival,
 }: {
   festivals: Festival[];
-  radiusKm: number | null;
-  searchQuery: string;
+  centerMarker: [number, number] | null;
+  pickingLocation: boolean;
+  onPickLocation: (lngLat: [number, number]) => void;
   onSelectFestival: (festival: Festival) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
+  const centerMarkerRef = useRef<Marker | null>(null);
   const [mapInstance, setMapInstance] = useState<MapLibreMap | null>(null);
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(
-    null,
-  );
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -63,38 +62,14 @@ export function TunetrailMap({
     };
   }, []);
 
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setUserLocation([pos.coords.longitude, pos.coords.latitude]),
-      () => setUserLocation(null),
-      { enableHighAccuracy: false, timeout: 8000 },
-    );
-  }, []);
-
+  // Festival markers
   useEffect(() => {
     if (!mapInstance) return;
 
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
-    const query = searchQuery.trim().toLowerCase();
-
-    const visible = festivals.filter((f) => {
-      if (query && !f.name.toLowerCase().includes(query)) return false;
-      if (radiusKm && userLocation) {
-        const d = distanceKm(
-          userLocation[1],
-          userLocation[0],
-          f.latitude,
-          f.longitude,
-        );
-        if (d > radiusKm) return false;
-      }
-      return true;
-    });
-
-    visible.forEach((festival) => {
+    festivals.forEach((festival) => {
       const el = document.createElement("button");
       el.type = "button";
       el.className =
@@ -107,17 +82,41 @@ export function TunetrailMap({
 
       markersRef.current.push(marker);
     });
+  }, [mapInstance, festivals, onSelectFestival]);
 
-    if (userLocation) {
+  // Radius center marker (GPS position or manually picked point)
+  useEffect(() => {
+    if (!mapInstance) return;
+
+    centerMarkerRef.current?.remove();
+    centerMarkerRef.current = null;
+
+    if (centerMarker) {
       const el = document.createElement("div");
       el.className =
         "h-4 w-4 rounded-full border-2 border-white/90 bg-[#FFB347] animate-user-pulse";
-      const marker = new maplibregl.Marker({ element: el })
-        .setLngLat(userLocation)
+      centerMarkerRef.current = new maplibregl.Marker({ element: el })
+        .setLngLat(centerMarker)
         .addTo(mapInstance);
-      markersRef.current.push(marker);
     }
-  }, [mapInstance, festivals, radiusKm, searchQuery, userLocation, onSelectFestival]);
+  }, [mapInstance, centerMarker]);
+
+  // Click-to-pick-location mode
+  useEffect(() => {
+    if (!mapInstance || !pickingLocation) return;
+
+    const handleClick = (e: maplibregl.MapMouseEvent) => {
+      onPickLocation([e.lngLat.lng, e.lngLat.lat]);
+    };
+
+    mapInstance.getCanvas().style.cursor = "crosshair";
+    mapInstance.on("click", handleClick);
+
+    return () => {
+      mapInstance.getCanvas().style.cursor = "";
+      mapInstance.off("click", handleClick);
+    };
+  }, [mapInstance, pickingLocation, onPickLocation]);
 
   return (
     <div className="relative h-full w-full overflow-hidden">

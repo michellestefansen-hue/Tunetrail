@@ -65,6 +65,44 @@ export function primaryTicketLink(festival: Festival): TicketLink | null {
   return festival.ticket_links[0] ?? null;
 }
 
+export type FestivalFilters = {
+  query?: string;
+  center?: [number, number] | null; // [lng, lat]
+  radiusKm?: number | null;
+  dateFrom?: string | null; // 'YYYY-MM-DD'
+  dateTo?: string | null;
+};
+
+export function filterFestivals(festivals: Festival[], filters: FestivalFilters): Festival[] {
+  const query = filters.query?.trim().toLowerCase() ?? "";
+
+  return festivals.filter((festival) => {
+    if (query && !festival.name.toLowerCase().includes(query)) return false;
+
+    if (filters.radiusKm && filters.center) {
+      const d = distanceKm(
+        filters.center[1],
+        filters.center[0],
+        festival.latitude,
+        festival.longitude,
+      );
+      if (d > filters.radiusKm) return false;
+    }
+
+    if (filters.dateFrom || filters.dateTo) {
+      const dates = sortedDates(festival);
+      const overlaps = dates.some((date) => {
+        if (filters.dateFrom && date < filters.dateFrom) return false;
+        if (filters.dateTo && date > filters.dateTo) return false;
+        return true;
+      });
+      if (!overlaps) return false;
+    }
+
+    return true;
+  });
+}
+
 export function distanceKm(
   lat1: number,
   lon1: number,

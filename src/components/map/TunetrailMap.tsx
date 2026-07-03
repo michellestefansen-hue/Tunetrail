@@ -50,7 +50,7 @@ export function TunetrailMap({
       map.setPaintProperty("background", "background-pattern", "bg-noise");
 
       map.fitBounds([NORWAY_SW, NORWAY_NE], {
-        padding: { top: 100, bottom: 420, left: 30, right: 30 },
+        padding: { top: 160, bottom: 420, left: 30, right: 30 },
         animate: false,
       });
       setMapInstance(map);

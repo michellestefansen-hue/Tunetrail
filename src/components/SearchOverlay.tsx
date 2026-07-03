@@ -14,7 +14,7 @@ export function SearchOverlay({
   filtersOpen: boolean;
 }) {
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-4 pt-[calc(env(safe-area-inset-top)+16px)]">
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-4 pt-[calc(env(safe-area-inset-top)+72px)]">
       <div className="pointer-events-auto flex w-full max-w-md items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-3 shadow-lg backdrop-blur-xl">
         <MagnifyingGlassIcon className="h-5 w-5 shrink-0 text-[#FF2D78]" />
         <input

@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Header } from "@/components/Header";
 import { SearchOverlay } from "@/components/SearchOverlay";
 import { FilterPanel } from "@/components/FilterPanel";
 import { FestivalSheet } from "@/components/FestivalSheet";
@@ -122,6 +123,8 @@ export default function Home() {
         onPickLocation={handlePickLocation}
         onSelectFestival={handleSelectFestival}
       />
+
+      <Header />
 
       <SearchOverlay
         query={query}

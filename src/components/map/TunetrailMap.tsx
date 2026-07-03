@@ -45,7 +45,7 @@ export function TunetrailMap({
 
     mapRef.current = map;
     map.on("load", () => {
-      const noise = createFractalNoiseCanvas(512, "#1F162B", "#9F3D66");
+      const noise = createFractalNoiseCanvas(512, "#1F162B", "#7A2E4D");
       const noiseData = noise.getContext("2d")!.getImageData(0, 0, noise.width, noise.height);
       map.addImage("bg-noise", noiseData);
       map.setPaintProperty("background", "background-pattern", "bg-noise");

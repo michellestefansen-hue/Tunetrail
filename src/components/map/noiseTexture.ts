@@ -62,11 +62,11 @@ export function createFractalNoiseCanvas(
   const [r2, g2, b2] = hexToRgb(colorB);
 
   const octaves = [
-    { grid: 4, weight: 0.26 },
-    { grid: 8, weight: 0.24 },
-    { grid: 16, weight: 0.2 },
-    { grid: 32, weight: 0.16 },
-    { grid: 64, weight: 0.14 },
+    { grid: 2, weight: 0.34 },
+    { grid: 4, weight: 0.28 },
+    { grid: 8, weight: 0.2 },
+    { grid: 16, weight: 0.12 },
+    { grid: 32, weight: 0.06 },
   ].map(({ grid, weight }) => ({
     data: upscaleWrapped(randomGrid(grid), grid, size),
     weight,
@@ -78,7 +78,7 @@ export function createFractalNoiseCanvas(
   const octx = out.getContext("2d")!;
   const outData = octx.createImageData(size, size);
 
-  const contrast = 2.1;
+  const contrast = 1.5;
 
   for (let i = 0; i < size * size; i++) {
     let v = 0;

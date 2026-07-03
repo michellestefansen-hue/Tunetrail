@@ -12,6 +12,14 @@ export type TicketLink = {
   label: string | null;
 };
 
+export type FestivalCategory =
+  | "Rock & Metal"
+  | "Pop & Mainstream"
+  | "Elektronisk & Dans"
+  | "Hip-Hop & R&B"
+  | "Folk & Vise"
+  | "Blandet/Flersjanger";
+
 export type Festival = {
   id: string;
   name: string;
@@ -24,6 +32,7 @@ export type Festival = {
   longitude: number;
   description: string | null;
   image_url: string | null;
+  category: FestivalCategory | null;
   festival_dates: FestivalDate[];
   ticket_links: TicketLink[];
 };
@@ -33,7 +42,7 @@ export async function fetchFestivals(): Promise<Festival[]> {
   const { data, error } = await supabase
     .from("festivals")
     .select(
-      "id, name, slug, website_url, city, region, venue_name, latitude, longitude, description, image_url, festival_dates(date, day_label, performances(artists(name))), ticket_links(provider, url, label)",
+      "id, name, slug, website_url, city, region, venue_name, latitude, longitude, description, image_url, category, festival_dates(date, day_label, performances(artists(name))), ticket_links(provider, url, label)",
     );
 
   if (error) throw error;

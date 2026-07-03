@@ -146,7 +146,7 @@ export const nightGlowStyle: StyleSpecification = {
         "text-transform": "uppercase",
       },
       paint: {
-        "text-color": "#FF2D78",
+        "text-color": "#FEE3CA",
         "text-halo-color": "#1F162B",
         "text-halo-width": 1.4,
         "text-opacity": 0.9,

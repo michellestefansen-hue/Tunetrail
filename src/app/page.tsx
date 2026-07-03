@@ -51,6 +51,19 @@ export default function Home() {
     categories,
   });
 
+  const handleQueryChange = (value: string) => {
+    setQuery(value);
+    if (value.trim()) {
+      setRadiusKm(null);
+      setPositionMode(null);
+      setGpsLocation(null);
+      setManualLocation(null);
+      setDateFrom(null);
+      setDateTo(null);
+      setCategories([]);
+    }
+  };
+
   const handleUseGpsPosition = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
@@ -58,6 +71,7 @@ export default function Home() {
         setGpsLocation([pos.coords.longitude, pos.coords.latitude]);
         setPositionMode("gps");
         setPickingLocation(false);
+        setQuery("");
       },
       () => setGpsLocation(null),
     );
@@ -65,12 +79,15 @@ export default function Home() {
 
   const handleStartPickingLocation = () => {
     setPickingLocation(true);
+    setFiltersOpen(false);
   };
 
   const handlePickLocation = (lngLat: [number, number]) => {
     setManualLocation(lngLat);
     setPositionMode("manual");
     setPickingLocation(false);
+    setQuery("");
+    setFiltersOpen(true);
   };
 
   const handleSelectFestival = (festival: Festival) => {
@@ -89,7 +106,7 @@ export default function Home() {
 
       <SearchOverlay
         query={query}
-        onQueryChange={setQuery}
+        onQueryChange={handleQueryChange}
         onToggleFilters={() => setFiltersOpen((v) => !v)}
         filtersOpen={filtersOpen}
       />
@@ -112,7 +129,7 @@ export default function Home() {
         />
       )}
 
-      <FestivalSheet festivals={visibleFestivals} />
+      <FestivalSheet festivals={visibleFestivals} collapsed={pickingLocation} />
     </div>
   );
 }

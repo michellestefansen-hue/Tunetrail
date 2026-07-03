@@ -50,11 +50,18 @@ function FestivalThumbnail({
   return <div className={`${className} bg-gradient-to-br ${gradientFor(festival.id)}`} />;
 }
 
-export function FestivalSheet({ festivals }: { festivals: Festival[] }) {
+export function FestivalSheet({
+  festivals,
+  collapsed = false,
+}: {
+  festivals: Festival[];
+  collapsed?: boolean;
+}) {
   const [heightsPx, setHeightsPx] = useState({ expanded: 700, default: 380 });
   const y = useMotionValue(heightsPx.expanded - heightsPx.default);
   const dragControls = useDragControls();
   const initialized = useRef(false);
+  const wasCollapsed = useRef(false);
 
   useEffect(() => {
     function update() {
@@ -81,6 +88,16 @@ export function FestivalSheet({ festivals }: { festivals: Festival[] }) {
   const snapToward = (key: SnapKey) => {
     animate(y, snapY[key], { type: "spring", stiffness: 420, damping: 42 });
   };
+
+  useEffect(() => {
+    if (collapsed && !wasCollapsed.current) {
+      snapToward("peek");
+    } else if (!collapsed && wasCollapsed.current) {
+      snapToward("default");
+    }
+    wasCollapsed.current = collapsed;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collapsed]);
 
   const handleDragEnd = (
     _event: MouseEvent | TouchEvent | PointerEvent,

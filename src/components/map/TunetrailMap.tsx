@@ -29,13 +29,6 @@ export function TunetrailMap({
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   );
-  const [noiseTileUrl, setNoiseTileUrl] = useState<string | null>(null);
-  const noiseTileSize = 512;
-
-  useEffect(() => {
-    const noise = createFractalNoiseCanvas(noiseTileSize, "#1F162B", "#9F3D66");
-    setNoiseTileUrl(noise.toDataURL());
-  }, []);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -52,6 +45,11 @@ export function TunetrailMap({
 
     mapRef.current = map;
     map.on("load", () => {
+      const noise = createFractalNoiseCanvas(512, "#1F162B", "#9F3D66");
+      const noiseData = noise.getContext("2d")!.getImageData(0, 0, noise.width, noise.height);
+      map.addImage("bg-noise", noiseData);
+      map.setPaintProperty("background", "background-pattern", "bg-noise");
+
       map.fitBounds([NORWAY_SW, NORWAY_NE], {
         padding: { top: 100, bottom: 420, left: 30, right: 30 },
         animate: false,
@@ -123,18 +121,6 @@ export function TunetrailMap({
 
   return (
     <div className="relative h-full w-full overflow-hidden">
-      <div
-        className="absolute inset-0"
-        style={
-          noiseTileUrl
-            ? {
-                backgroundImage: `url(${noiseTileUrl})`,
-                backgroundRepeat: "repeat",
-                backgroundSize: `${noiseTileSize}px ${noiseTileSize}px`,
-              }
-            : undefined
-        }
-      />
       <div className="absolute inset-0">
         <div ref={containerRef} className="h-full w-full" />
       </div>

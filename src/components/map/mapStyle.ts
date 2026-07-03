@@ -17,7 +17,7 @@ export const nightGlowStyle: StyleSpecification = {
     {
       id: "background",
       type: "background",
-      paint: { "background-color": BG, "background-opacity": 0 },
+      paint: { "background-color": BG },
     },
     {
       id: "water",

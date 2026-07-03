@@ -23,6 +23,7 @@ export type Festival = {
   latitude: number;
   longitude: number;
   description: string | null;
+  image_url: string | null;
   festival_dates: FestivalDate[];
   ticket_links: TicketLink[];
 };
@@ -32,7 +33,7 @@ export async function fetchFestivals(): Promise<Festival[]> {
   const { data, error } = await supabase
     .from("festivals")
     .select(
-      "id, name, slug, website_url, city, region, venue_name, latitude, longitude, description, festival_dates(date, day_label, performances(artists(name))), ticket_links(provider, url, label)",
+      "id, name, slug, website_url, city, region, venue_name, latitude, longitude, description, image_url, festival_dates(date, day_label, performances(artists(name))), ticket_links(provider, url, label)",
     );
 
   if (error) throw error;

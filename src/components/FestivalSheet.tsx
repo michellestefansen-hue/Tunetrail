@@ -21,6 +21,26 @@ function gradientFor(id: string) {
   return GRADIENTS[sum % GRADIENTS.length];
 }
 
+function FestivalThumbnail({
+  festival,
+  className,
+}: {
+  festival: Festival;
+  className: string;
+}) {
+  if (festival.image_url) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return (
+      <img
+        src={festival.image_url}
+        alt={festival.name}
+        className={`${className} object-cover`}
+      />
+    );
+  }
+  return <div className={`${className} bg-gradient-to-br ${gradientFor(festival.id)}`} />;
+}
+
 export function FestivalSheet({
   festivals,
   selected,
@@ -69,8 +89,9 @@ function FestivalList({
               onClick={() => onSelect(festival)}
               className="flex items-center gap-3 rounded-2xl bg-white p-2.5 text-left shadow-sm transition-transform active:scale-[0.98]"
             >
-              <div
-                className={`h-16 w-16 shrink-0 rounded-xl bg-gradient-to-br ${gradientFor(festival.id)}`}
+              <FestivalThumbnail
+                festival={festival}
+                className="h-16 w-16 shrink-0 rounded-xl"
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-heading text-[#2D1A12]">{festival.name}</p>
@@ -117,7 +138,7 @@ function FestivalDetail({
         Tilbake
       </button>
 
-      <div className={`mt-3 h-24 w-full rounded-2xl bg-gradient-to-br ${gradientFor(festival.id)}`} />
+      <FestivalThumbnail festival={festival} className="mt-3 h-24 w-full rounded-2xl" />
 
       <h2 className="mt-3 text-2xl">{festival.name}</h2>
       <p className="text-sm text-stone-500">

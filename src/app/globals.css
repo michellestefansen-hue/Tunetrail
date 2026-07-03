@@ -117,6 +117,42 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@keyframes glow-dash {
+  to {
+    stroke-dashoffset: -160;
+  }
+}
+
+.animate-glow-dash {
+  animation: glow-dash 6s linear infinite;
+}
+
+@keyframes marker-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 138, 61, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 18px rgba(255, 138, 61, 0);
+  }
+}
+
+.animate-marker-pulse {
+  animation: marker-pulse 2s ease-out infinite;
+}
+
+@keyframes user-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 22px rgba(236, 72, 153, 0);
+  }
+}
+
+.animate-user-pulse {
+  animation: user-pulse 2s ease-out infinite;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

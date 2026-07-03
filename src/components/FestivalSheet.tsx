@@ -74,7 +74,7 @@ function FestivalList({
 }) {
   return (
     <div className="flex max-h-[calc(46vh-24px)] flex-col overflow-y-auto px-5 pb-6 pt-3">
-      <h2 className="text-2xl">Upcoming Festivals</h2>
+      <h2 className="text-2xl">Utforsk festivaler</h2>
       <p className="mt-1 text-sm text-stone-500">
         Opplev magien fra den norske sommernatten
       </p>

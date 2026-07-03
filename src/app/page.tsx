@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SearchOverlay } from "@/components/SearchOverlay";
 import { FilterPanel } from "@/components/FilterPanel";
@@ -18,11 +19,11 @@ const TunetrailMap = dynamic(
 );
 
 export default function Home() {
+  const router = useRouter();
   const [festivals, setFestivals] = useState<Festival[]>([]);
   const [query, setQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
-  const [selected, setSelected] = useState<Festival | null>(null);
 
   const [gpsLocation, setGpsLocation] = useState<[number, number] | null>(null);
   const [manualLocation, setManualLocation] = useState<[number, number] | null>(null);
@@ -72,6 +73,10 @@ export default function Home() {
     setPickingLocation(false);
   };
 
+  const handleSelectFestival = (festival: Festival) => {
+    router.push(`/festival/${festival.slug}`);
+  };
+
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-[#0b0a1f]">
       <TunetrailMap
@@ -79,7 +84,7 @@ export default function Home() {
         centerMarker={center}
         pickingLocation={pickingLocation}
         onPickLocation={handlePickLocation}
-        onSelectFestival={setSelected}
+        onSelectFestival={handleSelectFestival}
       />
 
       <SearchOverlay
@@ -107,12 +112,7 @@ export default function Home() {
         />
       )}
 
-      <FestivalSheet
-        festivals={visibleFestivals}
-        selected={selected}
-        onSelect={setSelected}
-        onBack={() => setSelected(null)}
-      />
+      <FestivalSheet festivals={visibleFestivals} />
     </div>
   );
 }

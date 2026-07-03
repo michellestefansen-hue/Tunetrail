@@ -1,10 +1,20 @@
 import { createClient } from "@/lib/supabase/client";
 
+type ArtistRef = { name: string } | { name: string }[] | null;
+
 export type FestivalDate = {
   date: string;
   day_label: string | null;
-  performances: { artists: { name: string }[] }[];
+  performances: { artists: ArtistRef }[];
 };
+
+export function artistNamesForDate(date: FestivalDate | undefined): string[] {
+  if (!date) return [];
+  return date.performances.flatMap((p) => {
+    if (!p.artists) return [];
+    return Array.isArray(p.artists) ? p.artists.map((a) => a.name) : [p.artists.name];
+  });
+}
 
 export type TicketLink = {
   provider: string;
@@ -46,13 +56,12 @@ export type Festival = {
   ticket_links: TicketLink[];
 };
 
+export const FESTIVAL_SELECT =
+  "id, name, slug, website_url, city, region, venue_name, latitude, longitude, description, image_url, category, festival_dates(date, day_label, performances(artists(name))), ticket_links(provider, url, label)";
+
 export async function fetchFestivals(): Promise<Festival[]> {
   const supabase = createClient();
-  const { data, error } = await supabase
-    .from("festivals")
-    .select(
-      "id, name, slug, website_url, city, region, venue_name, latitude, longitude, description, image_url, category, festival_dates(date, day_label, performances(artists(name))), ticket_links(provider, url, label)",
-    );
+  const { data, error } = await supabase.from("festivals").select(FESTIVAL_SELECT);
 
   if (error) throw error;
   return (data ?? []) as unknown as Festival[];

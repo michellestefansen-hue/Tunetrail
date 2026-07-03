@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   motion,
   useMotionValue,
@@ -8,13 +9,7 @@ import {
   animate,
   type PanInfo,
 } from "framer-motion";
-import { ChevronLeftIcon, TicketIcon, GlobeAltIcon } from "@heroicons/react/24/solid";
-import {
-  dateRangeLabel,
-  primaryTicketLink,
-  sortedDates,
-  type Festival,
-} from "@/lib/festivals";
+import { dateRangeLabel, primaryTicketLink, type Festival } from "@/lib/festivals";
 
 const PEEK_PX = 140;
 const DEFAULT_VH = 0.46;
@@ -55,17 +50,7 @@ function FestivalThumbnail({
   return <div className={`${className} bg-gradient-to-br ${gradientFor(festival.id)}`} />;
 }
 
-export function FestivalSheet({
-  festivals,
-  selected,
-  onSelect,
-  onBack,
-}: {
-  festivals: Festival[];
-  selected: Festival | null;
-  onSelect: (festival: Festival) => void;
-  onBack: () => void;
-}) {
+export function FestivalSheet({ festivals }: { festivals: Festival[] }) {
   const [heightsPx, setHeightsPx] = useState({ expanded: 700, default: 380 });
   const y = useMotionValue(heightsPx.expanded - heightsPx.default);
   const dragControls = useDragControls();
@@ -96,13 +81,6 @@ export function FestivalSheet({
   const snapToward = (key: SnapKey) => {
     animate(y, snapY[key], { type: "spring", stiffness: 420, damping: 42 });
   };
-
-  useEffect(() => {
-    if (selected && y.get() >= snapY.peek - 1) {
-      snapToward("default");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
 
   const handleDragEnd = (
     _event: MouseEvent | TouchEvent | PointerEvent,
@@ -149,23 +127,13 @@ export function FestivalSheet({
       </div>
 
       <div className="min-h-0 flex-1">
-        {selected ? (
-          <FestivalDetail festival={selected} onBack={onBack} />
-        ) : (
-          <FestivalList festivals={festivals} onSelect={onSelect} />
-        )}
+        <FestivalList festivals={festivals} />
       </div>
     </motion.div>
   );
 }
 
-function FestivalList({
-  festivals,
-  onSelect,
-}: {
-  festivals: Festival[];
-  onSelect: (festival: Festival) => void;
-}) {
+function FestivalList({ festivals }: { festivals: Festival[] }) {
   return (
     <div className="flex h-full flex-col overflow-y-auto px-5 pb-6 pt-3">
       <h2 className="text-2xl">Utforsk festivaler</h2>
@@ -177,10 +145,9 @@ function FestivalList({
         {festivals.map((festival) => {
           const ticket = primaryTicketLink(festival);
           return (
-            <button
+            <Link
               key={festival.id}
-              type="button"
-              onClick={() => onSelect(festival)}
+              href={`/festival/${festival.slug}`}
               className="flex items-center gap-3 rounded-2xl bg-white p-2.5 text-left shadow-[0_8px_30px_rgba(45,26,18,0.18)] transition-transform active:scale-[0.98]"
             >
               <FestivalThumbnail
@@ -203,7 +170,7 @@ function FestivalList({
                   Program
                 </span>
               )}
-            </button>
+            </Link>
           );
         })}
         {festivals.length === 0 && (
@@ -211,99 +178,6 @@ function FestivalList({
             Ingen festivaler matcher søket ditt.
           </p>
         )}
-      </div>
-    </div>
-  );
-}
-
-function FestivalDetail({
-  festival,
-  onBack,
-}: {
-  festival: Festival;
-  onBack: () => void;
-}) {
-  const dates = sortedDates(festival);
-  const dateInfo = new Map(festival.festival_dates.map((d) => [d.date, d]));
-
-  return (
-    <div className="flex h-full flex-col overflow-y-auto px-5 pb-6 pt-3">
-      <button
-        type="button"
-        onClick={onBack}
-        className="flex w-fit items-center gap-1 text-sm font-medium text-stone-500"
-      >
-        <ChevronLeftIcon className="h-4 w-4 text-[#FF2D78]" />
-        Tilbake
-      </button>
-
-      <FestivalThumbnail festival={festival} className="mt-3 h-24 w-full rounded-2xl" />
-
-      <h2 className="mt-3 text-2xl">{festival.name}</h2>
-      <p className="text-sm text-stone-500">
-        {festival.venue_name ?? festival.city}, {festival.region}
-      </p>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        {festival.website_url && (
-          <a
-            href={festival.website_url}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600"
-          >
-            <GlobeAltIcon className="h-4 w-4 text-[#FF2D78]" />
-            Nettside
-          </a>
-        )}
-        {festival.ticket_links.map((t) => (
-          <a
-            key={t.url}
-            href={t.url}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-3 py-1.5 text-xs font-semibold text-white"
-          >
-            <TicketIcon className="h-4 w-4" />
-            {t.provider}
-          </a>
-        ))}
-      </div>
-
-      <div className="mt-5 flex flex-col gap-4">
-        {dates.map((date) => {
-          const info = dateInfo.get(date);
-          const artists = (info?.performances ?? []).flatMap((p) =>
-            p.artists.map((a) => a.name),
-          );
-
-          return (
-            <div key={date}>
-              <p className="text-sm font-semibold text-stone-900">
-                {new Date(date).toLocaleDateString("nb-NO", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                })}
-                {info?.day_label ? ` · ${info.day_label}` : ""}
-              </p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {artists.length > 0 ? (
-                  artists.map((name) => (
-                    <span
-                      key={name}
-                      className="rounded-full bg-stone-100 px-2.5 py-1 text-xs text-stone-700"
-                    >
-                      {name}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-xs text-stone-400">Program ikke annonsert</span>
-                )}
-              </div>
-            </div>
-          );
-        })}
       </div>
     </div>
   );

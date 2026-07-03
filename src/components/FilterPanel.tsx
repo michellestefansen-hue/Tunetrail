@@ -27,7 +27,7 @@ export function FilterPanel({
 }) {
   return (
     <div className="pointer-events-auto absolute inset-x-0 top-[calc(env(safe-area-inset-top)+80px)] z-20 flex justify-center px-4">
-      <div className="flex w-full max-w-md flex-col gap-4 rounded-2xl border border-white/10 bg-black/50 p-4 shadow-lg backdrop-blur-md">
+      <div className="flex w-full max-w-md flex-col gap-4 rounded-2xl border border-white/10 bg-white/10 p-4 shadow-lg backdrop-blur-xl">
         <div>
           <div className="flex items-center justify-between text-sm text-white/80">
             <span>Radius fra posisjon</span>

@@ -43,7 +43,7 @@ export default async function FestivalPage({
 
   return (
     <div className="min-h-dvh bg-[#FFF9F0] pb-16">
-      <div className="relative h-72 w-full sm:h-96">
+      <div className="relative h-64 w-full sm:h-80">
         {festival.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -54,7 +54,7 @@ export default async function FestivalPage({
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-[#FF4E50]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#FFF9F0] via-black/10 to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#FFF9F0] to-transparent" />
 
         <Link
           href="/"
@@ -63,19 +63,17 @@ export default async function FestivalPage({
           <ArrowLeftIcon className="h-4 w-4" />
           Kart
         </Link>
-
-        <div className="absolute inset-x-0 bottom-0 px-5 pb-6">
-          {festival.category && (
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#FF4E50]">
-              {festival.category}
-            </p>
-          )}
-          <h1 className="mt-1 text-3xl">{festival.name}</h1>
-        </div>
       </div>
 
-      <div className="mx-auto max-w-2xl rounded-t-3xl bg-[#FFF9F0] px-5 pt-6">
-        <p className="flex items-center gap-1.5 text-sm text-stone-500">
+      <div className="mx-auto max-w-2xl rounded-t-3xl bg-[#FFF9F0] px-5 pt-5">
+        {festival.category && (
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#FF4E50]">
+            {festival.category}
+          </p>
+        )}
+        <h1 className="mt-1 text-3xl">{festival.name}</h1>
+
+        <p className="mt-3 flex items-center gap-1.5 text-sm text-stone-500">
           <MapPinIcon className="h-4 w-4 text-[#FF2D78]" />
           {festival.venue_name ?? festival.city}
           {festival.region ? `, ${festival.region}` : ""}

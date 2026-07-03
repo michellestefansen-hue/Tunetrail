@@ -33,6 +33,7 @@ export default function Home() {
   const [dateFrom, setDateFrom] = useState<string | null>(null);
   const [dateTo, setDateTo] = useState<string | null>(null);
   const [categories, setCategories] = useState<FestivalCategory[]>([]);
+  const [searchLocation, setSearchLocation] = useState<[number, number] | null>(null);
 
   useEffect(() => {
     fetchFestivals()
@@ -40,7 +41,42 @@ export default function Home() {
       .catch((err) => console.error("Failed to load festivals", err));
   }, []);
 
-  const center = positionMode === "manual" ? manualLocation : gpsLocation;
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setSearchLocation(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=no&q=${encodeURIComponent(trimmed)}`,
+        { signal: controller.signal },
+      )
+        .then((res) => res.json())
+        .then((results: { lon: string; lat: string }[]) => {
+          if (results.length > 0) {
+            setSearchLocation([parseFloat(results[0].lon), parseFloat(results[0].lat)]);
+          } else {
+            setSearchLocation(null);
+          }
+        })
+        .catch(() => {});
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query]);
+
+  const center =
+    positionMode === "manual"
+      ? manualLocation
+      : positionMode === "gps"
+        ? gpsLocation
+        : searchLocation;
 
   const visibleFestivals = filterFestivals(festivals, {
     query,

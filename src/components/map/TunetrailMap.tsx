@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl, { Map as MapLibreMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { nightGlowStyle } from "./mapStyle";
-import { GlowLines } from "./GlowLines";
+import { createFractalNoiseCanvas } from "./noiseTexture";
 import type { Festival } from "@/lib/festivals";
 import { distanceKm } from "@/lib/festivals";
 
@@ -45,6 +45,11 @@ export function TunetrailMap({
 
     mapRef.current = map;
     map.on("load", () => {
+      const noise = createFractalNoiseCanvas(512, "#1F162B", "#9F3D66");
+      const noiseData = noise.getContext("2d")!.getImageData(0, 0, noise.width, noise.height);
+      map.addImage("bg-noise", noiseData);
+      map.setPaintProperty("background", "background-pattern", "bg-noise");
+
       map.fitBounds([NORWAY_SW, NORWAY_NE], {
         padding: { top: 100, bottom: 420, left: 30, right: 30 },
         animate: false,
@@ -93,7 +98,7 @@ export function TunetrailMap({
       const el = document.createElement("button");
       el.type = "button";
       el.className =
-        "h-4 w-4 rounded-full border-2 border-white/80 bg-orange-500 animate-marker-pulse cursor-pointer";
+        "h-4 w-4 rounded-full border-2 border-white/80 bg-[#FF2D78] animate-marker-pulse cursor-pointer";
       el.addEventListener("click", () => onSelectFestival(festival));
 
       const marker = new maplibregl.Marker({ element: el })
@@ -106,7 +111,7 @@ export function TunetrailMap({
     if (userLocation) {
       const el = document.createElement("div");
       el.className =
-        "h-4 w-4 rounded-full border-2 border-white/90 bg-pink-500 animate-user-pulse";
+        "h-4 w-4 rounded-full border-2 border-white/90 bg-[#FFB347] animate-user-pulse";
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat(userLocation)
         .addTo(mapInstance);
@@ -114,15 +119,9 @@ export function TunetrailMap({
     }
   }, [mapInstance, festivals, radiusKm, searchQuery, userLocation, onSelectFestival]);
 
-  const query = searchQuery.trim().toLowerCase();
-  const glowPoints = festivals
-    .filter((f) => !query || f.name.toLowerCase().includes(query))
-    .map((f) => ({ id: f.id, lng: f.longitude, lat: f.latitude }));
-
   return (
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
-      <GlowLines map={mapInstance} points={glowPoints} />
     </div>
   );
 }

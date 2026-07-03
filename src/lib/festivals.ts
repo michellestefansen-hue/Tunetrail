@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/client";
 export type FestivalDate = {
   date: string;
   day_label: string | null;
-  performances: { artists: { name: string } | null }[];
+  performances: { artists: { name: string }[] }[];
 };
 
 export type TicketLink = {
@@ -36,7 +36,7 @@ export async function fetchFestivals(): Promise<Festival[]> {
     );
 
   if (error) throw error;
-  return (data ?? []) as Festival[];
+  return (data ?? []) as unknown as Festival[];
 }
 
 export function sortedDates(festival: Festival): string[] {

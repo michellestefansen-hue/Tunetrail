@@ -16,7 +16,7 @@ export function SearchOverlay({
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-4 pt-[calc(env(safe-area-inset-top)+16px)]">
       <div className="pointer-events-auto flex w-full max-w-md items-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-3 shadow-lg backdrop-blur-md">
-        <MagnifyingGlassIcon className="h-5 w-5 shrink-0 text-white/60" />
+        <MagnifyingGlassIcon className="h-5 w-5 shrink-0 text-[#FF2D78]" />
         <input
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
@@ -28,7 +28,7 @@ export function SearchOverlay({
           onClick={onToggleFilters}
           aria-label="Filter"
           className={`shrink-0 rounded-full p-1.5 transition-colors ${
-            filtersOpen ? "bg-orange-500 text-white" : "text-white/60 hover:text-white"
+            filtersOpen ? "bg-[#FF2D78] text-white" : "text-[#FF2D78] hover:text-white"
           }`}
         >
           <AdjustmentsHorizontalIcon className="h-5 w-5" />

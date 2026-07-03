@@ -33,7 +33,7 @@ export function FestivalSheet({
   onBack: () => void;
 }) {
   return (
-    <div className="absolute inset-x-0 bottom-0 z-20 max-h-[46%] rounded-t-3xl border-t border-white/10 bg-[#fdf6ec] shadow-2xl">
+    <div className="absolute inset-x-0 bottom-0 z-20 max-h-[46%] rounded-t-3xl border-t border-white/10 bg-[#FFF9F0] shadow-2xl">
       <div className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-black/15" />
 
       {selected ? (
@@ -54,7 +54,7 @@ function FestivalList({
 }) {
   return (
     <div className="flex max-h-[calc(46vh-24px)] flex-col overflow-y-auto px-5 pb-6 pt-3">
-      <h2 className="text-2xl font-bold text-stone-900">Upcoming Festivals</h2>
+      <h2 className="text-2xl font-bold text-[#FF2D78]">Upcoming Festivals</h2>
       <p className="mt-1 text-sm text-stone-500">
         Opplev magien fra den norske sommernatten
       </p>
@@ -73,13 +73,13 @@ function FestivalList({
                 className={`h-16 w-16 shrink-0 rounded-xl bg-gradient-to-br ${gradientFor(festival.id)}`}
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-stone-900">{festival.name}</p>
+                <p className="truncate font-semibold text-[#FF2D78]">{festival.name}</p>
                 <p className="truncate text-xs text-stone-500">
                   {dateRangeLabel(festival)} • {festival.venue_name ?? festival.city}
                 </p>
               </div>
               {ticket && (
-                <span className="shrink-0 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 px-4 py-2 text-xs font-semibold text-white">
+                <span className="shrink-0 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-4 py-2 text-xs font-semibold text-white">
                   Tickets
                 </span>
               )}
@@ -113,13 +113,13 @@ function FestivalDetail({
         onClick={onBack}
         className="flex w-fit items-center gap-1 text-sm font-medium text-stone-500"
       >
-        <ChevronLeftIcon className="h-4 w-4" />
+        <ChevronLeftIcon className="h-4 w-4 text-[#FF2D78]" />
         Tilbake
       </button>
 
       <div className={`mt-3 h-24 w-full rounded-2xl bg-gradient-to-br ${gradientFor(festival.id)}`} />
 
-      <h2 className="mt-3 text-2xl font-bold text-stone-900">{festival.name}</h2>
+      <h2 className="mt-3 text-2xl font-bold text-[#FF2D78]">{festival.name}</h2>
       <p className="text-sm text-stone-500">
         {festival.venue_name ?? festival.city}, {festival.region}
       </p>
@@ -132,7 +132,7 @@ function FestivalDetail({
             rel="noreferrer"
             className="flex items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600"
           >
-            <GlobeAltIcon className="h-4 w-4" />
+            <GlobeAltIcon className="h-4 w-4 text-[#FF2D78]" />
             Nettside
           </a>
         )}
@@ -142,7 +142,7 @@ function FestivalDetail({
             href={t.url}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 px-3 py-1.5 text-xs font-semibold text-white"
+            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-3 py-1.5 text-xs font-semibold text-white"
           >
             <TicketIcon className="h-4 w-4" />
             {t.provider}
@@ -153,9 +153,9 @@ function FestivalDetail({
       <div className="mt-5 flex flex-col gap-4">
         {dates.map((date) => {
           const info = dateInfo.get(date);
-          const artists = (info?.performances ?? [])
-            .map((p) => p.artists?.name)
-            .filter((name): name is string => Boolean(name));
+          const artists = (info?.performances ?? []).flatMap((p) =>
+            p.artists.map((a) => a.name),
+          );
 
           return (
             <div key={date}>

@@ -90,9 +90,8 @@ export function FestivalSheet({
         type="button"
         onClick={() => setIsOpen((v) => !v)}
         aria-label={isOpen ? "Skjul festivaler" : "Vis festivaler"}
-        className="flex shrink-0 flex-col items-center gap-1.5 py-3"
+        className="flex shrink-0 items-center justify-center py-3"
       >
-        <div className="h-1.5 w-12 rounded-full bg-black/15" />
         {isOpen ? (
           <ChevronDownIcon className="h-4 w-4 text-stone-400" />
         ) : (

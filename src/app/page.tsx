@@ -51,7 +51,7 @@ export default function Home() {
     const controller = new AbortController();
     const timer = setTimeout(() => {
       fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=no&q=${encodeURIComponent(trimmed)}`,
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(trimmed)}`,
         { signal: controller.signal },
       )
         .then((res) => res.json())

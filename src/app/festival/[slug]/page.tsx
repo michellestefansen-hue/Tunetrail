@@ -75,8 +75,9 @@ export default async function FestivalPage({
 
         <p className="mt-3 flex items-center gap-1.5 text-sm text-stone-500">
           <MapPinIcon className="h-4 w-4 text-[#FF2D78]" />
-          {festival.venue_name ?? festival.city}
-          {festival.region ? `, ${festival.region}` : ""}
+          {[festival.venue_name ?? festival.city, festival.country]
+            .filter(Boolean)
+            .join(", ")}
         </p>
 
         {festival.description && (

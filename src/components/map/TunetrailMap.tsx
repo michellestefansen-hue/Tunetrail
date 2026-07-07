@@ -7,8 +7,8 @@ import { nightGlowStyle } from "./mapStyle";
 import { createFractalNoiseCanvas } from "./noiseTexture";
 import type { Festival } from "@/lib/festivals";
 
-const NORWAY_SW: [number, number] = [3.0, 57.5];
-const NORWAY_NE: [number, number] = [17.5, 69.5];
+const EUROPE_SW: [number, number] = [-11.0, 35.0];
+const EUROPE_NE: [number, number] = [31.0, 66.0];
 
 export function TunetrailMap({
   festivals,
@@ -35,7 +35,7 @@ export function TunetrailMap({
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: nightGlowStyle,
-      center: [9.5, 63.5],
+      center: [10, 50],
       zoom: 3,
       attributionControl: false,
     });
@@ -49,8 +49,8 @@ export function TunetrailMap({
       map.addImage("bg-noise", noiseData);
       map.setPaintProperty("background", "background-pattern", "bg-noise");
 
-      map.fitBounds([NORWAY_SW, NORWAY_NE], {
-        padding: { top: 160, bottom: 420, left: 30, right: 30 },
+      map.fitBounds([EUROPE_SW, EUROPE_NE], {
+        padding: { top: 160, bottom: 420, left: 20, right: 20 },
         animate: false,
       });
       setMapInstance(map);

@@ -23,19 +23,33 @@ export type TicketLink = {
 };
 
 export type FestivalCategory =
-  | "Rock & Metal"
   | "Pop & Mainstream"
+  | "Rock & Alternativ"
+  | "Metal"
+  | "Punk & Hardcore"
+  | "Indie"
   | "Elektronisk & Dans"
+  | "Techno & House"
   | "Hip-Hop & R&B"
-  | "Folk & Vise"
+  | "Jazz & Soul"
+  | "Klassisk"
+  | "Folk & Americana"
+  | "Reggae & World"
   | "Blandet/Flersjanger";
 
 export const FESTIVAL_CATEGORIES: FestivalCategory[] = [
-  "Rock & Metal",
   "Pop & Mainstream",
+  "Rock & Alternativ",
+  "Metal",
+  "Punk & Hardcore",
+  "Indie",
   "Elektronisk & Dans",
+  "Techno & House",
   "Hip-Hop & R&B",
-  "Folk & Vise",
+  "Jazz & Soul",
+  "Klassisk",
+  "Folk & Americana",
+  "Reggae & World",
   "Blandet/Flersjanger",
 ];
 
@@ -47,6 +61,7 @@ export type Festival = {
   city: string | null;
   region: string | null;
   venue_name: string | null;
+  country: string | null;
   latitude: number;
   longitude: number;
   description: string | null;
@@ -57,7 +72,7 @@ export type Festival = {
 };
 
 export const FESTIVAL_SELECT =
-  "id, name, slug, website_url, city, region, venue_name, latitude, longitude, description, image_url, category, festival_dates(date, day_label, performances(artists(name))), ticket_links(provider, url, label)";
+  "id, name, slug, website_url, city, region, venue_name, country, latitude, longitude, description, image_url, category, festival_dates(date, day_label, performances(artists(name))), ticket_links(provider, url, label)";
 
 export async function fetchFestivals(): Promise<Festival[]> {
   const supabase = createClient();
@@ -110,6 +125,7 @@ export function filterFestivals(festivals: Festival[], filters: FestivalFilters)
         festival.name,
         festival.city,
         festival.region,
+        festival.country,
         festival.venue_name,
       ]
         .filter(Boolean)

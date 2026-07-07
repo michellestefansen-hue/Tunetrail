@@ -111,7 +111,7 @@ function FestivalList({ festivals }: { festivals: Festival[] }) {
     <div className="flex h-full flex-col overflow-y-auto px-5 pb-6 pt-1">
       <h2 className="text-2xl">Utforsk festivaler</h2>
       <p className="mt-1 text-sm text-stone-500">
-        Opplev magien fra den norske sommernatten
+        Opplev musikkfestivaler over hele Europa
       </p>
 
       <div className="mt-4 flex flex-col gap-3">
@@ -130,7 +130,8 @@ function FestivalList({ festivals }: { festivals: Festival[] }) {
               <div className="min-w-0 flex-1">
                 <p className="truncate font-heading text-[#2D1A12]">{festival.name}</p>
                 <p className="truncate text-xs text-stone-500">
-                  {dateRangeLabel(festival)} • {festival.venue_name ?? festival.city}
+                  {dateRangeLabel(festival)} •{" "}
+                  {[festival.city, festival.country].filter(Boolean).join(", ")}
                 </p>
                 {festival.category && (
                   <p className="mt-1 truncate text-[11px] font-medium text-[#FF4E50]">

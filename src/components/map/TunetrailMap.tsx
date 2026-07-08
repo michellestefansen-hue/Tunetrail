@@ -20,12 +20,16 @@ function hoverDateLabel(festival: Festival): string {
 
 function HoverRow({ festival }: { festival: Festival }) {
   return (
-    <div className="grid grid-cols-[2fr_1fr] items-center gap-2">
-      <span className="truncate font-heading text-white">{festival.name}</span>
-      <span className="truncate text-white/70">{hoverDateLabel(festival)}</span>
+    <div className="flex items-baseline gap-3">
+      <span className="min-w-0 flex-1 truncate font-heading text-white">{festival.name}</span>
+      <span className="shrink-0 text-white/70">{hoverDateLabel(festival)}</span>
     </div>
   );
 }
+
+const TOOLTIP_WIDTH = 260;
+const TOOLTIP_MAX_HEIGHT = 220;
+const EDGE_PADDING = 10;
 
 function toFeatureCollection(festivals: Festival[]): GeoJSON.FeatureCollection {
   return {
@@ -189,46 +193,54 @@ export function TunetrailMap({
         });
       }
 
-      mapInstance.on("mousemove", "unclustered", (e) => {
-        const fid = e.features?.[0]?.properties?.fid;
-        const festival = festivalsRef.current.find((f) => f.id === fid);
-        if (festival) {
-          setHoverInfo({ kind: "single", x: e.point.x, y: e.point.y, festival });
-        }
-      });
-      mapInstance.on("mouseleave", "unclustered", () => setHoverInfo(null));
+      // Hover tooltips are a desktop-mouse convenience; on touch devices there's
+      // no real "hover out", so a tap would leave the tooltip stuck on screen.
+      const supportsHover =
+        typeof window !== "undefined" &&
+        window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
-      mapInstance.on("mousemove", "clusters", (e) => {
-        const feature = e.features?.[0];
-        const clusterId = feature?.properties?.cluster_id;
-        const pointCount = feature?.properties?.point_count ?? 0;
-        if (clusterId == null) return;
+      if (supportsHover) {
+        mapInstance.on("mousemove", "unclustered", (e) => {
+          const fid = e.features?.[0]?.properties?.fid;
+          const festival = festivalsRef.current.find((f) => f.id === fid);
+          if (festival) {
+            setHoverInfo({ kind: "single", x: e.point.x, y: e.point.y, festival });
+          }
+        });
+        mapInstance.on("mouseleave", "unclustered", () => setHoverInfo(null));
 
-        if (clusterId !== lastClusterId.current) {
-          lastClusterId.current = clusterId;
-          const source = mapInstance.getSource("festivals") as GeoJSONSource;
-          source.getClusterLeaves(clusterId, 8, 0).then((leaves) => {
-            const matched = leaves
-              .map((leaf) => festivalsRef.current.find((f) => f.id === leaf.properties?.fid))
-              .filter((f): f is Festival => Boolean(f));
-            setHoverInfo({
-              kind: "cluster",
-              x: e.point.x,
-              y: e.point.y,
-              festivals: matched,
-              extra: Math.max(0, pointCount - matched.length),
+        mapInstance.on("mousemove", "clusters", (e) => {
+          const feature = e.features?.[0];
+          const clusterId = feature?.properties?.cluster_id;
+          const pointCount = feature?.properties?.point_count ?? 0;
+          if (clusterId == null) return;
+
+          if (clusterId !== lastClusterId.current) {
+            lastClusterId.current = clusterId;
+            const source = mapInstance.getSource("festivals") as GeoJSONSource;
+            source.getClusterLeaves(clusterId, 8, 0).then((leaves) => {
+              const matched = leaves
+                .map((leaf) => festivalsRef.current.find((f) => f.id === leaf.properties?.fid))
+                .filter((f): f is Festival => Boolean(f));
+              setHoverInfo({
+                kind: "cluster",
+                x: e.point.x,
+                y: e.point.y,
+                festivals: matched,
+                extra: Math.max(0, pointCount - matched.length),
+              });
             });
-          });
-        } else {
-          setHoverInfo((prev) =>
-            prev && prev.kind === "cluster" ? { ...prev, x: e.point.x, y: e.point.y } : prev,
-          );
-        }
-      });
-      mapInstance.on("mouseleave", "clusters", () => {
-        lastClusterId.current = null;
-        setHoverInfo(null);
-      });
+          } else {
+            setHoverInfo((prev) =>
+              prev && prev.kind === "cluster" ? { ...prev, x: e.point.x, y: e.point.y } : prev,
+            );
+          }
+        });
+        mapInstance.on("mouseleave", "clusters", () => {
+          lastClusterId.current = null;
+          setHoverInfo(null);
+        });
+      }
 
       layersReady.current = true;
     } else {
@@ -273,8 +285,18 @@ export function TunetrailMap({
 
   const containerWidth = containerRef.current?.clientWidth ?? 0;
   const containerHeight = containerRef.current?.clientHeight ?? 0;
-  const flipX = hoverInfo != null && hoverInfo.x + 320 > containerWidth;
-  const flipY = hoverInfo != null && hoverInfo.y + 160 > containerHeight;
+  const tooltipLeft = hoverInfo
+    ? Math.min(
+        Math.max(hoverInfo.x + 14, EDGE_PADDING),
+        Math.max(EDGE_PADDING, containerWidth - TOOLTIP_WIDTH - EDGE_PADDING),
+      )
+    : 0;
+  const tooltipTop = hoverInfo
+    ? Math.min(
+        Math.max(hoverInfo.y + 14, EDGE_PADDING),
+        Math.max(EDGE_PADDING, containerHeight - TOOLTIP_MAX_HEIGHT - EDGE_PADDING),
+      )
+    : 0;
 
   return (
     <div className="relative h-full w-full overflow-hidden">
@@ -284,13 +306,8 @@ export function TunetrailMap({
 
       {hoverInfo && (
         <div
-          className="pointer-events-none absolute z-30 w-[300px] rounded-2xl border border-white/10 bg-white/10 p-3 text-xs shadow-lg backdrop-blur-xl"
-          style={{
-            left: flipX ? undefined : hoverInfo.x + 14,
-            right: flipX ? containerWidth - hoverInfo.x + 14 : undefined,
-            top: flipY ? undefined : hoverInfo.y + 14,
-            bottom: flipY ? containerHeight - hoverInfo.y + 14 : undefined,
-          }}
+          className="pointer-events-none absolute z-30 max-h-[220px] overflow-hidden rounded-2xl border border-white/10 bg-white/10 p-3 text-xs shadow-lg backdrop-blur-xl"
+          style={{ left: tooltipLeft, top: tooltipTop, width: TOOLTIP_WIDTH }}
         >
           {hoverInfo.kind === "single" ? (
             <HoverRow festival={hoverInfo.festival} />

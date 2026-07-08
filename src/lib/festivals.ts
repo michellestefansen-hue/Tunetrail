@@ -1,25 +1,19 @@
 import { createClient } from "@/lib/supabase/client";
 
-type ArtistRef = { name: string } | { name: string }[] | null;
-
-export type FestivalDate = {
-  date: string;
+export type ProgramArtist = { name: string; stage: string | null; time: string | null };
+export type ProgramDay = {
+  date: string; // 'YYYY-MM-DD'
   day_label: string | null;
-  performances: { artists: ArtistRef }[];
+  artists: ProgramArtist[];
 };
 
-export function artistNamesForDate(date: FestivalDate | undefined): string[] {
-  if (!date) return [];
-  return date.performances.flatMap((p) => {
-    if (!p.artists) return [];
-    return Array.isArray(p.artists) ? p.artists.map((a) => a.name) : [p.artists.name];
-  });
-}
-
-export type TicketLink = {
-  provider: string;
-  url: string;
-  label: string | null;
+export type FestivalEdition = {
+  id: string;
+  year: number;
+  date_from: string | null;
+  date_to: string | null;
+  ticket_url: string | null;
+  program: ProgramDay[];
 };
 
 export type FestivalCategory =
@@ -67,12 +61,11 @@ export type Festival = {
   description: string | null;
   image_url: string | null;
   category: FestivalCategory | null;
-  festival_dates: FestivalDate[];
-  ticket_links: TicketLink[];
+  festival_editions: FestivalEdition[];
 };
 
 export const FESTIVAL_SELECT =
-  "id, name, slug, website_url, city, region, venue_name, country, latitude, longitude, description, image_url, category, festival_dates(date, day_label, performances(artists(name))), ticket_links(provider, url, label)";
+  "id, name, slug, website_url, city, region, venue_name, country, latitude, longitude, description, image_url, category, festival_editions(id, year, date_from, date_to, ticket_url, program)";
 
 export async function fetchFestivals(): Promise<Festival[]> {
   const supabase = createClient();
@@ -82,19 +75,34 @@ export async function fetchFestivals(): Promise<Festival[]> {
   return (data ?? []) as unknown as Festival[];
 }
 
-export function sortedDates(festival: Festival): string[] {
-  return [...festival.festival_dates.map((d) => d.date)].sort();
+/** The edition to surface — the upcoming one, else the most recent. */
+export function currentEdition(festival: Festival): FestivalEdition | null {
+  const editions = festival.festival_editions;
+  if (!editions || editions.length === 0) return null;
+  const today = new Date().toISOString().slice(0, 10);
+  const upcoming = editions
+    .filter((e) => (e.date_to ?? e.date_from ?? "") >= today)
+    .sort((a, b) => (a.date_from ?? "").localeCompare(b.date_from ?? ""));
+  if (upcoming.length > 0) return upcoming[0];
+  return [...editions].sort((a, b) => b.year - a.year)[0];
+}
+
+export function editionDates(edition: FestivalEdition | null): string[] {
+  if (!edition) return [];
+  return edition.program.map((d) => d.date).sort();
 }
 
 export function dateRangeLabel(festival: Festival): string {
-  const dates = sortedDates(festival);
-  if (dates.length === 0) return "Dato ikke satt";
+  const edition = currentEdition(festival);
+  const from = edition?.date_from;
+  const to = edition?.date_to;
+  if (!from) return "Dato ikke satt";
 
-  const first = new Date(dates[0]);
-  const last = new Date(dates[dates.length - 1]);
+  const first = new Date(from);
+  const last = new Date(to ?? from);
   const opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "long" };
 
-  if (dates.length === 1) {
+  if (!to || from === to) {
     return first.toLocaleDateString("nb-NO", opts);
   }
   if (first.getMonth() === last.getMonth()) {
@@ -103,8 +111,8 @@ export function dateRangeLabel(festival: Festival): string {
   return `${first.toLocaleDateString("nb-NO", opts)} - ${last.toLocaleDateString("nb-NO", opts)}`;
 }
 
-export function primaryTicketLink(festival: Festival): TicketLink | null {
-  return festival.ticket_links[0] ?? null;
+export function ticketUrl(festival: Festival): string | null {
+  return currentEdition(festival)?.ticket_url ?? null;
 }
 
 export type FestivalFilters = {
@@ -137,7 +145,7 @@ export function filterFestivals(festivals: Festival[], filters: FestivalFilters)
     }
 
     if (filters.dateFrom || filters.dateTo) {
-      const dates = sortedDates(festival);
+      const dates = editionDates(currentEdition(festival));
       const overlaps = dates.some((date) => {
         if (filters.dateFrom && date < filters.dateFrom) return false;
         if (filters.dateTo && date > filters.dateTo) return false;

@@ -7,12 +7,7 @@ import {
   MapPinIcon,
 } from "@heroicons/react/24/solid";
 import { createClient } from "@/lib/supabase/server";
-import {
-  FESTIVAL_SELECT,
-  artistNamesForDate,
-  sortedDates,
-  type Festival,
-} from "@/lib/festivals";
+import { FESTIVAL_SELECT, currentEdition, type Festival } from "@/lib/festivals";
 
 export const dynamic = "force-dynamic";
 
@@ -38,8 +33,8 @@ export default async function FestivalPage({
 
   if (!festival) notFound();
 
-  const dates = sortedDates(festival);
-  const dateInfo = new Map(festival.festival_dates.map((d) => [d.date, d]));
+  const edition = currentEdition(festival);
+  const program = edition?.program ?? [];
 
   return (
     <div className="min-h-dvh bg-[#FFF9F0] pb-16">
@@ -98,61 +93,54 @@ export default async function FestivalPage({
               Nettside
             </a>
           )}
-          {festival.ticket_links.map((t) => (
+          {edition?.ticket_url && (
             <a
-              key={t.url}
-              href={t.url}
+              href={edition.ticket_url}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-4 py-2 text-sm font-semibold text-white"
             >
               <TicketIcon className="h-4 w-4" />
-              {t.label ?? t.provider}
+              Billetter
             </a>
-          ))}
+          )}
         </div>
 
         <h2 className="mt-8 text-xl">Program</h2>
         <div className="mt-4 flex flex-col gap-5">
-          {dates.length === 0 && (
+          {program.length === 0 && (
             <p className="text-sm text-stone-400">Program ikke annonsert ennå.</p>
           )}
-          {dates.map((date, i) => {
-            const info = dateInfo.get(date);
-            const artists = artistNamesForDate(info);
-
-            return (
-              <div key={date} className="rounded-2xl bg-white p-4 shadow-[0_8px_30px_rgba(45,26,18,0.08)]">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#FF2D78]">
-                  Dag {i + 1}
-                  {info?.day_label ? ` · ${info.day_label}` : ""}
-                </p>
-                <p className="mt-0.5 font-heading text-lg text-[#2D1A12]">
-                  {new Date(date).toLocaleDateString("nb-NO", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                  })}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {artists.length > 0 ? (
-                    artists.map((name) => (
-                      <span
-                        key={name}
-                        className="rounded-full bg-stone-100 px-2.5 py-1 text-xs text-stone-700"
-                      >
-                        {name}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-xs text-stone-400">
-                      Program ikke annonsert
+          {program.map((day, i) => (
+            <div key={day.date} className="rounded-2xl bg-white p-4 shadow-[0_8px_30px_rgba(45,26,18,0.08)]">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#FF2D78]">
+                Dag {i + 1}
+                {day.day_label ? ` · ${day.day_label}` : ""}
+              </p>
+              <p className="mt-0.5 font-heading text-lg text-[#2D1A12]">
+                {new Date(day.date).toLocaleDateString("nb-NO", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                })}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {day.artists.length > 0 ? (
+                  day.artists.map((a, idx) => (
+                    <span
+                      key={`${a.name}-${idx}`}
+                      className="rounded-full bg-stone-100 px-2.5 py-1 text-xs text-stone-700"
+                      title={[a.stage, a.time].filter(Boolean).join(" · ")}
+                    >
+                      {a.name}
                     </span>
-                  )}
-                </div>
+                  ))
+                ) : (
+                  <span className="text-xs text-stone-400">Program ikke annonsert</span>
+                )}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </div>

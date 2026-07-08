@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, useMotionValue, animate } from "framer-motion";
 import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
-import { dateRangeLabel, primaryTicketLink, type Festival } from "@/lib/festivals";
+import { dateRangeLabel, type Festival } from "@/lib/festivals";
 
 const PEEK_PX = 140;
 const OPEN_VH = 0.46;
@@ -99,38 +99,33 @@ function FestivalList({ festivals }: { festivals: Festival[] }) {
       </p>
 
       <div className="mt-4 flex flex-col gap-3">
-        {festivals.map((festival) => {
-          const ticket = primaryTicketLink(festival);
-          return (
-            <Link
-              key={festival.id}
-              href={`/festival/${festival.slug}`}
-              className="flex items-center gap-3 rounded-2xl bg-white p-2.5 text-left shadow-[0_8px_30px_rgba(45,26,18,0.18)] transition-transform active:scale-[0.98]"
-            >
-              <FestivalThumbnail
-                festival={festival}
-                className="h-16 w-16 shrink-0 rounded-xl"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-heading text-[#2D1A12]">{festival.name}</p>
-                <p className="truncate text-xs text-stone-500">
-                  {dateRangeLabel(festival)} •{" "}
-                  {[festival.city, festival.country].filter(Boolean).join(", ")}
+        {festivals.map((festival) => (
+          <Link
+            key={festival.id}
+            href={`/festival/${festival.slug}`}
+            className="flex items-center gap-3 rounded-2xl bg-white p-2.5 text-left shadow-[0_8px_30px_rgba(45,26,18,0.18)] transition-transform active:scale-[0.98]"
+          >
+            <FestivalThumbnail
+              festival={festival}
+              className="h-16 w-16 shrink-0 rounded-xl"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-heading text-[#2D1A12]">{festival.name}</p>
+              <p className="truncate text-xs text-stone-500">
+                {dateRangeLabel(festival)} •{" "}
+                {[festival.city, festival.country].filter(Boolean).join(", ")}
+              </p>
+              {festival.category && (
+                <p className="mt-1 truncate text-[11px] font-medium text-[#FF4E50]">
+                  {festival.category}
                 </p>
-                {festival.category && (
-                  <p className="mt-1 truncate text-[11px] font-medium text-[#FF4E50]">
-                    {festival.category}
-                  </p>
-                )}
-              </div>
-              {ticket && (
-                <span className="shrink-0 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-4 py-2 text-xs font-semibold text-white">
-                  Program
-                </span>
               )}
-            </Link>
-          );
-        })}
+            </div>
+            <span className="shrink-0 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-4 py-2 text-xs font-semibold text-white">
+              Program
+            </span>
+          </Link>
+        ))}
         {festivals.length === 0 && (
           <p className="py-8 text-center text-sm text-stone-400">
             Ingen festivaler matcher søket ditt.

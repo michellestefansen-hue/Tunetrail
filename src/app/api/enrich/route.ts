@@ -145,78 +145,74 @@ export async function GET(request: Request) {
     return NextResponse.json({ processed: festivals.length, matched: 0, offset });
   }
 
-  // 2. Dates
-  const dateRows = matches.flatMap((m) =>
-    [...m.dates.keys()].map((date) => ({ festival_id: m.festival.id, date })),
-  );
-  await supabase
-    .from("festival_dates")
-    .upsert(dateRows, { onConflict: "festival_id,date", ignoreDuplicates: true });
-
   const festivalIds = matches.map((m) => m.festival.id);
-  const { data: fdRows } = await supabase
-    .from("festival_dates")
-    .select("id, festival_id, date")
-    .in("festival_id", festivalIds);
-  const fdId = new Map(
-    (fdRows ?? []).map((r) => [`${r.festival_id}|${r.date}`, r.id as string]),
-  );
 
-  // 3. Artists
-  const artistNames = [
-    ...new Set(matches.flatMap((m) => [...m.dates.values()].flatMap((s) => [...s]))),
-  ];
-  if (artistNames.length) {
-    await supabase
-      .from("artists")
-      .upsert(artistNames.map((name) => ({ name })), { onConflict: "name", ignoreDuplicates: true });
-  }
-  const { data: aRows } = await supabase
-    .from("artists")
-    .select("id, name")
-    .in("name", artistNames.length ? artistNames : ["__none__"]);
-  const artistId = new Map((aRows ?? []).map((r) => [r.name as string, r.id as string]));
-
-  // 4. Performances (only insert pairs that don't already exist)
-  const fdIds = [...fdId.values()];
-  const { data: existingPerf } = await supabase
-    .from("performances")
-    .select("festival_date_id, artist_id")
-    .in("festival_date_id", fdIds.length ? fdIds : ["__none__"]);
-  const existing = new Set(
-    (existingPerf ?? []).map((p) => `${p.festival_date_id}|${p.artist_id}`),
-  );
-  const perfRows: { festival_date_id: string; artist_id: string }[] = [];
+  // Build one edition per festival per year from the matched TM data.
+  type Edition = {
+    festival_id: string;
+    year: number;
+    date_from: string;
+    date_to: string;
+    ticket_url: string | null;
+    program: { date: string; day_label: null; artists: { name: string; stage: null; time: null }[] }[];
+    count: number;
+  };
+  const editions: Edition[] = [];
   for (const m of matches) {
+    const byYear = new Map<number, Map<string, Set<string>>>();
     for (const [date, set] of m.dates) {
-      const dateId = fdId.get(`${m.festival.id}|${date}`);
-      if (!dateId) continue;
-      for (const name of set) {
-        const aid = artistId.get(name);
-        if (!aid) continue;
-        const key = `${dateId}|${aid}`;
-        if (!existing.has(key)) {
-          existing.add(key);
-          perfRows.push({ festival_date_id: dateId, artist_id: aid });
-        }
-      }
+      const year = Number(date.slice(0, 4));
+      if (!byYear.has(year)) byYear.set(year, new Map());
+      byYear.get(year)!.set(date, set);
+    }
+    for (const [year, days] of byYear) {
+      const sortedDays = [...days.keys()].sort();
+      const program = sortedDays.map((d) => ({
+        date: d,
+        day_label: null as null,
+        artists: [...days.get(d)!].map((name) => ({ name, stage: null as null, time: null as null })),
+      }));
+      editions.push({
+        festival_id: m.festival.id,
+        year,
+        date_from: sortedDays[0],
+        date_to: sortedDays[sortedDays.length - 1],
+        ticket_url: m.ticketUrl,
+        program,
+        count: program.reduce((n, d) => n + d.artists.length, 0),
+      });
     }
   }
-  if (perfRows.length) await supabase.from("performances").insert(perfRows);
 
-  // 5. Ticket links (add Ticketmaster link if the festival has none)
-  const { data: existingTickets } = await supabase
-    .from("ticket_links")
-    .select("festival_id")
-    .eq("provider", "Ticketmaster")
+  // Don't clobber a richer existing edition (e.g. a manually curated program);
+  // only upsert when we have at least as many artists as what's already stored.
+  const { data: existingEds } = await supabase
+    .from("festival_editions")
+    .select("festival_id, year, program")
     .in("festival_id", festivalIds);
-  const hasTicket = new Set((existingTickets ?? []).map((t) => t.festival_id as string));
-  const ticketRows = matches
-    .filter((m) => m.ticketUrl && !hasTicket.has(m.festival.id))
-    .map((m) => ({ festival_id: m.festival.id, provider: "Ticketmaster", url: m.ticketUrl! }));
-  if (ticketRows.length) await supabase.from("ticket_links").insert(ticketRows);
+  const existingCount = new Map(
+    (existingEds ?? []).map((e) => {
+      const prog = (e.program as { artists?: unknown[] }[] | null) ?? [];
+      return [`${e.festival_id}|${e.year}`, prog.reduce((n, d) => n + (d.artists?.length ?? 0), 0)];
+    }),
+  );
 
-  // 6. Backfill city / image where missing
+  const toUpsert = editions
+    .filter((e) => e.count >= (existingCount.get(`${e.festival_id}|${e.year}`) ?? 0))
+    .map((e) => ({
+      festival_id: e.festival_id,
+      year: e.year,
+      date_from: e.date_from,
+      date_to: e.date_to,
+      ticket_url: e.ticket_url,
+      program: e.program,
+      source: "ticketmaster",
+    }));
+  if (toUpsert.length) {
+    await supabase.from("festival_editions").upsert(toUpsert, { onConflict: "festival_id,year" });
+  }
+
+  // Backfill city / image where missing.
   for (const m of matches) {
     if (!m.city && !m.image) continue;
     const patch: { city?: string; image_url?: string } = {};
@@ -228,8 +224,7 @@ export async function GET(request: Request) {
   return NextResponse.json({
     processed: festivals.length,
     matched: matches.length,
-    dates: dateRows.length,
-    artists: artistNames.length,
+    editions: toUpsert.length,
     offset,
   });
 }

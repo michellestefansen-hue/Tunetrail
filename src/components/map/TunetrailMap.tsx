@@ -5,7 +5,7 @@ import maplibregl, { Map as MapLibreMap, Marker, GeoJSONSource } from "maplibre-
 import "maplibre-gl/dist/maplibre-gl.css";
 import { nightGlowStyle } from "./mapStyle";
 import { createFractalNoiseCanvas } from "./noiseTexture";
-import { dateRangeLabel, sortedDates, type Festival } from "@/lib/festivals";
+import { currentEdition, dateRangeLabel, editionDates, type Festival } from "@/lib/festivals";
 
 const EUROPE_SW: [number, number] = [-11.0, 35.0];
 const EUROPE_NE: [number, number] = [31.0, 66.0];
@@ -15,7 +15,7 @@ type HoverInfo =
   | { kind: "cluster"; x: number; y: number; festivals: Festival[]; extra: number };
 
 function hoverDateLabel(festival: Festival): string {
-  return sortedDates(festival).length === 0 ? "NA" : dateRangeLabel(festival);
+  return editionDates(currentEdition(festival)).length === 0 ? "NA" : dateRangeLabel(festival);
 }
 
 function HoverRow({ festival }: { festival: Festival }) {

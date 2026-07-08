@@ -5,10 +5,24 @@ import maplibregl, { Map as MapLibreMap, Marker, GeoJSONSource } from "maplibre-
 import "maplibre-gl/dist/maplibre-gl.css";
 import { nightGlowStyle } from "./mapStyle";
 import { createFractalNoiseCanvas } from "./noiseTexture";
-import type { Festival } from "@/lib/festivals";
+import { dateRangeLabel, type Festival } from "@/lib/festivals";
 
 const EUROPE_SW: [number, number] = [-11.0, 35.0];
 const EUROPE_NE: [number, number] = [31.0, 66.0];
+
+type HoverInfo =
+  | { kind: "single"; x: number; y: number; festival: Festival }
+  | { kind: "cluster"; x: number; y: number; festivals: Festival[]; extra: number };
+
+function HoverRow({ festival }: { festival: Festival }) {
+  return (
+    <div className="grid grid-cols-[1.3fr_1fr_1fr] items-center gap-2">
+      <span className="truncate font-heading text-white">{festival.name}</span>
+      <span className="truncate text-white/70">{dateRangeLabel(festival)}</span>
+      <span className="truncate text-[#FF2D78]">{festival.category ?? "–"}</span>
+    </div>
+  );
+}
 
 function toFeatureCollection(festivals: Festival[]): GeoJSON.FeatureCollection {
   return {
@@ -42,7 +56,9 @@ export function TunetrailMap({
   const layersReady = useRef(false);
   const festivalsRef = useRef<Festival[]>(festivals);
   festivalsRef.current = festivals;
+  const lastClusterId = useRef<number | null>(null);
   const [mapInstance, setMapInstance] = useState<MapLibreMap | null>(null);
+  const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -170,6 +186,47 @@ export function TunetrailMap({
         });
       }
 
+      mapInstance.on("mousemove", "unclustered", (e) => {
+        const fid = e.features?.[0]?.properties?.fid;
+        const festival = festivalsRef.current.find((f) => f.id === fid);
+        if (festival) {
+          setHoverInfo({ kind: "single", x: e.point.x, y: e.point.y, festival });
+        }
+      });
+      mapInstance.on("mouseleave", "unclustered", () => setHoverInfo(null));
+
+      mapInstance.on("mousemove", "clusters", (e) => {
+        const feature = e.features?.[0];
+        const clusterId = feature?.properties?.cluster_id;
+        const pointCount = feature?.properties?.point_count ?? 0;
+        if (clusterId == null) return;
+
+        if (clusterId !== lastClusterId.current) {
+          lastClusterId.current = clusterId;
+          const source = mapInstance.getSource("festivals") as GeoJSONSource;
+          source.getClusterLeaves(clusterId, 8, 0).then((leaves) => {
+            const matched = leaves
+              .map((leaf) => festivalsRef.current.find((f) => f.id === leaf.properties?.fid))
+              .filter((f): f is Festival => Boolean(f));
+            setHoverInfo({
+              kind: "cluster",
+              x: e.point.x,
+              y: e.point.y,
+              festivals: matched,
+              extra: Math.max(0, pointCount - matched.length),
+            });
+          });
+        } else {
+          setHoverInfo((prev) =>
+            prev && prev.kind === "cluster" ? { ...prev, x: e.point.x, y: e.point.y } : prev,
+          );
+        }
+      });
+      mapInstance.on("mouseleave", "clusters", () => {
+        lastClusterId.current = null;
+        setHoverInfo(null);
+      });
+
       layersReady.current = true;
     } else {
       const source = mapInstance.getSource("festivals") as GeoJSONSource | undefined;
@@ -211,11 +268,41 @@ export function TunetrailMap({
     };
   }, [mapInstance, pickingLocation, onPickLocation]);
 
+  const containerWidth = containerRef.current?.clientWidth ?? 0;
+  const containerHeight = containerRef.current?.clientHeight ?? 0;
+  const flipX = hoverInfo != null && hoverInfo.x + 320 > containerWidth;
+  const flipY = hoverInfo != null && hoverInfo.y + 160 > containerHeight;
+
   return (
     <div className="relative h-full w-full overflow-hidden">
       <div className="absolute inset-0">
         <div ref={containerRef} className="h-full w-full" />
       </div>
+
+      {hoverInfo && (
+        <div
+          className="pointer-events-none absolute z-30 w-[300px] rounded-2xl border border-white/10 bg-white/10 p-3 text-xs shadow-lg backdrop-blur-xl"
+          style={{
+            left: flipX ? undefined : hoverInfo.x + 14,
+            right: flipX ? containerWidth - hoverInfo.x + 14 : undefined,
+            top: flipY ? undefined : hoverInfo.y + 14,
+            bottom: flipY ? containerHeight - hoverInfo.y + 14 : undefined,
+          }}
+        >
+          {hoverInfo.kind === "single" ? (
+            <HoverRow festival={hoverInfo.festival} />
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {hoverInfo.festivals.map((f) => (
+                <HoverRow key={f.id} festival={f} />
+              ))}
+              {hoverInfo.extra > 0 && (
+                <span className="text-white/50">+{hoverInfo.extra} flere</span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

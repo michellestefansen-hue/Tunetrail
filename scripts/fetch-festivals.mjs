@@ -55,15 +55,44 @@ function slugify(s) {
     .slice(0, 60);
 }
 
-// Strip years, day-of-week suffixes and parentheticals so day-events group together.
+const TICKET_NOISE =
+  /\b(pass(\s+vip)?|vip|forfait|billet(s|terie)?|ticket(s)?|navette|shuttle|camping|glamping|parking|entr[ée]e|de\s*luxe|deluxe|jour\s*\d+|\d+\s*jours?|day\s*\d+|dag\s*\d+|weekend|1\s*jour|monday|tuesday|wednesday|thursday|friday|saturday|sunday|mandag|tirsdag|onsdag|torsdag|fredag|lørdag|søndag)\b/gi;
+
+function titleCaseIfShouting(s) {
+  if (s === s.toUpperCase() && /[A-Z]/.test(s)) {
+    return s
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+  return s;
+}
+
+// Normalise names so day-events / ticket tiers collapse into one festival.
 function cleanName(name) {
-  return name
-    .replace(/\b20\d{2}\b/g, "")
-    .replace(/\s*[-–—|]\s*(mon|tue|wed|thu|fri|sat|sun|day\s*\d+).*$/i, "")
-    .replace(/\s*\((?:day|dag)\s*\d+\)\s*/i, " ")
-    .replace(/\s{2,}/g, " ")
-    .replace(/\s*[-–—|:]\s*$/, "")
-    .trim();
+  const parts = name
+    .split(/\s*[-–—|:]\s*/)
+    .map((p) =>
+      p
+        .replace(/\b20\d{2}\b/g, " ")
+        .replace(TICKET_NOISE, " ")
+        .replace(/\s{2,}/g, " ")
+        .trim(),
+    )
+    .filter((p) => p && !/^[\d&+,.\s]*$/.test(p) && !/^\(.*\)$/.test(p));
+
+  const seen = new Set();
+  const unique = [];
+  for (const p of parts) {
+    const key = p.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(p);
+    }
+  }
+
+  return titleCaseIfShouting(
+    unique.join(" - ").replace(/\s{2,}/g, " ").replace(/\s*[-–—|:]\s*$/, "").trim(),
+  );
 }
 
 function mapCategory(genre, subGenre) {
@@ -144,7 +173,7 @@ for (const [code, countryName] of Object.entries(COUNTRIES)) {
           name,
           slug: slugify(name),
           country: countryName,
-          city: venue.city?.name ?? null,
+          city: venue.city?.name?.trim() ?? null,
           venue_name: venue.name ?? null,
           latitude: Number(venue.location.latitude),
           longitude: Number(venue.location.longitude),

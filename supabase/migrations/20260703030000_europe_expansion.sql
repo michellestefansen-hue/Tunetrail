@@ -1,5 +1,5 @@
 -- Add country and backfill existing Norwegian festivals
-alter table festivals add column country text;
+alter table festivals add column if not exists country text;
 update festivals set country = 'Norge' where country is null;
 
 -- Expand the category taxonomy for a Europe-wide scope.

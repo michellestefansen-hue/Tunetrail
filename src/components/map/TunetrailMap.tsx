@@ -68,22 +68,18 @@ function toFeatureCollection(festivals: Festival[]): GeoJSON.FeatureCollection {
 
 export function TunetrailMap({
   festivals,
-  centerMarker,
-  pickingLocation,
-  onPickLocation,
+  searchMarker,
   onSelectFestival,
   onViewportChange,
 }: {
   festivals: Festival[];
-  centerMarker: [number, number] | null;
-  pickingLocation: boolean;
-  onPickLocation: (lngLat: [number, number]) => void;
+  searchMarker: [number, number] | null;
   onSelectFestival: (festival: Festival) => void;
   onViewportChange?: (bounds: MapBounds) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
-  const centerMarkerRef = useRef<Marker | null>(null);
+  const searchMarkerRef = useRef<Marker | null>(null);
   const layersReady = useRef(false);
   const festivalsRef = useRef<Festival[]>(festivals);
   festivalsRef.current = festivals;
@@ -304,39 +300,24 @@ export function TunetrailMap({
     }
   }, [mapInstance, festivals, onSelectFestival]);
 
-  // Radius center marker (manually picked / searched point)
+  // Pin for a geocoded place search, and fly there so the viewport-synced
+  // list naturally shows what's nearby (replaces the old radius filter).
   useEffect(() => {
     if (!mapInstance) return;
 
-    centerMarkerRef.current?.remove();
-    centerMarkerRef.current = null;
+    searchMarkerRef.current?.remove();
+    searchMarkerRef.current = null;
 
-    if (centerMarker) {
+    if (searchMarker) {
       const el = document.createElement("div");
       el.className =
         "h-4 w-4 rounded-full border-2 border-white/90 bg-[#FFB347] animate-user-pulse";
-      centerMarkerRef.current = new maplibregl.Marker({ element: el })
-        .setLngLat(centerMarker)
+      searchMarkerRef.current = new maplibregl.Marker({ element: el })
+        .setLngLat(searchMarker)
         .addTo(mapInstance);
+      mapInstance.flyTo({ center: searchMarker, zoom: 9, duration: 800 });
     }
-  }, [mapInstance, centerMarker]);
-
-  // Click-to-pick-location mode
-  useEffect(() => {
-    if (!mapInstance || !pickingLocation) return;
-
-    const handleClick = (e: maplibregl.MapMouseEvent) => {
-      onPickLocation([e.lngLat.lng, e.lngLat.lat]);
-    };
-
-    mapInstance.getCanvas().style.cursor = "crosshair";
-    mapInstance.on("click", handleClick);
-
-    return () => {
-      mapInstance.getCanvas().style.cursor = "";
-      mapInstance.off("click", handleClick);
-    };
-  }, [mapInstance, pickingLocation, onPickLocation]);
+  }, [mapInstance, searchMarker]);
 
   const containerWidth = containerRef.current?.clientWidth ?? 0;
   const containerHeight = containerRef.current?.clientHeight ?? 0;

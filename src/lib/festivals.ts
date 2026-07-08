@@ -109,8 +109,6 @@ export function primaryTicketLink(festival: Festival): TicketLink | null {
 
 export type FestivalFilters = {
   query?: string;
-  center?: [number, number] | null; // [lng, lat]
-  radiusKm?: number | null;
   dateFrom?: string | null; // 'YYYY-MM-DD'
   dateTo?: string | null;
   categories?: FestivalCategory[] | null;
@@ -138,16 +136,6 @@ export function filterFestivals(festivals: Festival[], filters: FestivalFilters)
       if (!festival.category || !filters.categories.includes(festival.category)) return false;
     }
 
-    if (filters.radiusKm && filters.center) {
-      const d = distanceKm(
-        filters.center[1],
-        filters.center[0],
-        festival.latitude,
-        festival.longitude,
-      );
-      if (d > filters.radiusKm) return false;
-    }
-
     if (filters.dateFrom || filters.dateTo) {
       const dates = sortedDates(festival);
       const overlaps = dates.some((date) => {
@@ -160,22 +148,4 @@ export function filterFestivals(festivals: Festival[], filters: FestivalFilters)
 
     return true;
   });
-}
-
-export function distanceKm(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number,
-): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
 }

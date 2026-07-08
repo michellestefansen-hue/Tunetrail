@@ -5,12 +5,6 @@ import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { FESTIVAL_CATEGORIES, type FestivalCategory } from "@/lib/festivals";
 
 export function FilterPanel({
-  radiusKm,
-  onRadiusChange,
-  hasCenter,
-  positionMode,
-  onStartPickingLocation,
-  pickingLocation,
   dateFrom,
   dateTo,
   onDateFromChange,
@@ -18,12 +12,6 @@ export function FilterPanel({
   categories,
   onCategoriesChange,
 }: {
-  radiusKm: number | null;
-  onRadiusChange: (value: number | null) => void;
-  hasCenter: boolean;
-  positionMode: "manual" | null;
-  onStartPickingLocation: () => void;
-  pickingLocation: boolean;
   dateFrom: string | null;
   dateTo: string | null;
   onDateFromChange: (value: string | null) => void;
@@ -45,51 +33,6 @@ export function FilterPanel({
     <div className="pointer-events-auto absolute inset-x-0 top-[calc(env(safe-area-inset-top)+136px)] z-20 flex justify-center px-4">
       <div className="flex w-full max-w-md flex-col gap-4 rounded-2xl border border-white/10 bg-white/10 p-4 shadow-lg backdrop-blur-xl">
         <div>
-          <div className="flex items-center justify-between text-sm text-white/80">
-            <span>Radius fra posisjon</span>
-            <span className="font-medium text-[#FF2D78]">
-              {radiusKm ? `${radiusKm} km` : "Alle"}
-            </span>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={800}
-            step={50}
-            value={radiusKm ?? 800}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              onRadiusChange(value >= 800 ? null : value);
-            }}
-            disabled={!hasCenter}
-            className="mt-3 w-full accent-[#FF2D78]"
-          />
-
-          <button
-            type="button"
-            onClick={onStartPickingLocation}
-            className={`mt-3 w-full rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              positionMode === "manual"
-                ? "bg-[#FF2D78] text-white"
-                : "bg-white/10 text-white/70 hover:bg-white/20"
-            }`}
-          >
-            Velg på kartet
-          </button>
-
-          {pickingLocation && (
-            <p className="mt-2 text-xs text-[#FEE3CA]">
-              Trykk et sted på kartet for å sette posisjon.
-            </p>
-          )}
-          {!hasCenter && !pickingLocation && (
-            <p className="mt-2 text-xs text-white/50">
-              Søk på et sted eller velg posisjon på kartet for å filtrere på avstand.
-            </p>
-          )}
-        </div>
-
-        <div className="border-t border-white/10 pt-3">
           <button
             type="button"
             onClick={() => setCategoryOpen((v) => !v)}

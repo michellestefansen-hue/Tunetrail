@@ -25,11 +25,6 @@ export default function Home() {
   const [festivals, setFestivals] = useState<Festival[]>([]);
   const [query, setQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [radiusKm, setRadiusKm] = useState<number | null>(200);
-
-  const [manualLocation, setManualLocation] = useState<[number, number] | null>(null);
-  const [positionMode, setPositionMode] = useState<"manual" | null>(null);
-  const [pickingLocation, setPickingLocation] = useState(false);
 
   const [dateFrom, setDateFrom] = useState<string | null>(null);
   const [dateTo, setDateTo] = useState<string | null>(null);
@@ -43,6 +38,8 @@ export default function Home() {
       .catch((err) => console.error("Failed to load festivals", err));
   }, []);
 
+  // Geocode search text so a place name (e.g. "Kristiansand") flies the map
+  // there; the viewport-synced list then naturally shows what's nearby.
   useEffect(() => {
     const trimmed = query.trim();
     if (!trimmed) {
@@ -73,16 +70,12 @@ export default function Home() {
     };
   }, [query]);
 
-  const center = positionMode === "manual" ? manualLocation : searchLocation;
-
-  // Once the search text resolves to a real place, filter purely by radius
-  // from that point instead of also requiring the text to match name/city.
+  // Once the search text resolves to a real place, stop requiring the text to
+  // also match name/city — the map flies there and the viewport list takes over.
   const effectiveQuery = searchLocation ? "" : query;
 
   const visibleFestivals = filterFestivals(festivals, {
     query: effectiveQuery,
-    center,
-    radiusKm,
     dateFrom,
     dateTo,
     categories,
@@ -104,25 +97,10 @@ export default function Home() {
   const handleQueryChange = (value: string) => {
     setQuery(value);
     if (value.trim()) {
-      setPositionMode(null);
-      setManualLocation(null);
       setDateFrom(null);
       setDateTo(null);
       setCategories([]);
     }
-  };
-
-  const handleStartPickingLocation = () => {
-    setPickingLocation(true);
-    setFiltersOpen(false);
-  };
-
-  const handlePickLocation = (lngLat: [number, number]) => {
-    setManualLocation(lngLat);
-    setPositionMode("manual");
-    setPickingLocation(false);
-    setQuery("");
-    setFiltersOpen(true);
   };
 
   const handleSelectFestival = useCallback(
@@ -136,9 +114,7 @@ export default function Home() {
     <div className="relative h-dvh w-full overflow-hidden bg-[#0b0a1f]">
       <TunetrailMap
         festivals={visibleFestivals}
-        centerMarker={center}
-        pickingLocation={pickingLocation}
-        onPickLocation={handlePickLocation}
+        searchMarker={searchLocation}
         onSelectFestival={handleSelectFestival}
         onViewportChange={setMapBounds}
       />
@@ -154,12 +130,6 @@ export default function Home() {
 
       {filtersOpen && (
         <FilterPanel
-          radiusKm={radiusKm}
-          onRadiusChange={setRadiusKm}
-          hasCenter={center !== null}
-          positionMode={positionMode}
-          onStartPickingLocation={handleStartPickingLocation}
-          pickingLocation={pickingLocation}
           dateFrom={dateFrom}
           dateTo={dateTo}
           onDateFromChange={setDateFrom}
@@ -169,7 +139,7 @@ export default function Home() {
         />
       )}
 
-      <FestivalSheet festivals={festivalsInView} collapsed={pickingLocation} />
+      <FestivalSheet festivals={festivalsInView} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, useMotionValue, animate } from "framer-motion";
 import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
@@ -42,13 +42,7 @@ function FestivalThumbnail({
   return <div className={`${className} bg-gradient-to-br ${gradientFor(festival.id)}`} />;
 }
 
-export function FestivalSheet({
-  festivals,
-  collapsed = false,
-}: {
-  festivals: Festival[];
-  collapsed?: boolean;
-}) {
+export function FestivalSheet({ festivals }: { festivals: Festival[] }) {
   const [openPx, setOpenPx] = useState(380);
   const [isOpen, setIsOpen] = useState(true);
   const y = useMotionValue(0);
@@ -70,16 +64,6 @@ export function FestivalSheet({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, openPx]);
-
-  const wasCollapsed = useRef(false);
-  useEffect(() => {
-    if (collapsed && !wasCollapsed.current) {
-      setIsOpen(false);
-    } else if (!collapsed && wasCollapsed.current) {
-      setIsOpen(true);
-    }
-    wasCollapsed.current = collapsed;
-  }, [collapsed]);
 
   return (
     <motion.div

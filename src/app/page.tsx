@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Header } from "@/components/Header";
 import { SearchOverlay } from "@/components/SearchOverlay";
 import { FilterPanel } from "@/components/FilterPanel";
@@ -13,6 +13,7 @@ import {
   type Festival,
   type FestivalCategory,
 } from "@/lib/festivals";
+import type { MapBounds } from "@/components/map/TunetrailMap";
 
 const TunetrailMap = dynamic(
   () => import("@/components/map/TunetrailMap").then((m) => m.TunetrailMap),
@@ -34,6 +35,7 @@ export default function Home() {
   const [dateTo, setDateTo] = useState<string | null>(null);
   const [categories, setCategories] = useState<FestivalCategory[]>([]);
   const [searchLocation, setSearchLocation] = useState<[number, number] | null>(null);
+  const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
 
   useEffect(() => {
     fetchFestivals()
@@ -86,6 +88,19 @@ export default function Home() {
     categories,
   });
 
+  // The bottom sheet only lists festivals currently visible within the map's viewport.
+  const festivalsInView = useMemo(() => {
+    if (!mapBounds) return visibleFestivals;
+    return visibleFestivals.filter(
+      (f) =>
+        f.longitude >= mapBounds.west &&
+        f.longitude <= mapBounds.east &&
+        f.latitude >= mapBounds.south &&
+        f.latitude <= mapBounds.north,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleFestivals, mapBounds]);
+
   const handleQueryChange = (value: string) => {
     setQuery(value);
     if (value.trim()) {
@@ -110,9 +125,12 @@ export default function Home() {
     setFiltersOpen(true);
   };
 
-  const handleSelectFestival = (festival: Festival) => {
-    router.push(`/festival/${festival.slug}`);
-  };
+  const handleSelectFestival = useCallback(
+    (festival: Festival) => {
+      router.push(`/festival/${festival.slug}`);
+    },
+    [router],
+  );
 
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-[#0b0a1f]">
@@ -122,6 +140,7 @@ export default function Home() {
         pickingLocation={pickingLocation}
         onPickLocation={handlePickLocation}
         onSelectFestival={handleSelectFestival}
+        onViewportChange={setMapBounds}
       />
 
       <Header />
@@ -150,7 +169,7 @@ export default function Home() {
         />
       )}
 
-      <FestivalSheet festivals={visibleFestivals} collapsed={pickingLocation} />
+      <FestivalSheet festivals={festivalsInView} collapsed={pickingLocation} />
     </div>
   );
 }

@@ -30,6 +30,28 @@ function HoverRow({ festival }: { festival: Festival }) {
 const TOOLTIP_WIDTH = 260;
 const TOOLTIP_MAX_HEIGHT = 220;
 const EDGE_PADDING = 10;
+const MAP_PADDING = { top: 160, bottom: 420, left: 20, right: 20 };
+
+export type MapBounds = { west: number; south: number; east: number; north: number };
+
+function festivalBounds(festivals: Festival[]): [[number, number], [number, number]] | null {
+  let west = Infinity;
+  let south = Infinity;
+  let east = -Infinity;
+  let north = -Infinity;
+  for (const f of festivals) {
+    if (!Number.isFinite(f.longitude) || !Number.isFinite(f.latitude)) continue;
+    west = Math.min(west, f.longitude);
+    east = Math.max(east, f.longitude);
+    south = Math.min(south, f.latitude);
+    north = Math.max(north, f.latitude);
+  }
+  if (!Number.isFinite(west)) return null;
+  return [
+    [west, south],
+    [east, north],
+  ];
+}
 
 function toFeatureCollection(festivals: Festival[]): GeoJSON.FeatureCollection {
   return {
@@ -50,12 +72,14 @@ export function TunetrailMap({
   pickingLocation,
   onPickLocation,
   onSelectFestival,
+  onViewportChange,
 }: {
   festivals: Festival[];
   centerMarker: [number, number] | null;
   pickingLocation: boolean;
   onPickLocation: (lngLat: [number, number]) => void;
   onSelectFestival: (festival: Festival) => void;
+  onViewportChange?: (bounds: MapBounds) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -64,6 +88,9 @@ export function TunetrailMap({
   const festivalsRef = useRef<Festival[]>(festivals);
   festivalsRef.current = festivals;
   const lastClusterId = useRef<number | null>(null);
+  const lastFestivalIds = useRef<string>("");
+  const onViewportChangeRef = useRef(onViewportChange);
+  onViewportChangeRef.current = onViewportChange;
   const [mapInstance, setMapInstance] = useState<MapLibreMap | null>(null);
   const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
 
@@ -90,11 +117,21 @@ export function TunetrailMap({
       map.resize();
       requestAnimationFrame(() => {
         map.fitBounds([EUROPE_SW, EUROPE_NE], {
-          padding: { top: 160, bottom: 420, left: 20, right: 20 },
+          padding: MAP_PADDING,
           animate: false,
         });
       });
       setMapInstance(map);
+    });
+
+    map.on("moveend", () => {
+      const b = map.getBounds();
+      onViewportChangeRef.current?.({
+        west: b.getWest(),
+        south: b.getSouth(),
+        east: b.getEast(),
+        north: b.getNorth(),
+      });
     });
 
     return () => {
@@ -243,9 +280,27 @@ export function TunetrailMap({
       }
 
       layersReady.current = true;
+      lastFestivalIds.current = festivals
+        .map((f) => f.id)
+        .sort()
+        .join(",");
     } else {
       const source = mapInstance.getSource("festivals") as GeoJSONSource | undefined;
       source?.setData(toFeatureCollection(festivals));
+
+      // Only fly when the actual result set changed (filters/search), never on
+      // unrelated re-renders or when the user is just panning the map around.
+      const signature = festivals
+        .map((f) => f.id)
+        .sort()
+        .join(",");
+      if (signature !== lastFestivalIds.current) {
+        lastFestivalIds.current = signature;
+        const bounds = festivalBounds(festivals);
+        if (bounds) {
+          mapInstance.fitBounds(bounds, { padding: MAP_PADDING, maxZoom: 12, duration: 800 });
+        }
+      }
     }
   }, [mapInstance, festivals, onSelectFestival]);
 

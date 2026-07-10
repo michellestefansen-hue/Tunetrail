@@ -1,0 +1,63 @@
+{
+  "Header": {
+    "title": "Tunetrail"
+  },
+  "Search": {
+    "placeholder": "Rechercher un lieu ou un festival...",
+    "filterLabel": "Filtre"
+  },
+  "Filters": {
+    "category": "Catégorie",
+    "dateRange": "Période",
+    "reset": "Réinitialiser",
+    "resetDates": "Réinitialiser les dates"
+  },
+  "FestivalSheet": {
+    "heading": "Explorer les festivals",
+    "subheading": "Découvrez des festivals de musique partout en Europe",
+    "hide": "Masquer les festivals",
+    "show": "Afficher les festivals",
+    "programCta": "Programme",
+    "empty": "Aucun festival ne correspond à votre recherche."
+  },
+  "FestivalPage": {
+    "backToMap": "Carte",
+    "website": "Site web",
+    "tickets": "Billets",
+    "program": "Programme",
+    "day": "Jour {number}",
+    "programNotAnnouncedYet": "Programme non encore annoncé.",
+    "programNotAnnounced": "Programme non annoncé",
+    "noDateSet": "Date non définie",
+    "metaTitle": "{name} {year} – dates, lieu et programmation | Tunetrail",
+    "metaTitleNoEdition": "{name} | Tunetrail",
+    "metaWhen": " ({range})",
+    "metaWhere": " à {place}",
+    "metaDescription": "{name}{when}{where}. Retrouvez le programme complet sur Tunetrail."
+  },
+  "Map": {
+    "clusterMore": "+{count} de plus"
+  },
+  "Categories": {
+    "Pop & Mainstream": "Pop & Mainstream",
+    "Rock & Alternativ": "Rock & Alternatif",
+    "Metal": "Metal",
+    "Punk & Hardcore": "Punk & Hardcore",
+    "Indie": "Indie",
+    "Elektronisk & Dans": "Électronique & Dance",
+    "Techno & House": "Techno & House",
+    "Hip-Hop & R&B": "Hip-Hop & R&B",
+    "Jazz & Soul": "Jazz & Soul",
+    "Klassisk": "Classique",
+    "Folk & Americana": "Folk & Americana",
+    "Reggae & World": "Reggae & World",
+    "Blandet/Flersjanger": "Varié/Multi-genre"
+  },
+  "LanguageSwitcher": {
+    "nb": "Norsk",
+    "en": "English",
+    "de": "Deutsch",
+    "fr": "Français",
+    "es": "Español"
+  }
+}

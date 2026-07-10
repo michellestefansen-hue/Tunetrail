@@ -92,23 +92,33 @@ export function editionDates(edition: FestivalEdition | null): string[] {
   return edition.program.map((d) => d.date).sort();
 }
 
-export function dateRangeLabel(festival: Festival): string {
+export const BCP47_LOCALE: Record<string, string> = {
+  nb: "nb-NO",
+  en: "en-US",
+  de: "de-DE",
+  fr: "fr-FR",
+  es: "es-ES",
+};
+
+/** Returns null when the festival has no date set — caller renders its own localized fallback. */
+export function dateRangeLabel(festival: Festival, locale: string): string | null {
   const edition = currentEdition(festival);
   const from = edition?.date_from;
   const to = edition?.date_to;
-  if (!from) return "Dato ikke satt";
+  if (!from) return null;
 
+  const bcp = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
   const first = new Date(from);
   const last = new Date(to ?? from);
   const opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "long" };
 
   if (!to || from === to) {
-    return first.toLocaleDateString("nb-NO", opts);
+    return first.toLocaleDateString(bcp, opts);
   }
   if (first.getMonth() === last.getMonth()) {
-    return `${first.getDate()}. - ${last.toLocaleDateString("nb-NO", opts)}`;
+    return `${first.getDate()} – ${last.toLocaleDateString(bcp, opts)}`;
   }
-  return `${first.toLocaleDateString("nb-NO", opts)} - ${last.toLocaleDateString("nb-NO", opts)}`;
+  return `${first.toLocaleDateString(bcp, opts)} – ${last.toLocaleDateString(bcp, opts)}`;
 }
 
 export function ticketUrl(festival: Festival): string | null {

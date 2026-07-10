@@ -1,0 +1,63 @@
+{
+  "Header": {
+    "title": "Tunetrail"
+  },
+  "Search": {
+    "placeholder": "Søk etter sted eller festival...",
+    "filterLabel": "Filter"
+  },
+  "Filters": {
+    "category": "Kategori",
+    "dateRange": "Datoperiode",
+    "reset": "Nullstill",
+    "resetDates": "Nullstill datoer"
+  },
+  "FestivalSheet": {
+    "heading": "Utforsk festivaler",
+    "subheading": "Opplev musikkfestivaler over hele Europa",
+    "hide": "Skjul festivaler",
+    "show": "Vis festivaler",
+    "programCta": "Program",
+    "empty": "Ingen festivaler matcher søket ditt."
+  },
+  "FestivalPage": {
+    "backToMap": "Kart",
+    "website": "Nettside",
+    "tickets": "Billetter",
+    "program": "Program",
+    "day": "Dag {number}",
+    "programNotAnnouncedYet": "Program ikke annonsert ennå.",
+    "programNotAnnounced": "Program ikke annonsert",
+    "noDateSet": "Dato ikke satt",
+    "metaTitle": "{name} {year} – dato, sted og program | Tunetrail",
+    "metaTitleNoEdition": "{name} | Tunetrail",
+    "metaWhen": " ({range})",
+    "metaWhere": " i {place}",
+    "metaDescription": "{name}{when}{where}. Se fullt program med artister på Tunetrail."
+  },
+  "Map": {
+    "clusterMore": "+{count} flere"
+  },
+  "Categories": {
+    "Pop & Mainstream": "Pop & Mainstream",
+    "Rock & Alternativ": "Rock & Alternativ",
+    "Metal": "Metal",
+    "Punk & Hardcore": "Punk & Hardcore",
+    "Indie": "Indie",
+    "Elektronisk & Dans": "Elektronisk & Dans",
+    "Techno & House": "Techno & House",
+    "Hip-Hop & R&B": "Hip-Hop & R&B",
+    "Jazz & Soul": "Jazz & Soul",
+    "Klassisk": "Klassisk",
+    "Folk & Americana": "Folk & Americana",
+    "Reggae & World": "Reggae & World",
+    "Blandet/Flersjanger": "Blandet/Flersjanger"
+  },
+  "LanguageSwitcher": {
+    "nb": "Norsk",
+    "en": "English",
+    "de": "Deutsch",
+    "fr": "Français",
+    "es": "Español"
+  }
+}

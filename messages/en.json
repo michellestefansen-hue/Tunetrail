@@ -1,0 +1,63 @@
+{
+  "Header": {
+    "title": "Tunetrail"
+  },
+  "Search": {
+    "placeholder": "Search for a place or festival...",
+    "filterLabel": "Filter"
+  },
+  "Filters": {
+    "category": "Category",
+    "dateRange": "Date range",
+    "reset": "Reset",
+    "resetDates": "Reset dates"
+  },
+  "FestivalSheet": {
+    "heading": "Explore festivals",
+    "subheading": "Discover music festivals across Europe",
+    "hide": "Hide festivals",
+    "show": "Show festivals",
+    "programCta": "Lineup",
+    "empty": "No festivals match your search."
+  },
+  "FestivalPage": {
+    "backToMap": "Map",
+    "website": "Website",
+    "tickets": "Tickets",
+    "program": "Lineup",
+    "day": "Day {number}",
+    "programNotAnnouncedYet": "Lineup not announced yet.",
+    "programNotAnnounced": "Lineup not announced",
+    "noDateSet": "Date not set",
+    "metaTitle": "{name} {year} – dates, venue and lineup | Tunetrail",
+    "metaTitleNoEdition": "{name} | Tunetrail",
+    "metaWhen": " ({range})",
+    "metaWhere": " in {place}",
+    "metaDescription": "{name}{when}{where}. See the full lineup on Tunetrail."
+  },
+  "Map": {
+    "clusterMore": "+{count} more"
+  },
+  "Categories": {
+    "Pop & Mainstream": "Pop & Mainstream",
+    "Rock & Alternativ": "Rock & Alternative",
+    "Metal": "Metal",
+    "Punk & Hardcore": "Punk & Hardcore",
+    "Indie": "Indie",
+    "Elektronisk & Dans": "Electronic & Dance",
+    "Techno & House": "Techno & House",
+    "Hip-Hop & R&B": "Hip-Hop & R&B",
+    "Jazz & Soul": "Jazz & Soul",
+    "Klassisk": "Classical",
+    "Folk & Americana": "Folk & Americana",
+    "Reggae & World": "Reggae & World",
+    "Blandet/Flersjanger": "Mixed/Multi-genre"
+  },
+  "LanguageSwitcher": {
+    "nb": "Norsk",
+    "en": "English",
+    "de": "Deutsch",
+    "fr": "Français",
+    "es": "Español"
+  }
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { FESTIVAL_CATEGORIES, type FestivalCategory } from "@/lib/festivals";
 
@@ -19,6 +20,8 @@ export function FilterPanel({
   categories: FestivalCategory[];
   onCategoriesChange: (value: FestivalCategory[]) => void;
 }) {
+  const t = useTranslations("Filters");
+  const tCategories = useTranslations("Categories");
   const [categoryOpen, setCategoryOpen] = useState(false);
 
   const toggleCategory = (category: FestivalCategory) => {
@@ -39,7 +42,7 @@ export function FilterPanel({
             className="flex w-full items-center justify-between text-sm text-white/80"
           >
             <span>
-              Kategori
+              {t("category")}
               {categories.length > 0 && (
                 <span className="ml-1.5 text-[#FF2D78]">({categories.length})</span>
               )}
@@ -64,7 +67,7 @@ export function FilterPanel({
                         : "border-white/15 bg-white/10 text-white/70 hover:bg-white/20"
                     }`}
                   >
-                    {category}
+                    {tCategories(category)}
                   </button>
                 );
               })}
@@ -74,7 +77,7 @@ export function FilterPanel({
                   onClick={() => onCategoriesChange([])}
                   className="rounded-full px-3 py-1.5 text-xs text-white/50 underline"
                 >
-                  Nullstill
+                  {t("reset")}
                 </button>
               )}
             </div>
@@ -82,7 +85,7 @@ export function FilterPanel({
         </div>
 
         <div className="border-t border-white/10 pt-3">
-          <span className="text-sm text-white/80">Datoperiode</span>
+          <span className="text-sm text-white/80">{t("dateRange")}</span>
           <div className="mt-2 flex items-center gap-2">
             <input
               type="date"
@@ -107,7 +110,7 @@ export function FilterPanel({
               }}
               className="mt-2 text-xs text-white/50 underline"
             >
-              Nullstill datoer
+              {t("resetDates")}
             </button>
           )}
         </div>

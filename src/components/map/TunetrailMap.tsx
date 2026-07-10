@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import maplibregl, { Map as MapLibreMap, Marker, GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { nightGlowStyle } from "./mapStyle";
@@ -14,15 +15,18 @@ type HoverInfo =
   | { kind: "single"; x: number; y: number; festival: Festival }
   | { kind: "cluster"; x: number; y: number; festivals: Festival[]; extra: number };
 
-function hoverDateLabel(festival: Festival): string {
-  return editionDates(currentEdition(festival)).length === 0 ? "NA" : dateRangeLabel(festival);
+function hoverDateLabel(festival: Festival, locale: string): string {
+  return editionDates(currentEdition(festival)).length === 0
+    ? "NA"
+    : dateRangeLabel(festival, locale) ?? "NA";
 }
 
 function HoverRow({ festival }: { festival: Festival }) {
+  const locale = useLocale();
   return (
     <div className="flex items-baseline gap-3">
       <span className="min-w-0 flex-1 truncate font-heading text-white">{festival.name}</span>
-      <span className="shrink-0 text-white/70">{hoverDateLabel(festival)}</span>
+      <span className="shrink-0 text-white/70">{hoverDateLabel(festival, locale)}</span>
     </div>
   );
 }
@@ -89,6 +93,7 @@ export function TunetrailMap({
   onViewportChangeRef.current = onViewportChange;
   const [mapInstance, setMapInstance] = useState<MapLibreMap | null>(null);
   const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
+  const tMap = useTranslations("Map");
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -353,7 +358,7 @@ export function TunetrailMap({
                 <HoverRow key={f.id} festival={f} />
               ))}
               {hoverInfo.extra > 0 && (
-                <span className="text-white/50">+{hoverInfo.extra} flere</span>
+                <span className="text-white/50">{tMap("clusterMore", { count: hoverInfo.extra })}</span>
               )}
             </div>
           )}

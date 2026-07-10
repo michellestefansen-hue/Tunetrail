@@ -1,8 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "@/i18n/navigation";
 import { Header } from "@/components/Header";
 import { SearchOverlay } from "@/components/SearchOverlay";
 import { FilterPanel } from "@/components/FilterPanel";

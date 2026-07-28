@@ -107,7 +107,7 @@ function FestivalList({ festivals }: { festivals: Festival[] }) {
         {festivals.map((festival) => (
           <Link
             key={festival.id}
-            href={`/festival/${festival.slug}`}
+            href={{ pathname: "/festival/[slug]", params: { slug: festival.slug } }}
             className="flex items-center gap-3 rounded-2xl bg-white p-2.5 text-left shadow-[0_8px_30px_rgba(45,26,18,0.18)] transition-transform active:scale-[0.98]"
           >
             <FestivalThumbnail

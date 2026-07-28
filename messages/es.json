@@ -59,5 +59,205 @@
     "de": "Deutsch",
     "fr": "Français",
     "es": "Español"
+  },
+  "Guides": {
+    "navLabel": "Guías",
+    "breadcrumbHome": "Mapa",
+    "breadcrumbGuides": "Guías",
+    "hubTitle": "Los mejores festivales de música de Europa {year}",
+    "hubMetaTitle": "Los mejores festivales de música de Europa {year} – guías | Tunetrail",
+    "hubMetaDescription": "Guías de los mejores festivales de música de Europa en {year}: rock y metal, techno, jazz, Francia y Escandinavia. Fechas, recintos y carteles actualizados.",
+    "hubAnswer": "Europa acoge varios miles de festivales de música cada verano. Abajo encontrarás cinco guías con los más grandes y comentados, con fechas, recintos y carteles tomados directamente de los anuncios de los propios festivales.",
+    "hubIntro": "Tunetrail sigue {total} festivales por toda Europa. Estas guías son selecciones editoriales: elegimos y ordenamos los festivales que más importan en cada género y región, mientras las fechas, los recintos y los carteles se actualizan automáticamente a medida que los organizadores publican novedades. Si prefieres explorar por tu cuenta, todos los festivales están en el mapa.",
+    "exploreAll": "Explorar todos los festivales en el mapa",
+    "updatedAt": "Última actualización: {date}",
+    "festivalsInGuide": "{count} festivales en esta guía",
+    "tableFestival": "Festival",
+    "tableCountry": "País",
+    "tableDates": "Fechas",
+    "tableGenre": "Género",
+    "tableTickets": "Entradas",
+    "ticketsLink": "Entradas",
+    "headliners": "En el cartel",
+    "byMonth": "Mes a mes",
+    "faqHeading": "Preguntas frecuentes",
+    "seeAlsoHeading": "Ver también",
+    "readGuide": "Leer la guía",
+    "noProgram": "Cartel aún sin anunciar",
+    "rock-metal": {
+      "title": "Los mejores festivales de rock y metal de Europa {year}",
+      "metaTitle": "Mejores festivales de rock y metal de Europa {year} – fechas y carteles | Tunetrail",
+      "metaDescription": "Los mayores festivales de rock y metal de Europa en {year}, con fechas, recintos y carteles actualizados. De Wacken y Hellfest a Download y Copenhell.",
+      "answer": "Wacken Open Air, Hellfest, Download y Graspop Metal Meeting son los mayores festivales de rock y metal de Europa. Casi todos se celebran entre junio y agosto, y las entradas de los más populares se agotan mucho antes de que el cartel esté completo.",
+      "intro": "Europa es, con diferencia, el mercado más denso del mundo para la música pesada. En unas pocas semanas de verano puedes ver a los mismos cabezas de cartel en escenarios de Alemania, Francia, Inglaterra y Bélgica, pero los festivales que los rodean son muy distintos entre sí. Wacken Open Air convierte una aldea alemana de 1.800 habitantes en una ciudad de 85.000 personas, y lleva años agotándose a través de su lista de espera. Hellfest, en Clisson, es el mayor en escala pura: unos 180.000 visitantes en cuatro días y seis escenarios que cubren prácticamente todos los subgéneros del hard rock y el metal. Download, en Castle Donington, es el pilar británico, mientras que Graspop, en la localidad belga de Dessel, atrae a un público parecido con un perfil algo más metálico.\n\nSi vas a viajar lejos, conviene planificar más allá de los cabezas de cartel. Las entradas suelen salir en varias tandas y las primeras son las más baratas. Varios de estos festivales están lo bastante cerca en el calendario para combinar dos en un mismo viaje, y como muchos comparten cabezas de cartel, la elección suele depender del lugar, el tamaño y el ambiente más que del propio cartel.",
+      "outro": "La lista anterior es una selección editorial de los nombres más consolidados, pero Europa tiene muchos más festivales de rock y metal de los que caben aquí: desde pequeños eventos especializados hasta festivales de rock más amplios que también programan bandas más duras. Las fechas y los carteles proceden directamente de los anuncios de los festivales y se actualizan de forma continua.",
+      "ctaMap": "Ver todos los festivales de metal en el mapa",
+      "faq": [
+        {
+          "q": "¿Cuál es el mayor festival de metal de Europa?",
+          "a": "Hellfest, en Francia, es el mayor por asistencia, con unos 180.000 visitantes en cuatro días. Wacken Open Air, en Alemania, es el más famoso con cerca de 85.000 visitantes, pero siempre se agota."
+        },
+        {
+          "q": "¿Cuándo se celebran los festivales de rock y metal en Europa?",
+          "a": "La temporada principal va de junio a agosto. Rock am Ring y Download son a principios de junio, Hellfest y Graspop a mediados, y Wacken, Bloodstock, Alcatraz y Summer Breeze a finales de julio y en agosto."
+        },
+        {
+          "q": "¿Cuándo salen las entradas?",
+          "a": "La mayoría de los grandes festivales abren la venta poco después de terminar la edición anterior, hasta un año antes. Wacken suele agotarse antes de anunciar el cartel, así que conviene adelantarse."
+        },
+        {
+          "q": "¿Qué festival es mejor para una primera vez?",
+          "a": "Graspop y Download tienen buena infraestructura, son fáciles de alcanzar y ofrecen carteles amplios, del rock clásico al metal más duro. Ambos son sencillos de llegar en transporte público."
+        },
+        {
+          "q": "¿Puedo encadenar varios festivales en un viaje?",
+          "a": "Sí. Hellfest y Graspop caen a menudo la misma semana y están a pocas horas uno del otro. Rock am Ring y Rock im Park comparten cartel y se celebran simultáneamente."
+        },
+        {
+          "q": "¿Están ya completos los carteles?",
+          "a": "Rara vez. Los nombres más grandes se anuncian el otoño anterior y el resto se completa durante el invierno y la primavera. Las listas de esta guía se actualizan automáticamente."
+        }
+      ]
+    },
+    "elektronisk": {
+      "title": "Los mejores festivales de electrónica y techno de Europa {year}",
+      "metaTitle": "Mejores festivales de electrónica y techno de Europa {year} | Tunetrail",
+      "metaDescription": "Los mayores festivales europeos de techno, house y música electrónica en {year}. Fechas, recintos y carteles actualizados: de Tomorrowland a Awakenings y Dekmantel.",
+      "answer": "Tomorrowland, en Bélgica, es el festival de música electrónica más conocido del mundo, mientras que Awakenings y Dekmantel, en los Países Bajos, son los más sólidos centrados puramente en el techno. La temporada va de mayo a septiembre, con el pico en julio.",
+      "intro": "La música electrónica sostiene en Europa varias tradiciones festivaleras que conviven, y las diferencias entre ellas son más profundas de lo que sugieren los carteles. Tomorrowland, en De Schorre, es la gran producción: más de 500 artistas en dieciséis escenarios, repartidos en dos fines de semana de julio, con una escenografía que es una atracción en sí misma. Awakenings y Dekmantel, en los Países Bajos, tiran en la dirección contraria: más cuidadosamente seleccionados, más cerca de la cultura de club de la que viene esta música, y con un público que va por los artistas y no por el espectáculo.\n\nEntre esos polos hay numerosos especialistas. Defqon.1 cultiva el hardstyle y el hardcore con uno de los mayores números de artistas de toda Europa. Kappa FuturFestival ocupa un recinto industrial en el centro de Turín, mientras Nature One, en Alemania, se instala en una antigua base de misiles. Sónar, en Barcelona, combina conciertos con un congreso sobre música y tecnología, y cae antes en la temporada que la mayoría.\n\nLa logística también difiere de los festivales de rock: muchos de estos eventos son de un solo día o urbanos, con menos camping y noches más cortas de lo que el cartel sugiere.",
+      "outro": "Los carteles de los festivales electrónicos salen más tarde y en más tandas que en otros géneros, y los horarios por escenario suelen llegar solo semanas antes. Las listas aquí se actualizan a medida que los organizadores confirman nombres, pero consulta siempre la web del festival si viajas por un artista concreto.",
+      "ctaMap": "Ver todos los festivales de electrónica en el mapa",
+      "faq": [
+        {
+          "q": "¿Cuál es el mayor festival de música electrónica de Europa?",
+          "a": "Tomorrowland, en Bélgica, celebrado en dos fines de semana de julio con más de 500 artistas en dieciséis escenarios. Es también el más conocido internacionalmente."
+        },
+        {
+          "q": "¿Qué festival es mejor para techno puro?",
+          "a": "Awakenings y Dekmantel, ambos en los Países Bajos, son los más respetados entre los puramente techno. Awakenings es el mayor; Dekmantel, el más cuidadosamente seleccionado."
+        },
+        {
+          "q": "¿Cuál es la temporada de los festivales electrónicos?",
+          "a": "De mayo a septiembre, con clara concentración en julio. Sónar es en junio, Tomorrowland y Awakenings en julio, y Creamfields y Mysteryland a finales de agosto."
+        },
+        {
+          "q": "¿Hay camping en estos festivales?",
+          "a": "Varía más que en los de rock. Tomorrowland tiene su propia ciudad de camping, mientras que los urbanos como Sónar y Kappa FuturFestival dan por hecho que te alojas en la ciudad."
+        },
+        {
+          "q": "¿Con cuánta antelación debo comprar la entrada?",
+          "a": "Tomorrowland usa un sistema de registro que reparte entradas por tandas con meses de antelación, y se agotan de inmediato. Los demás tienen ventas más convencionales, pero las primeras tandas son más baratas."
+        },
+        {
+          "q": "¿Sabré a qué hora toca cada artista?",
+          "a": "Los horarios por escenario se publican solo unas semanas antes, y a menudo primero en la app del festival. Los carteles de esta guía muestran quién está confirmado, no cuándo toca."
+        }
+      ]
+    },
+    "jazz": {
+      "title": "Los mejores festivales de jazz de Europa {year}",
+      "metaTitle": "Mejores festivales de jazz de Europa {year} – fechas y programas | Tunetrail",
+      "metaDescription": "Los festivales de jazz más importantes de Europa en {year}, con fechas, recintos y programas actualizados. De Montreux y North Sea Jazz a Umbria Jazz y Gent Jazz.",
+      "answer": "El Montreux Jazz Festival, en Suiza, y North Sea Jazz, en Róterdam, son los dos festivales de jazz más importantes de Europa. Montreux cumple 60 años en {year}. La temporada es más corta y concentrada que en otros géneros, centrada en julio.",
+      "intro": "El festival de jazz europeo es una tradición propia, y los más antiguos han moldeado el género mucho más allá de sus propios escenarios. El Montreux Jazz Festival, a orillas del lago Lemán, celebra su 60 aniversario en {year} y hace tiempo que es más que un festival de jazz: el programa va de los conciertos de jazz al soul, el blues y el pop, y atrae a varios cientos de miles de personas en dos semanas. North Sea Jazz, en Róterdam, es el más denso de todos: tres días, muchos escenarios en paralelo y un programa que figura de forma constante entre los más extensos de Europa.\n\nItalia tiene dos de los más atmosféricos. Umbria Jazz, en Perugia, utiliza las plazas y callejuelas medievales de la ciudad como escenarios, mientras Pescara Jazz se celebra junto al Adriático. En Suiza, Cully Jazz tiene lugar en un pueblo vinícola del Lemán, y Ascona Jazz toca a lo largo del paseo del lago, en la parte italófona del país.\n\nLos festivales de jazz son sistemáticamente más pequeños y urbanos que los de rock o electrónica, con conciertos en salas, iglesias y plazas en lugar de en explanadas. Eso los hace fáciles de combinar con una escapada urbana.",
+      "outro": "Los programas de los festivales de jazz se publican a menudo antes que en otros géneros, pero en tandas más pequeñas: se añaden conciertos sueltos durante toda la primavera. Varios venden entradas por concierto además de abonos, lo que permite elegir nombres concretos. Las fechas y carteles aquí se actualizan de forma continua.",
+      "ctaMap": "Ver todos los festivales de jazz en el mapa",
+      "faq": [
+        {
+          "q": "¿Cuál es el festival de jazz más conocido de Europa?",
+          "a": "El Montreux Jazz Festival, en Suiza, fundado en 1967 y con varios cientos de miles de visitantes cada año. En {year} celebra su 60 aniversario."
+        },
+        {
+          "q": "¿Qué festival de jazz tiene el programa más amplio?",
+          "a": "North Sea Jazz, en Róterdam, que concentra un programa excepcionalmente extenso en tres días y muchos escenarios en paralelo."
+        },
+        {
+          "q": "¿Cuándo se celebran los festivales de jazz?",
+          "a": "La mayoría en julio: Montreux, North Sea Jazz, Umbria Jazz y Pori Jazz. Cully Jazz es en abril y Jazz à Liège en mayo, así que la temporada empieza antes que en otros géneros."
+        },
+        {
+          "q": "¿Tengo que comprar un abono completo?",
+          "a": "No: varios festivales de jazz europeos venden entradas para conciertos individuales además de abonos. Es habitual en Montreux, Umbria Jazz y Cully Jazz."
+        },
+        {
+          "q": "¿Solo hay jazz?",
+          "a": "Rara vez. Montreux programa desde hace mucho soul, blues, pop y rock junto al jazz, y la mayoría de los grandes festivales de jazz tienen carteles más amplios de lo que su nombre sugiere."
+        },
+        {
+          "q": "¿Funcionan los festivales de jazz como escapada urbana?",
+          "a": "Sí, son mayoritariamente urbanos. Umbria Jazz usa el centro histórico de Perugia, Montreux está a orillas del Lemán y North Sea Jazz se celebra en un centro de congresos de Róterdam."
+        }
+      ]
+    },
+    "frankrike": {
+      "title": "Los mejores festivales de música de Francia {year}",
+      "metaTitle": "Mejores festivales de música de Francia {year} – fechas y carteles | Tunetrail",
+      "metaDescription": "Guía de los mayores festivales de música de Francia en {year}: Hellfest, Vieilles Charrues, Solidays, Rock en Seine y más. Fechas, recintos y carteles actualizados.",
+      "answer": "Hellfest, Les Vieilles Charrues, Solidays y Rock en Seine son los mayores festivales de música de Francia. La temporada va de mayo a finales de agosto, y Francia tiene más grandes festivales por habitante que la mayoría de los países europeos.",
+      "intro": "Francia tiene uno de los panoramas festivaleros más densos de Europa, y no se concentra en París. Les Vieilles Charrues, en el pueblo bretón de Carhaix, es el mayor del país: nacido como evento local, hoy programa cabezas de cartel internacionales sin perder su arraigo regional. Hellfest, en Clisson, es el mayor festival de metal de Europa y lleva unos 180.000 visitantes a un lugar que el resto del año es una pequeña ciudad del Loira.\n\nAlrededor de París los festivales se acercan a la ciudad. Rock en Seine ocupa el Domaine de Saint-Cloud al oeste del centro, Solidays se celebra en el hipódromo de Longchamp con un propósito solidario explícito, y We Love Green se instala en el Bois de Vincennes con la sostenibilidad como hilo conductor. Más lejos están Les Eurockéennes, en una península junto a un lago cerca de Belfort, Main Square en la plaza mayor de Arras, y Musilac junto al lago de Aix-les-Bains.\n\nLos festivales franceses destacan siempre en comida y bebida, y muchos se sitúan en regiones que merecen el viaje de todos modos, lo que facilita integrarlos en unas vacaciones más largas.",
+      "outro": "Francia tiene muchos más festivales que los citados aquí: Tunetrail sigue más de 140 eventos franceses, desde grandes nombres internacionales hasta festivales locales de fuerte carácter regional. Los carteles salen durante el invierno y la primavera, y las fechas y listas de artistas de esta guía se actualizan automáticamente.",
+      "ctaMap": "Ver todos los festivales franceses en el mapa",
+      "faq": [
+        {
+          "q": "¿Cuál es el mayor festival de música de Francia?",
+          "a": "Les Vieilles Charrues, en Carhaix, es el mayor por asistencia entre los de cartel amplio, mientras que Hellfest, en Clisson, es el mayor de su género con unos 180.000 visitantes en cuatro días."
+        },
+        {
+          "q": "¿Cuándo es la temporada de festivales en Francia?",
+          "a": "De mayo a finales de agosto. We Love Green a principios de junio, Hellfest y Solidays a mediados, Les Vieilles Charrues en julio y Rock en Seine justo al final de agosto."
+        },
+        {
+          "q": "¿Qué festivales están en París o cerca?",
+          "a": "Rock en Seine en el Domaine de Saint-Cloud, Solidays en Longchamp y We Love Green en el Bois de Vincennes son todos accesibles desde París en transporte público."
+        },
+        {
+          "q": "¿Necesito hablar francés?",
+          "a": "No. Los grandes festivales ofrecen información en inglés y atraen público internacional, aunque los carteles incluyen muchos artistas franceses que merece la pena descubrir antes."
+        },
+        {
+          "q": "¿Hay camping en los festivales franceses?",
+          "a": "En la mayoría de los grandes fuera de las ciudades, como Hellfest, Les Vieilles Charrues y Les Eurockéennes. Los del área de París normalmente no lo ofrecen, ya que el público se aloja en la ciudad."
+        },
+        {
+          "q": "¿Con cuánta antelación debo comprar la entrada?",
+          "a": "Hellfest suele agotarse muy rápido tras abrir la venta. Los demás grandes festivales mantienen entradas más tiempo, pero las primeras tandas son las más baratas."
+        }
+      ]
+    },
+    "norden": {
+      "title": "Los mejores festivales de música de Escandinavia {year}",
+      "metaTitle": "Mejores festivales de música de Escandinavia {year} – fechas y carteles | Tunetrail",
+      "metaDescription": "Guía de los mayores festivales de Noruega, Suecia, Dinamarca y Finlandia en {year}: Roskilde, Smukfest, Flow, Øya, Copenhell y más. Fechas y carteles actualizados.",
+      "answer": "El Roskilde Festival, en Dinamarca, es el mayor de Escandinavia y uno de los más antiguos de Europa. Smukfest y Copenhell en Dinamarca, Flow en Finlandia y Øyafestivalen en Noruega completan el grupo. La temporada es corta y densa: casi todo ocurre entre junio y mediados de agosto.",
+      "intro": "El verano festivalero nórdico es corto, y eso condiciona cómo están construidos los festivales. Casi todo sucede en doce semanas entre junio y mediados de agosto, con las noches claras como parte de la experiencia y no como una curiosidad. El Roskilde Festival, en Dinamarca, es el más antiguo y grande, gestionado como organización sin ánimo de lucro desde 1971, con un programa que va de los mayores nombres internacionales a artistas emergentes muy específicos, y una cultura de camping que empieza días antes de la música.\n\nDinamarca reúne varios de los más sólidos: Smukfest, en Skanderborg, se celebra en un hayedo, Copenhell es el festival de metal más importante del norte, y Tinderbox y Northside cubren pop y rock más amplios. En Finlandia, el Flow Festival de Helsinki es el más cuidado —en una antigua central eléctrica, con una identidad marcada de diseño y gastronomía—, mientras Provinssi, Ruisrock e Ilosaarirock son los festivales de verano consolidados. Suecia tiene Way Out West en Gotemburgo y Sweden Rock en la costa oeste, y en Noruega Øyafestivalen ocupa el parque de Tøyen, en Oslo.\n\nLos festivales están lo bastante cerca geográficamente para combinar varios, y las capitales nórdicas están bien conectadas por tren.",
+      "outro": "Escandinavia tiene muchos más festivales de los que caben aquí, sobre todo pequeños eventos muy arraigados en la costa y el interior que no programan nombres internacionales pero a menudo ofrecen la mejor experiencia. Las fechas y carteles de esta guía se actualizan automáticamente.",
+      "ctaMap": "Ver todos los festivales nórdicos en el mapa",
+      "faq": [
+        {
+          "q": "¿Cuál es el mayor festival de música de Escandinavia?",
+          "a": "El Roskilde Festival, en Dinamarca, entre los más antiguos y grandes de Europa. Se gestiona como organización sin ánimo de lucro y se celebra desde 1971."
+        },
+        {
+          "q": "¿Cuándo es la temporada de festivales en Escandinavia?",
+          "a": "Corta y concentrada: de principios de junio a mediados de agosto. Northside y Sweden Rock a principios de junio, Roskilde a finales de junio, y Flow, Way Out West y Øya en agosto."
+        },
+        {
+          "q": "¿Qué festival es mejor para metal?",
+          "a": "Copenhell, en Copenhague, es el festival de metal más importante de Escandinavia. Sweden Rock, en la costa oeste sueca, cubre hard rock y metal clásicos, y Midgardsblot, en Noruega, tiene un perfil folk y black metal más específico."
+        },
+        {
+          "q": "¿Puedo combinar varios festivales nórdicos?",
+          "a": "Sí. Los festivales daneses están cerca entre sí, y Copenhague, Oslo, Gotemburgo y Estocolmo están bien conectados por tren. Varios caen en semanas consecutivas."
+        },
+        {
+          "q": "¿Qué tiempo hace?",
+          "a": "Imprevisible. Incluso en julio y agosto conviene contar con lluvia y tardes frescas, y la mayoría de los festivales nórdicos se celebran con cualquier tiempo. Las noches claras compensan de sobra."
+        },
+        {
+          "q": "¿Son caros los festivales nórdicos?",
+          "a": "Los precios de las entradas están más o menos al nivel europeo, pero comida, bebida y transporte cuestan más que en el sur de Europa. Varios festivales permiten llevar comida propia al camping."
+        }
+      ]
+    }
   }
 }

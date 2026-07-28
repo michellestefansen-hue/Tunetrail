@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { Header } from "@/components/Header";
 import { SearchOverlay } from "@/components/SearchOverlay";
@@ -10,6 +11,7 @@ import { FestivalSheet } from "@/components/FestivalSheet";
 import {
   fetchFestivals,
   filterFestivals,
+  FESTIVAL_CATEGORIES,
   type Festival,
   type FestivalCategory,
 } from "@/lib/festivals";
@@ -21,14 +23,32 @@ const TunetrailMap = dynamic(
 );
 
 export default function Home() {
+  return (
+    <Suspense fallback={<div className="h-dvh w-full bg-[#0b0a1f]" />}>
+      <MapView />
+    </Suspense>
+  );
+}
+
+function MapView() {
   const router = useRouter();
+  // Guides link here with ?q= and ?category= so their CTA lands on a filtered
+  // map. Read once, as initial state — after that the UI owns the filters.
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") ?? "";
+  const initialCategory = searchParams.get("category");
+
   const [festivals, setFestivals] = useState<Festival[]>([]);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [dateFrom, setDateFrom] = useState<string | null>(null);
   const [dateTo, setDateTo] = useState<string | null>(null);
-  const [categories, setCategories] = useState<FestivalCategory[]>([]);
+  const [categories, setCategories] = useState<FestivalCategory[]>(() =>
+    initialCategory && (FESTIVAL_CATEGORIES as string[]).includes(initialCategory)
+      ? [initialCategory as FestivalCategory]
+      : [],
+  );
   const [searchLocation, setSearchLocation] = useState<[number, number] | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
 
@@ -105,7 +125,7 @@ export default function Home() {
 
   const handleSelectFestival = useCallback(
     (festival: Festival) => {
-      router.push(`/festival/${festival.slug}`);
+      router.push({ pathname: "/festival/[slug]", params: { slug: festival.slug } });
     },
     [router],
   );

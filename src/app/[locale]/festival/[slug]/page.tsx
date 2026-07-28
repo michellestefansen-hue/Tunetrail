@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/static";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Link, getPathname } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
+import { guidesForFestival, guidePath } from "@/lib/guides";
 import {
   FESTIVAL_SELECT,
   currentEdition,
@@ -74,7 +75,7 @@ export async function generateMetadata({
     ? t("metaTitle", { name: festival.name, year: edition.year })
     : t("metaTitleNoEdition", { name: festival.name });
   const description = await metaDescription(festival, locale, edition);
-  const href = `/festival/${slug}`;
+  const href = { pathname: "/festival/[slug]" as const, params: { slug } };
   const url = `${SITE_URL}${getPathname({ locale, href })}`;
   const images = festival.image_url ? [festival.image_url] : undefined;
 
@@ -109,7 +110,10 @@ function eventJsonLd(
     name: festival.name,
     startDate: edition.date_from,
     endDate: edition.date_to ?? edition.date_from,
-    url: `${SITE_URL}${getPathname({ locale, href: `/festival/${festival.slug}` })}`,
+    url: `${SITE_URL}${getPathname({
+      locale,
+      href: { pathname: "/festival/[slug]", params: { slug: festival.slug } },
+    })}`,
     ...(festival.image_url ? { image: [festival.image_url] } : {}),
     location: {
       "@type": "Place",
@@ -147,6 +151,14 @@ export default async function FestivalPage({
 
   const t = await getTranslations({ locale, namespace: "FestivalPage" });
   const tCategories = await getTranslations({ locale, namespace: "Categories" });
+  const tg = await getTranslations({ locale, namespace: "Guides" });
+  const year = new Date().getFullYear();
+  const relatedGuides = await Promise.all(
+    guidesForFestival(slug).map(async (key) => {
+      const tGuide = await getTranslations({ locale, namespace: `Guides.${key}` });
+      return { key, title: tGuide("title", { year }) };
+    }),
+  );
   const edition = currentEdition(festival);
   const program = edition?.program ?? [];
   const jsonLd = eventJsonLd(festival, edition, locale);
@@ -268,6 +280,26 @@ export default async function FestivalPage({
             </div>
           ))}
         </div>
+
+        {relatedGuides.length > 0 && (
+          <section className="mt-10 border-t border-stone-200 pt-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
+              {tg("seeAlsoHeading")}
+            </h2>
+            <ul className="mt-3 flex flex-col gap-2">
+              {relatedGuides.map(({ key, title }) => (
+                <li key={key}>
+                  <Link
+                    href={guidePath(key)}
+                    className="text-sm text-[#FF2D78] hover:underline"
+                  >
+                    → {title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
     </div>
   );

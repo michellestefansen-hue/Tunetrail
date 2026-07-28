@@ -53,6 +53,7 @@ export async function generateMetadata({
     description: DESCRIPTION[l],
     icons: { icon: "/logo.svg" },
     robots: { index: true, follow: true },
+    verification: { google: "PdhWujFyWH-8y2qtNg0x5HSAMZCHW-z9kZ_wP3La0Cw" },
     openGraph: {
       siteName: "Tunetrail",
       locale: OG_LOCALE[l],

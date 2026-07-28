@@ -72,6 +72,7 @@
     "exploreAll": "Explorer tous les festivals sur la carte",
     "updatedAt": "Dernière mise à jour le {date}",
     "festivalsInGuide": "{count} festivals dans ce guide",
+    "guideCount": "{count} guides",
     "tableFestival": "Festival",
     "tableCountry": "Pays",
     "tableDates": "Dates",

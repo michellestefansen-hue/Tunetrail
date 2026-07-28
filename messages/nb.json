@@ -72,6 +72,7 @@
     "exploreAll": "Utforsk alle festivaler i kartet",
     "updatedAt": "Sist oppdatert {date}",
     "festivalsInGuide": "{count} festivaler i denne guiden",
+    "guideCount": "{count} guider",
     "tableFestival": "Festival",
     "tableCountry": "Land",
     "tableDates": "Datoer",

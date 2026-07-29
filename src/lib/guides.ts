@@ -39,6 +39,7 @@ export const GUIDES: Record<GuideKey, Guide> = {
       "download-festival",
       "graspop-metal-meeting",
       "copenhell",
+      "nova-rock-festival",
       "bloodstock-open-air",
       "resurrection-fest",
       "summer-breeze-open-air",
@@ -46,6 +47,10 @@ export const GUIDES: Record<GuideKey, Guide> = {
       "brutal-assault",
       "rock-am-ring",
       "sweden-rock-festival",
+      "rock-for-people",
+      "motocultor-festival",
+      "vagos-metal-fest",
+      "hills-of-rock",
     ],
   },
   elektronisk: {

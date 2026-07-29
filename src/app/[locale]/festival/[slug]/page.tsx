@@ -50,7 +50,11 @@ async function metaDescription(
   edition: ReturnType<typeof currentEdition>,
 ): Promise<string> {
   const t = await getTranslations({ locale, namespace: "FestivalPage" });
-  const place = [festival.venue_name ?? festival.city, festival.country]
+  const tCountries = await getTranslations({ locale, namespace: "Countries" });
+  const place = [
+    festival.venue_name ?? festival.city,
+    festival.country ? tCountries(festival.country) : null,
+  ]
     .filter(Boolean)
     .join(", ");
   const range = edition?.date_from ? dateRangeLabel(festival, locale) : null;
@@ -97,6 +101,7 @@ function eventJsonLd(
   festival: Festival,
   edition: ReturnType<typeof currentEdition>,
   locale: Locale,
+  countryName: string | null,
 ) {
   if (!edition?.date_from) return null;
 
@@ -118,7 +123,7 @@ function eventJsonLd(
     location: {
       "@type": "Place",
       name: festival.venue_name ?? festival.city ?? festival.name,
-      address: [festival.venue_name ?? festival.city, festival.country]
+      address: [festival.venue_name ?? festival.city, countryName]
         .filter(Boolean)
         .join(", "),
       geo: {
@@ -151,6 +156,7 @@ export default async function FestivalPage({
 
   const t = await getTranslations({ locale, namespace: "FestivalPage" });
   const tCategories = await getTranslations({ locale, namespace: "Categories" });
+  const tCountries = await getTranslations({ locale, namespace: "Countries" });
   const tg = await getTranslations({ locale, namespace: "Guides" });
   const year = new Date().getFullYear();
   const relatedGuides = await Promise.all(
@@ -159,9 +165,10 @@ export default async function FestivalPage({
       return { key, title: tGuide("title", { year }) };
     }),
   );
+  const countryName = festival.country ? tCountries(festival.country) : null;
   const edition = currentEdition(festival);
   const program = edition?.program ?? [];
-  const jsonLd = eventJsonLd(festival, edition, locale);
+  const jsonLd = eventJsonLd(festival, edition, locale, countryName);
   const bcp = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
 
   return (
@@ -186,7 +193,7 @@ export default async function FestivalPage({
         <div className="absolute inset-0 bg-gradient-to-t from-[#FFF9F0] to-transparent" />
 
         <Link
-          href="/"
+          href="/kart"
           className="absolute left-4 top-[calc(env(safe-area-inset-top)+16px)] flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-2 text-sm font-medium text-white backdrop-blur-md"
         >
           <ArrowLeftIcon className="h-4 w-4" />
@@ -208,9 +215,7 @@ export default async function FestivalPage({
 
         <p className="mt-3 flex items-center gap-1.5 text-sm text-stone-500">
           <MapPinIcon className="h-4 w-4 text-[#FF2D78]" />
-          {[festival.venue_name ?? festival.city, festival.country]
-            .filter(Boolean)
-            .join(", ")}
+          {[festival.venue_name ?? festival.city, countryName].filter(Boolean).join(", ")}
         </p>
 
         {festival.description && (

@@ -61,7 +61,8 @@
     "es": "Español"
   },
   "Guides": {
-    "navLabel": "Guides",
+    "navExploreFestivals": "Festivals entdecken",
+    "navExploreMap": "Karte entdecken",
     "breadcrumbHome": "Karte",
     "breadcrumbGuides": "Guides",
     "hubTitle": "Die besten Musikfestivals in Europa {year}",
@@ -260,5 +261,34 @@
         }
       ]
     }
+  },
+  "Countries": {
+    "Albania": "Albanien",
+    "Belgia": "Belgien",
+    "Danmark": "Dänemark",
+    "Estland": "Estland",
+    "Finland": "Finnland",
+    "Frankrike": "Frankreich",
+    "Hellas": "Griechenland",
+    "Irland": "Irland",
+    "Island": "Island",
+    "Italia": "Italien",
+    "Kroatia": "Kroatien",
+    "Nederland": "Niederlande",
+    "Norge": "Norwegen",
+    "Polen": "Polen",
+    "Portugal": "Portugal",
+    "Romania": "Rumänien",
+    "Serbia": "Serbien",
+    "Slovakia": "Slowakei",
+    "Slovenia": "Slowenien",
+    "Spania": "Spanien",
+    "Storbritannia": "Vereinigtes Königreich",
+    "Sveits": "Schweiz",
+    "Sverige": "Schweden",
+    "Tsjekkia": "Tschechien",
+    "Tyskland": "Deutschland",
+    "Ungarn": "Ungarn",
+    "Østerrike": "Österreich"
   }
 }

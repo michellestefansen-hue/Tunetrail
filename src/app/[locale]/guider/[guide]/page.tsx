@@ -2,10 +2,11 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ArrowLeftIcon, TicketIcon, MapIcon } from "@heroicons/react/24/solid";
+import { TicketIcon, MapIcon } from "@heroicons/react/24/solid";
 import { Link, getPathname } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import { GUIDES, GUIDE_KEYS, guideMapQuery, guidePath, type GuideKey } from "@/lib/guides";
+import { SiteHeader } from "@/components/SiteHeader";
 import {
   fetchGuideFestivals,
   guideYear,
@@ -83,7 +84,9 @@ export default async function GuidePage({
   const t = await getTranslations({ locale, namespace: `Guides.${key}` });
   const tg = await getTranslations({ locale, namespace: "Guides" });
   const tc = await getTranslations({ locale, namespace: "Categories" });
+  const tCountries = await getTranslations({ locale, namespace: "Countries" });
   const bcp = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
+  const countryName = (country: string | null) => (country ? tCountries(country) : null);
 
   const faq = t.raw("faq") as FaqItem[];
   const months = groupByMonth(festivals, locale, year);
@@ -123,8 +126,8 @@ export default async function GuidePage({
         {
           "@type": "ListItem",
           position: 1,
-          name: tg("breadcrumbGuides"),
-          item: `${SITE_URL}${getPathname({ locale, href: "/guider" })}`,
+          name: tg("navExploreFestivals"),
+          item: `${SITE_URL}${getPathname({ locale, href: "/" })}`,
         },
         { "@type": "ListItem", position: 2, name: t("title", { year }), item: guideUrl },
       ],
@@ -162,24 +165,10 @@ export default async function GuidePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="mx-auto max-w-3xl px-5 pt-[calc(env(safe-area-inset-top)+24px)]">
-        <nav aria-label="Breadcrumb" className="text-xs text-stone-500">
-          <ol className="flex flex-wrap items-center gap-1.5">
-            <li>
-              <Link href="/" className="hover:text-[#FF2D78]">
-                {tg("breadcrumbHome")}
-              </Link>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li>
-              <Link href="/guider" className="hover:text-[#FF2D78]">
-                {tg("breadcrumbGuides")}
-              </Link>
-            </li>
-          </ol>
-        </nav>
+      <SiteHeader />
 
-        <h1 className="mt-4 text-3xl sm:text-4xl">{t("title", { year })}</h1>
+      <div className="mx-auto max-w-3xl px-5 pt-6">
+        <h1 className="text-3xl sm:text-4xl">{t("title", { year })}</h1>
 
         <p className="mt-4 text-base leading-relaxed text-[#2D1A12]">
           {t("answer", { year })}
@@ -221,7 +210,7 @@ export default async function GuidePage({
                         {f.name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-stone-600">{f.country}</td>
+                    <td className="px-4 py-3 text-stone-600">{countryName(f.country)}</td>
                     <td className="px-4 py-3 text-stone-600">{dateLabel(f)}</td>
                     <td className="px-4 py-3 text-stone-600">
                       {f.category ? tc(f.category) : "—"}
@@ -276,7 +265,9 @@ export default async function GuidePage({
                       </Link>
                     </h2>
                     <p className="mt-0.5 text-xs text-stone-500">
-                      {[f.venue_name ?? f.city, f.country].filter(Boolean).join(", ")}
+                      {[f.venue_name ?? f.city, countryName(f.country)]
+                        .filter(Boolean)
+                        .join(", ")}
                       {" · "}
                       {dateLabel(f)}
                     </p>
@@ -365,18 +356,17 @@ export default async function GuidePage({
 
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
-            href={{ pathname: "/", query: guideMapQuery(GUIDES[key]) }}
+            href={{ pathname: "/kart", query: guideMapQuery(GUIDES[key]) }}
             className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-5 py-3 text-sm font-semibold text-white"
           >
             <MapIcon className="h-4 w-4" />
             {t("ctaMap")}
           </Link>
           <Link
-            href="/guider"
+            href="/"
             className="flex items-center gap-2 rounded-full border border-stone-200 px-5 py-3 text-sm font-medium text-stone-600"
           >
-            <ArrowLeftIcon className="h-4 w-4" />
-            {tg("breadcrumbGuides")}
+            {tg("navExploreFestivals")}
           </Link>
         </div>
       </div>

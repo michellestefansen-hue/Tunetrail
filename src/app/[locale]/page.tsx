@@ -1,165 +1,153 @@
-"use client";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { hasLocale } from "next-intl";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getPathname, Link } from "@/i18n/navigation";
+import { routing, type Locale } from "@/i18n/routing";
+import { GUIDES, GUIDE_KEYS, guidePath } from "@/lib/guides";
+import { createClient } from "@/lib/supabase/static";
+import { fetchGuideFestivals, guideYear } from "@/lib/guideFestivals";
+import { SiteHeader } from "@/components/SiteHeader";
 
-import dynamic from "next/dynamic";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "@/i18n/navigation";
-import { Header } from "@/components/Header";
-import { SearchOverlay } from "@/components/SearchOverlay";
-import { FilterPanel } from "@/components/FilterPanel";
-import { FestivalSheet } from "@/components/FestivalSheet";
-import {
-  fetchFestivals,
-  filterFestivals,
-  FESTIVAL_CATEGORIES,
-  type Festival,
-  type FestivalCategory,
-} from "@/lib/festivals";
-import type { MapBounds } from "@/components/map/TunetrailMap";
+export const revalidate = 3600;
 
-const TunetrailMap = dynamic(
-  () => import("@/components/map/TunetrailMap").then((m) => m.TunetrailMap),
-  { ssr: false },
-);
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://tune-trail.org";
 
-export default function Home() {
-  return (
-    <Suspense fallback={<div className="h-dvh w-full bg-[#0b0a1f]" />}>
-      <MapView />
-    </Suspense>
-  );
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
 }
 
-function MapView() {
-  const router = useRouter();
-  // Guides link here with ?q= and ?category= so their CTA lands on a filtered
-  // map. Read once, as initial state — after that the UI owns the filters.
-  const searchParams = useSearchParams();
-  const initialQuery = searchParams.get("q") ?? "";
-  const initialCategory = searchParams.get("category");
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: rawLocale } = await params;
+  const locale = hasLocale(routing.locales, rawLocale) ? rawLocale : routing.defaultLocale;
+  const t = await getTranslations({ locale, namespace: "Guides" });
+  const year = new Date().getFullYear();
 
-  const [festivals, setFestivals] = useState<Festival[]>([]);
-  const [query, setQuery] = useState(initialQuery);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const title = t("hubMetaTitle", { year });
+  const description = t("hubMetaDescription", { year });
 
-  const [dateFrom, setDateFrom] = useState<string | null>(null);
-  const [dateTo, setDateTo] = useState<string | null>(null);
-  const [categories, setCategories] = useState<FestivalCategory[]>(() =>
-    initialCategory && (FESTIVAL_CATEGORIES as string[]).includes(initialCategory)
-      ? [initialCategory as FestivalCategory]
-      : [],
-  );
-  const [searchLocation, setSearchLocation] = useState<[number, number] | null>(null);
-  const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
-
-  useEffect(() => {
-    fetchFestivals()
-      .then(setFestivals)
-      .catch((err) => console.error("Failed to load festivals", err));
-  }, []);
-
-  // Geocode search text so a place name (e.g. "Kristiansand") flies the map
-  // there; the viewport-synced list then naturally shows what's nearby.
-  useEffect(() => {
-    const trimmed = query.trim();
-    if (!trimmed) {
-      setSearchLocation(null);
-      return;
-    }
-
-    const controller = new AbortController();
-    const timer = setTimeout(() => {
-      fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(trimmed)}`,
-        { signal: controller.signal },
-      )
-        .then((res) => res.json())
-        .then((results: { lon: string; lat: string }[]) => {
-          if (results.length > 0) {
-            setSearchLocation([parseFloat(results[0].lon), parseFloat(results[0].lat)]);
-          } else {
-            setSearchLocation(null);
-          }
-        })
-        .catch(() => {});
-    }, 500);
-
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [query]);
-
-  // Once the search text resolves to a real place, stop requiring the text to
-  // also match name/city — the map flies there and the viewport list takes over.
-  const effectiveQuery = searchLocation ? "" : query;
-
-  const visibleFestivals = filterFestivals(festivals, {
-    query: effectiveQuery,
-    dateFrom,
-    dateTo,
-    categories,
-  });
-
-  // The bottom sheet only lists festivals currently visible within the map's viewport.
-  const festivalsInView = useMemo(() => {
-    if (!mapBounds) return visibleFestivals;
-    return visibleFestivals.filter(
-      (f) =>
-        f.longitude >= mapBounds.west &&
-        f.longitude <= mapBounds.east &&
-        f.latitude >= mapBounds.south &&
-        f.latitude <= mapBounds.north,
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleFestivals, mapBounds]);
-
-  const handleQueryChange = (value: string) => {
-    setQuery(value);
-    if (value.trim()) {
-      setDateFrom(null);
-      setDateTo(null);
-      setCategories([]);
-    }
-  };
-
-  const handleSelectFestival = useCallback(
-    (festival: Festival) => {
-      router.push({ pathname: "/festival/[slug]", params: { slug: festival.slug } });
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${SITE_URL}${getPathname({ locale, href: "/" })}`,
+      languages: Object.fromEntries(
+        routing.locales.map((l) => [l, `${SITE_URL}${getPathname({ locale: l, href: "/" })}`]),
+      ),
     },
-    [router],
+    openGraph: {
+      title,
+      description,
+      url: `${SITE_URL}${getPathname({ locale, href: "/" })}`,
+    },
+    twitter: { title, description },
+  };
+}
+
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: rawLocale } = await params;
+  if (!hasLocale(routing.locales, rawLocale)) notFound();
+  const locale = rawLocale as Locale;
+  setRequestLocale(locale);
+
+  const tg = await getTranslations({ locale, namespace: "Guides" });
+
+  const supabase = createClient();
+  const { count } = await supabase
+    .from("festivals")
+    .select("id", { count: "exact", head: true });
+
+  // One representative year per guide, derived from the curated editions.
+  const entries = await Promise.all(
+    GUIDE_KEYS.map(async (key) => {
+      const festivals = await fetchGuideFestivals(GUIDES[key].festivalSlugs);
+      const t = await getTranslations({ locale, namespace: `Guides.${key}` });
+      return {
+        key,
+        title: t("title", { year: guideYear(festivals) }),
+        answer: t("answer", { year: guideYear(festivals) }),
+        count: festivals.length,
+      };
+    }),
   );
+
+  const hubYear = new Date().getFullYear();
+  const hubUrl = `${SITE_URL}${getPathname({ locale, href: "/" })}`;
+
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: tg("hubTitle", { year: hubYear }),
+      url: hubUrl,
+      dateModified: new Date().toISOString(),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      numberOfItems: entries.length,
+      itemListElement: entries.map((e, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: e.title,
+        url: `${SITE_URL}${getPathname({ locale, href: guidePath(e.key) })}`,
+      })),
+    },
+  ];
 
   return (
-    <div className="relative h-dvh w-full overflow-hidden bg-[#0b0a1f]">
-      <TunetrailMap
-        festivals={visibleFestivals}
-        searchMarker={searchLocation}
-        onSelectFestival={handleSelectFestival}
-        onViewportChange={setMapBounds}
+    <div className="min-h-dvh bg-[#FFF9F0] pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <Header />
+      <SiteHeader />
 
-      <SearchOverlay
-        query={query}
-        onQueryChange={handleQueryChange}
-        onToggleFilters={() => setFiltersOpen((v) => !v)}
-        filtersOpen={filtersOpen}
-      />
+      <div className="mx-auto max-w-3xl px-5 pt-6">
+        <h1 className="text-3xl sm:text-4xl">{tg("hubTitle", { year: hubYear })}</h1>
 
-      {filtersOpen && (
-        <FilterPanel
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          onDateFromChange={setDateFrom}
-          onDateToChange={setDateTo}
-          categories={categories}
-          onCategoriesChange={setCategories}
-        />
-      )}
+        <p className="mt-4 text-base leading-relaxed text-[#2D1A12]">{tg("hubAnswer")}</p>
 
-      <FestivalSheet festivals={festivalsInView} />
+        <p className="mt-3 text-sm leading-relaxed text-[#6B5E59]">
+          {tg("hubIntro", { total: count ?? 0 })}
+        </p>
+
+        <div className="mt-8 flex flex-col gap-3">
+          {entries.map((e) => (
+            <Link
+              key={e.key}
+              href={guidePath(e.key)}
+              className="rounded-2xl bg-white p-5 shadow-[0_8px_30px_rgba(45,26,18,0.08)] transition-transform active:scale-[0.99]"
+            >
+              <h2 className="text-lg">{e.title}</h2>
+              <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-[#6B5E59]">
+                {e.answer}
+              </p>
+              <p className="mt-2 text-xs font-medium text-[#FF4E50]">
+                {tg("festivalsInGuide", { count: e.count })}
+              </p>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link
+            href="/kart"
+            className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-5 py-3 text-sm font-semibold text-white"
+          >
+            {tg("exploreAll")}
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

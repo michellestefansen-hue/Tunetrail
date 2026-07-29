@@ -32,11 +32,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from("festivals")
     .select("slug, festival_editions(updated_at)");
 
+  // "/" is the guides hub; "/kart" is the interactive map.
   const home = entriesFor("/");
-  const guidesHub = entriesFor("/guider");
-  const guides = GUIDE_KEYS.flatMap((key) =>
-    entriesFor(guidePath(key)),
-  );
+  const map = entriesFor("/kart");
+  const guides = GUIDE_KEYS.flatMap((key) => entriesFor(guidePath(key)));
 
   const festivals = (data ?? []).flatMap((f) => {
     const updates = (f.festival_editions as { updated_at: string }[] | null) ?? [];
@@ -47,5 +46,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   });
 
-  return [...home, ...guidesHub, ...guides, ...festivals];
+  return [...home, ...map, ...guides, ...festivals];
 }

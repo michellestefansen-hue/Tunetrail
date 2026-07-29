@@ -11,12 +11,12 @@ export const routing = defineRouting({
   pathnames: {
     "/": "/",
     "/festival/[slug]": "/festival/[slug]",
-    "/guider": {
-      nb: "/guider",
-      en: "/guides",
-      de: "/guides",
-      fr: "/guides",
-      es: "/guias",
+    "/kart": {
+      nb: "/kart",
+      en: "/map",
+      de: "/karte",
+      fr: "/carte",
+      es: "/mapa",
     },
     "/guider/rock-metal": {
       nb: "/guider/beste-rock-og-metalfestivaler-i-europa",

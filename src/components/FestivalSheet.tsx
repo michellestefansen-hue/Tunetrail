@@ -96,6 +96,7 @@ function FestivalList({ festivals }: { festivals: Festival[] }) {
   const t = useTranslations("FestivalSheet");
   const tCategories = useTranslations("Categories");
   const tFestivalPage = useTranslations("FestivalPage");
+  const tCountries = useTranslations("Countries");
   const locale = useLocale();
 
   return (
@@ -118,7 +119,9 @@ function FestivalList({ festivals }: { festivals: Festival[] }) {
               <p className="truncate font-heading text-[#2D1A12]">{festival.name}</p>
               <p className="truncate text-xs text-stone-500">
                 {dateRangeLabel(festival, locale) ?? tFestivalPage("noDateSet")} •{" "}
-                {[festival.city, festival.country].filter(Boolean).join(", ")}
+                {[festival.city, festival.country ? tCountries(festival.country) : null]
+                  .filter(Boolean)
+                  .join(", ")}
               </p>
               {festival.category && (
                 <p className="mt-1 truncate text-[11px] font-medium text-[#FF4E50]">

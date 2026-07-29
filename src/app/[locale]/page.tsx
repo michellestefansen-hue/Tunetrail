@@ -112,10 +112,21 @@ export default async function HomePage({
 
       <SiteHeader />
 
-      <div className="mx-auto max-w-3xl px-5 pt-6">
-        <h1 className="text-3xl sm:text-4xl">{tg("hubTitle", { year: hubYear })}</h1>
+      <div className="relative h-56 w-full overflow-hidden sm:h-72">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/hero-map.jpg"
+          alt={tg("heroAlt")}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 px-5 pb-5 sm:px-8 sm:pb-6">
+          <h1 className="text-2xl text-white sm:text-4xl">{tg("hubTitle", { year: hubYear })}</h1>
+        </div>
+      </div>
 
-        <p className="mt-4 text-base leading-relaxed text-[#2D1A12]">{tg("hubAnswer")}</p>
+      <div className="mx-auto max-w-3xl px-5 pt-6">
+        <p className="text-base leading-relaxed text-[#2D1A12]">{tg("hubAnswer")}</p>
 
         <p className="mt-3 text-sm leading-relaxed text-[#6B5E59]">
           {tg("hubIntro", { total: count ?? 0 })}

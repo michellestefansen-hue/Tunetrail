@@ -120,8 +120,10 @@ export default async function HomePage({
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 px-5 pb-5 sm:px-8 sm:pb-6">
-          <h1 className="text-2xl text-white sm:text-4xl">{tg("hubTitle", { year: hubYear })}</h1>
+        <div className="absolute inset-x-0 bottom-0 px-5 pb-5 sm:pb-6">
+          <h1 className="mx-auto max-w-3xl text-2xl text-white sm:text-4xl">
+            {tg("hubTitle", { year: hubYear })}
+          </h1>
         </div>
       </div>
 

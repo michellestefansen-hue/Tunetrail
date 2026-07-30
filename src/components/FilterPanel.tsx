@@ -33,7 +33,7 @@ export function FilterPanel({
   };
 
   return (
-    <div className="pointer-events-auto absolute inset-x-0 top-[calc(env(safe-area-inset-top)+136px)] z-20 flex justify-center px-4">
+    <div className="pointer-events-auto absolute inset-x-0 top-[calc(env(safe-area-inset-top)+160px)] z-20 flex justify-center px-4">
       <div className="flex w-full max-w-md flex-col gap-4 rounded-2xl border border-white/10 bg-white/10 p-4 shadow-lg backdrop-blur-xl">
         <div>
           <button

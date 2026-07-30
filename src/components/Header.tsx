@@ -11,7 +11,7 @@ export function Header() {
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex justify-center pt-[env(safe-area-inset-top)]">
       <div className="pointer-events-auto w-full bg-[#FFF9F0] shadow-sm">
-        <div className="flex items-center gap-3 px-4 py-3">
+        <div className="flex items-center gap-3 px-4 py-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="" className="h-7 w-7" />
           <span className="font-heading text-lg text-[#2D1A12]">{t("title")}</span>

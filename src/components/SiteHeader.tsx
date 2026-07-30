@@ -16,7 +16,7 @@ export function SiteHeader() {
 
   return (
     <div className="bg-[#FFF9F0] pt-[env(safe-area-inset-top)]">
-      <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
+      <div className="flex items-center gap-3 px-4 py-2 sm:px-5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.svg" alt="" className="h-7 w-7 shrink-0" />
         <span className="font-heading text-lg text-[#2D1A12]">{t("title")}</span>

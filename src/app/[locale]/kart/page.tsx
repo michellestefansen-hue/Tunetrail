@@ -91,19 +91,27 @@ function MapView() {
   }, [query]);
 
   // Once the search text resolves to a real place, stop requiring the text to
-  // also match name/city — the map flies there and the viewport list takes over.
-  const effectiveQuery = searchLocation ? "" : query;
+  // also match name/city — the map flies there and the viewport list takes
+  // over. But a name/city match always wins over the geocoded place: without
+  // this, typing a festival name (e.g. "Wacken") would show the right result
+  // for a moment, then lose it ~500ms later once Nominatim resolved the text
+  // to some unrelated place and the list silently switched to viewport-only.
+  const nameMatches = filterFestivals(festivals, { query, dateFrom, dateTo, categories });
+  const effectiveQuery = searchLocation && nameMatches.length === 0 ? "" : query;
 
-  const visibleFestivals = filterFestivals(festivals, {
-    query: effectiveQuery,
-    dateFrom,
-    dateTo,
-    categories,
-  });
+  const visibleFestivals =
+    effectiveQuery === query
+      ? nameMatches
+      : filterFestivals(festivals, { query: effectiveQuery, dateFrom, dateTo, categories });
 
-  // The bottom sheet only lists festivals currently visible within the map's viewport.
+  // The bottom sheet only lists festivals currently visible within the map's
+  // viewport — but only while browsing without a search. With an active
+  // query, showing the full match list matters more than the viewport: the
+  // map may have zoomed tightly around a geocoded point that doesn't include
+  // the matched festival's own coordinates, which would otherwise hide a
+  // correct result.
   const festivalsInView = useMemo(() => {
-    if (!mapBounds) return visibleFestivals;
+    if (!mapBounds || query.trim()) return visibleFestivals;
     return visibleFestivals.filter(
       (f) =>
         f.longitude >= mapBounds.west &&
@@ -112,7 +120,7 @@ function MapView() {
         f.latitude <= mapBounds.north,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleFestivals, mapBounds]);
+  }, [visibleFestivals, mapBounds, query]);
 
   const handleQueryChange = (value: string) => {
     setQuery(value);

@@ -12,14 +12,13 @@
     "clearAll": "Nullstill alle filtre",
     "festivalLabel": "Festival",
     "festivalPlaceholder": "Søk etter festivalnavn",
-    "placeLabel": "Sted",
-    "placePlaceholder": "By, land eller spillested",
     "artistLabel": "Artist eller band",
     "artistPlaceholder": "Søk i programmet",
     "dateFrom": "Fra dato",
     "dateTo": "Til dato",
     "noMatch": "Ingen treff i databasen",
-    "removeFilter": "Fjern {value}"
+    "removeFilter": "Fjern {value}",
+    "countryLabel": "Land"
   },
   "FestivalSheet": {
     "heading": "Utforsk festivaler",

@@ -12,14 +12,13 @@
     "clearAll": "Alle Filter zurücksetzen",
     "festivalLabel": "Festival",
     "festivalPlaceholder": "Nach Festivalnamen suchen",
-    "placeLabel": "Ort",
-    "placePlaceholder": "Stadt, Land oder Veranstaltungsort",
     "artistLabel": "Künstler oder Band",
     "artistPlaceholder": "Im Line-up suchen",
     "dateFrom": "Von",
     "dateTo": "Bis",
     "noMatch": "Kein Treffer in der Datenbank",
-    "removeFilter": "{value} entfernen"
+    "removeFilter": "{value} entfernen",
+    "countryLabel": "Land"
   },
   "FestivalSheet": {
     "heading": "Festivals entdecken",

@@ -128,8 +128,8 @@ export function ticketUrl(festival: Festival): string | null {
 export type FestivalFilters = {
   /** Exact festival names. Several are OR-ed together. */
   festivalNames?: string[];
-  /** Exact city, region, country or venue values. OR-ed together. */
-  places?: string[];
+  /** Exact country values, as stored on the record. OR-ed together. */
+  countries?: string[];
   /** Exact artist names from the surfaced edition. OR-ed together. */
   artists?: string[];
   dateFrom?: string | null; // 'YYYY-MM-DD'
@@ -143,45 +143,41 @@ export function festivalArtistNames(festival: Festival): string[] {
   return (edition?.program ?? []).flatMap((day) => day.artists.map((a) => a.name));
 }
 
-/** Every place string a festival can legitimately be matched on. */
-export function festivalPlaceNames(festival: Festival): string[] {
-  return [festival.city, festival.region, festival.country, festival.venue_name].filter(
-    (v): v is string => Boolean(v),
-  );
-}
-
-export type Suggestions = { festivals: string[]; places: string[]; artists: string[] };
+export type Suggestions = { festivals: string[]; countries: string[]; artists: string[] };
 
 /**
- * The only values the filter fields will accept, derived from the loaded
- * festivals so a chip can never describe something the data cannot match.
+ * The values the filter offers, derived from the loaded festivals so a chip
+ * can never describe something the data has no way of matching.
+ *
+ * Country is the only location field worth filtering on: every record has one,
+ * whereas a quarter have no city, and venue strings are often addresses or
+ * several venues joined together, which read badly as a filter chip.
  */
 export function buildSuggestions(festivals: Festival[]): Suggestions {
   const names = new Set<string>();
-  const places = new Set<string>();
+  const countries = new Set<string>();
   const artists = new Set<string>();
 
   for (const festival of festivals) {
     if (festival.name) names.add(festival.name);
-    for (const p of festivalPlaceNames(festival)) places.add(p);
+    if (festival.country) countries.add(festival.country);
     for (const a of festivalArtistNames(festival)) artists.add(a);
   }
 
   const sort = (set: Set<string>) => [...set].sort((a, b) => a.localeCompare(b));
-  return { festivals: sort(names), places: sort(places), artists: sort(artists) };
+  return { festivals: sort(names), countries: sort(countries), artists: sort(artists) };
 }
 
 export function filterFestivals(festivals: Festival[], filters: FestivalFilters): Festival[] {
   const names = filters.festivalNames ?? [];
-  const places = filters.places ?? [];
+  const countries = filters.countries ?? [];
   const artists = filters.artists ?? [];
 
   return festivals.filter((festival) => {
     if (names.length > 0 && !names.includes(festival.name)) return false;
 
-    if (places.length > 0) {
-      const own = festivalPlaceNames(festival);
-      if (!places.some((p) => own.includes(p))) return false;
+    if (countries.length > 0) {
+      if (!festival.country || !countries.includes(festival.country)) return false;
     }
 
     if (artists.length > 0) {

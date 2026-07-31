@@ -55,7 +55,7 @@ function MapView() {
   }));
   const [searchLocation, setSearchLocation] = useState<[number, number] | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
-  const seededPlaces = useRef(false);
+  const seededCountries = useRef(false);
 
   useEffect(() => {
     fetchFestivals()
@@ -66,30 +66,29 @@ function MapView() {
   const suggestions = useMemo(() => buildSuggestions(festivals), [festivals]);
 
   // A guide's "explore on the map" CTA arrives as ?q=, comma-separated for
-  // regions that span several countries. Seed it as place chips once the data
-  // is in, dropping anything the data cannot actually match — a chip must
-  // always correspond to a real value.
+  // regions that span several countries. Seed it once the data is in,
+  // dropping anything the data cannot actually match.
   useEffect(() => {
-    if (seededPlaces.current || festivals.length === 0 || !initialQuery) return;
-    seededPlaces.current = true;
+    if (seededCountries.current || festivals.length === 0 || !initialQuery) return;
+    seededCountries.current = true;
     const valid = initialQuery
       .split(",")
       .map((v) => v.trim())
-      .filter((v) => suggestions.places.includes(v));
-    if (valid.length > 0) setFilters((f) => ({ ...f, places: valid }));
+      .filter((v) => suggestions.countries.includes(v));
+    if (valid.length > 0) setFilters((f) => ({ ...f, countries: valid }));
   }, [festivals, initialQuery, suggestions]);
 
-  // Fly the map to a single chosen place. With several places selected there
-  // is no one point to fly to, so the fitted results speak for themselves.
-  const soloPlace = filters.places.length === 1 ? filters.places[0] : null;
+  // Fly the map to a single chosen country. With several selected there is no
+  // one point to fly to, so the fitted results speak for themselves.
+  const soloCountry = filters.countries.length === 1 ? filters.countries[0] : null;
   useEffect(() => {
-    if (!soloPlace) {
+    if (!soloCountry) {
       setSearchLocation(null);
       return;
     }
     const controller = new AbortController();
     fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(soloPlace)}`,
+      `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(soloCountry)}`,
       { signal: controller.signal },
     )
       .then((res) => res.json())
@@ -102,7 +101,7 @@ function MapView() {
       })
       .catch(() => {});
     return () => controller.abort();
-  }, [soloPlace]);
+  }, [soloCountry]);
 
   // Every chip is an exact value taken from the data, so a filtered result is
   // always the true, complete answer. Showing only the part of it that happens

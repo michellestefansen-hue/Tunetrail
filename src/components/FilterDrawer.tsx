@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useRef } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { ChipField } from "@/components/ChipField";
 import {
   FESTIVAL_CATEGORIES,
+  BCP47_LOCALE,
   type FestivalCategory,
   type Suggestions,
 } from "@/lib/festivals";
 
 export type FilterState = {
   festivalNames: string[];
-  places: string[];
+  countries: string[];
   artists: string[];
   dateFrom: string | null;
   dateTo: string | null;
@@ -21,7 +22,7 @@ export type FilterState = {
 
 export const EMPTY_FILTERS: FilterState = {
   festivalNames: [],
-  places: [],
+  countries: [],
   artists: [],
   dateFrom: null,
   dateTo: null,
@@ -32,10 +33,51 @@ export const EMPTY_FILTERS: FilterState = {
 export function activeFilterCount(f: FilterState): number {
   return (
     f.festivalNames.length +
-    f.places.length +
+    f.countries.length +
     f.artists.length +
     (f.dateFrom || f.dateTo ? 1 : 0) +
     f.categories.length
+  );
+}
+
+/** A multi-select row of chips, shared by the country and category sections. */
+function ChipToggles<T extends string>({
+  label,
+  options,
+  selected,
+  onToggle,
+  render,
+}: {
+  label: string;
+  options: T[];
+  selected: T[];
+  onToggle: (value: T) => void;
+  render: (value: T) => string;
+}) {
+  return (
+    <div className="border-t border-black/5 pt-4">
+      <span className="text-xs font-medium text-[#6B5E59]">{label}</span>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {options.map((option) => {
+          const active = selected.includes(option);
+          return (
+            <button
+              key={option}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onToggle(option)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                active
+                  ? "border-[#FF2D78] bg-[#FF2D78] text-white"
+                  : "border-black/10 bg-white text-[#6B5E59]"
+              }`}
+            >
+              {render(option)}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -54,6 +96,8 @@ export function FilterDrawer({
 }) {
   const t = useTranslations("Filters");
   const tCategories = useTranslations("Categories");
+  const tCountries = useTranslations("Countries");
+  const locale = useLocale();
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,13 +112,32 @@ export function FilterDrawer({
   const set = <K extends keyof FilterState>(key: K, value: FilterState[K]) =>
     onChange({ ...filters, [key]: value });
 
-  const toggleCategory = (category: FestivalCategory) =>
+  const toggleCountry = (value: string) =>
+    set(
+      "countries",
+      filters.countries.includes(value)
+        ? filters.countries.filter((v) => v !== value)
+        : [...filters.countries, value],
+    );
+
+  const toggleCategory = (value: FestivalCategory) =>
     set(
       "categories",
-      filters.categories.includes(category)
-        ? filters.categories.filter((c) => c !== category)
-        : [...filters.categories, category],
+      filters.categories.includes(value)
+        ? filters.categories.filter((v) => v !== value)
+        : [...filters.categories, value],
     );
+
+  // The records store country names in Norwegian; the chips show the reader's
+  // own language, so order them by what is actually on screen — and collate in
+  // that language too, or Norwegian Ø sorts as O and lands mid-list instead of
+  // at the end where a Norwegian reader looks for it.
+  const countries = useMemo(() => {
+    const collator = new Intl.Collator(BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb);
+    return [...suggestions.countries].sort((a, b) =>
+      collator.compare(tCountries(a), tCountries(b)),
+    );
+  }, [suggestions.countries, tCountries, locale]);
 
   const count = activeFilterCount(filters);
 
@@ -127,15 +190,6 @@ export function FilterDrawer({
             onChange={(v) => set("festivalNames", v)}
           />
           <ChipField
-            label={t("placeLabel")}
-            placeholder={t("placePlaceholder")}
-            emptyHint={t("noMatch")}
-            removeLabel={(value) => t("removeFilter", { value })}
-            suggestions={suggestions.places}
-            selected={filters.places}
-            onChange={(v) => set("places", v)}
-          />
-          <ChipField
             label={t("artistLabel")}
             placeholder={t("artistPlaceholder")}
             emptyHint={t("noMatch")}
@@ -145,29 +199,21 @@ export function FilterDrawer({
             onChange={(v) => set("artists", v)}
           />
 
-          <div className="border-t border-black/5 pt-4">
-            <span className="text-xs font-medium text-[#6B5E59]">{t("category")}</span>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {FESTIVAL_CATEGORIES.map((category) => {
-                const active = filters.categories.includes(category);
-                return (
-                  <button
-                    key={category}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => toggleCategory(category)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                      active
-                        ? "border-[#FF2D78] bg-[#FF2D78] text-white"
-                        : "border-black/10 bg-white text-[#6B5E59]"
-                    }`}
-                  >
-                    {tCategories(category)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <ChipToggles
+            label={t("countryLabel")}
+            options={countries}
+            selected={filters.countries}
+            onToggle={toggleCountry}
+            render={(v) => tCountries(v)}
+          />
+
+          <ChipToggles
+            label={t("category")}
+            options={FESTIVAL_CATEGORIES}
+            selected={filters.categories}
+            onToggle={toggleCategory}
+            render={(v) => tCategories(v)}
+          />
 
           <div className="border-t border-black/5 pt-4">
             <span className="text-xs font-medium text-[#6B5E59]">{t("dateRange")}</span>

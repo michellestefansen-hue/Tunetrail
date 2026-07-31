@@ -12,14 +12,13 @@
     "clearAll": "Effacer tous les filtres",
     "festivalLabel": "Festival",
     "festivalPlaceholder": "Rechercher par nom de festival",
-    "placeLabel": "Lieu",
-    "placePlaceholder": "Ville, pays ou salle",
     "artistLabel": "Artiste ou groupe",
     "artistPlaceholder": "Rechercher dans le programme",
     "dateFrom": "Du",
     "dateTo": "Au",
     "noMatch": "Aucun résultat dans la base de données",
-    "removeFilter": "Retirer {value}"
+    "removeFilter": "Retirer {value}",
+    "countryLabel": "Pays"
   },
   "FestivalSheet": {
     "heading": "Explorer les festivals",

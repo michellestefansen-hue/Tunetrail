@@ -2,9 +2,14 @@
 """
 Exports everything in the database to a friendly, editable Excel master file.
 
-One sheet, "Festivaler": one row per festival edition. Festival info first, then
-one column per day ("Dag 1", "Dag 2", ...). Each day cell starts with the date on
-its own line, followed by that day's artists, one per line:
+One sheet, "Festivaler": one row per festival edition. The first column is the
+festival's slug — the key the importer matches on. It is greyed out because
+changing it points the row at a different festival (or at none). Every other
+column, the name included, is safe to edit: correcting a name here renames the
+festival rather than detaching the row from it.
+
+Then one column per day ("Dag 1", "Dag 2", ...). Each day cell starts with the
+date on its own line, followed by that day's artists, one per line:
 
     2026-08-06
     Saxon
@@ -74,10 +79,13 @@ HEAD_FILL = PatternFill("solid", fgColor="FF4E50")
 HEAD_FONT = Font(bold=True, color="FFFFFF")
 MISSING_FILL = PatternFill("solid", fgColor="FFD6D6")   # soft red
 MISSING_FONT = Font(bold=True, color="C0392B")
+KEY_FILL = PatternFill("solid", fgColor="F1EFE8")       # muted: "leave this alone"
+KEY_FONT = Font(color="8A8178")
 DAY_ALIGN = Alignment(vertical="top", wrap_text=True)
 
-base_cols = ["Festival", "Land", "By", "Sted/venue", "Sjanger", "Nettside",
-             "Bilde-URL", "Billett-URL", "Årstall", "Fra dato", "Til dato", "Program"]
+base_cols = ["Slug", "Festival", "Land", "By", "Region", "Sted/venue", "Sjanger", "Nettside",
+             "Bilde-URL", "Breddegrad", "Lengdegrad",
+             "Billett-URL", "Årstall", "Fra dato", "Til dato", "Program"]
 day_cols = [f"Dag {i + 1}" for i in range(n_day_cols)]
 cols = base_cols + day_cols
 ws.append(cols)
@@ -102,12 +110,17 @@ for f, ed in edition_rows():
         day_cells[i] = "\n".join(lines)
 
     ws.append([
-        f.get("name"), f.get("country"), f.get("city"), f.get("venue_name"),
-        f.get("category"), f.get("website_url"), f.get("image_url"),
+        f.get("slug"), f.get("name"), f.get("country"), f.get("city"), f.get("region"),
+        f.get("venue_name"), f.get("category"), f.get("website_url"), f.get("image_url"),
+        f.get("latitude"), f.get("longitude"),
         ed.get("ticket_url"), ed.get("year"), ed.get("date_from"), ed.get("date_to"),
         status, *day_cells,
     ])
     row = ws.max_row
+    # The slug is the key the importer matches on — greyed out to read as
+    # "don't touch". Everything else, including the name, is safe to edit.
+    key = ws.cell(row=row, column=1)
+    key.fill, key.font = KEY_FILL, KEY_FONT
     if missing:
         c = ws.cell(row=row, column=PROG_COL)
         c.fill, c.font = MISSING_FILL, MISSING_FONT
@@ -119,10 +132,10 @@ for c in range(1, len(cols) + 1):
     cell = ws.cell(row=1, column=c)
     cell.fill, cell.font = HEAD_FILL, HEAD_FONT
     cell.alignment = Alignment(vertical="center")
-ws.freeze_panes = "C2"  # keep Festival + Land visible while scrolling
+ws.freeze_panes = "C2"  # keep Slug + Festival visible while scrolling
 ws.auto_filter.ref = f"A1:{get_column_letter(len(cols))}1"
 
-widths = [30, 14, 16, 24, 20, 30, 34, 30, 8, 12, 12, 20] + [26] * n_day_cols
+widths = [26, 30, 14, 16, 14, 24, 20, 30, 34, 12, 12, 30, 8, 12, 12, 20] + [26] * n_day_cols
 for i, w in enumerate(widths, start=1):
     ws.column_dimensions[get_column_letter(i)].width = w
 

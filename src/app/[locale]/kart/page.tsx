@@ -5,8 +5,13 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { Header } from "@/components/Header";
-import { SearchOverlay } from "@/components/SearchOverlay";
-import { FilterPanel } from "@/components/FilterPanel";
+import { FilterButton } from "@/components/FilterButton";
+import {
+  FilterDrawer,
+  EMPTY_FILTERS,
+  activeFilterCount,
+  type FilterState,
+} from "@/components/FilterDrawer";
 import { FestivalSheet } from "@/components/FestivalSheet";
 import {
   fetchFestivals,
@@ -39,18 +44,21 @@ function MapView() {
   const initialCategory = searchParams.get("category");
 
   const [festivals, setFestivals] = useState<Festival[]>([]);
-  const [query, setQuery] = useState(initialQuery);
   const [filtersOpen, setFiltersOpen] = useState(false);
-
-  const [dateFrom, setDateFrom] = useState<string | null>(null);
-  const [dateTo, setDateTo] = useState<string | null>(null);
-  const [categories, setCategories] = useState<FestivalCategory[]>(() =>
-    initialCategory && (FESTIVAL_CATEGORIES as string[]).includes(initialCategory)
-      ? [initialCategory as FestivalCategory]
-      : [],
-  );
+  const [filters, setFilters] = useState<FilterState>(() => ({
+    ...EMPTY_FILTERS,
+    // A guide's "explore on the map" CTA passes a place (a country or region),
+    // so it seeds the place field rather than the festival-name one.
+    placeQuery: initialQuery,
+    categories:
+      initialCategory && (FESTIVAL_CATEGORIES as string[]).includes(initialCategory)
+        ? [initialCategory as FestivalCategory]
+        : [],
+  }));
   const [searchLocation, setSearchLocation] = useState<[number, number] | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
+
+  const { placeQuery } = filters;
 
   useEffect(() => {
     fetchFestivals()
@@ -58,10 +66,10 @@ function MapView() {
       .catch((err) => console.error("Failed to load festivals", err));
   }, []);
 
-  // Geocode search text so a place name (e.g. "Kristiansand") flies the map
-  // there; the viewport-synced list then naturally shows what's nearby.
+  // Geocode the place field so a place name (e.g. "Kristiansand") flies the
+  // map there; the viewport-synced list then naturally shows what's nearby.
   useEffect(() => {
-    const trimmed = query.trim();
+    const trimmed = placeQuery.trim();
     if (!trimmed) {
       setSearchLocation(null);
       return;
@@ -88,30 +96,26 @@ function MapView() {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query]);
+  }, [placeQuery]);
 
-  // Once the search text resolves to a real place, stop requiring the text to
-  // also match name/city — the map flies there and the viewport list takes
-  // over. But a name/city match always wins over the geocoded place: without
-  // this, typing a festival name (e.g. "Wacken") would show the right result
-  // for a moment, then lose it ~500ms later once Nominatim resolved the text
-  // to some unrelated place and the list silently switched to viewport-only.
-  const nameMatches = filterFestivals(festivals, { query, dateFrom, dateTo, categories });
-  const effectiveQuery = searchLocation && nameMatches.length === 0 ? "" : query;
+  // A place can be written two ways: as text a festival record actually
+  // stores ("Frankrike"), or as somewhere only the map knows ("Kristiansand",
+  // where no festival's own city says that). When the text matches nothing but
+  // the geocoder did resolve it, drop the text test and let the map fly there
+  // — the viewport scoping below then surfaces what is actually nearby.
+  const strict = filterFestivals(festivals, filters);
+  const placeIsMapOnly = Boolean(searchLocation) && strict.length === 0;
+  const visibleFestivals = placeIsMapOnly
+    ? filterFestivals(festivals, { ...filters, placeQuery: "" })
+    : strict;
 
-  const visibleFestivals =
-    effectiveQuery === query
-      ? nameMatches
-      : filterFestivals(festivals, { query: effectiveQuery, dateFrom, dateTo, categories });
+  // Searching by festival name or artist is a lookup, not a browse: those
+  // results must not be cut down to whatever the map happens to be showing,
+  // since the match may well sit outside the current viewport.
+  const isLookup = Boolean(filters.festivalQuery.trim() || filters.artistQuery.trim());
 
-  // The bottom sheet only lists festivals currently visible within the map's
-  // viewport — but only while browsing without a search. With an active
-  // query, showing the full match list matters more than the viewport: the
-  // map may have zoomed tightly around a geocoded point that doesn't include
-  // the matched festival's own coordinates, which would otherwise hide a
-  // correct result.
   const festivalsInView = useMemo(() => {
-    if (!mapBounds || query.trim()) return visibleFestivals;
+    if (!mapBounds || isLookup) return visibleFestivals;
     return visibleFestivals.filter(
       (f) =>
         f.longitude >= mapBounds.west &&
@@ -120,16 +124,7 @@ function MapView() {
         f.latitude <= mapBounds.north,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleFestivals, mapBounds, query]);
-
-  const handleQueryChange = (value: string) => {
-    setQuery(value);
-    if (value.trim()) {
-      setDateFrom(null);
-      setDateTo(null);
-      setCategories([]);
-    }
-  };
+  }, [visibleFestivals, mapBounds, isLookup]);
 
   const handleSelectFestival = useCallback(
     (festival: Festival) => {
@@ -149,23 +144,18 @@ function MapView() {
 
       <Header />
 
-      <SearchOverlay
-        query={query}
-        onQueryChange={handleQueryChange}
-        onToggleFilters={() => setFiltersOpen((v) => !v)}
-        filtersOpen={filtersOpen}
+      <FilterButton
+        count={activeFilterCount(filters)}
+        open={filtersOpen}
+        onClick={() => setFiltersOpen(true)}
       />
 
-      {filtersOpen && (
-        <FilterPanel
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          onDateFromChange={setDateFrom}
-          onDateToChange={setDateTo}
-          categories={categories}
-          onCategoriesChange={setCategories}
-        />
-      )}
+      <FilterDrawer
+        open={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        filters={filters}
+        onChange={setFilters}
+      />
 
       <FestivalSheet festivals={festivalsInView} />
     </div>

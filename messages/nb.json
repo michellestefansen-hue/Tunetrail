@@ -2,15 +2,22 @@
   "Header": {
     "title": "Tunetrail"
   },
-  "Search": {
-    "placeholder": "Søk etter sted eller festival...",
-    "filterLabel": "Filter"
-  },
   "Filters": {
     "category": "Kategori",
     "dateRange": "Datoperiode",
     "reset": "Nullstill",
-    "resetDates": "Nullstill datoer"
+    "resetDates": "Nullstill datoer",
+    "title": "Filter",
+    "close": "Lukk filter",
+    "clearAll": "Nullstill alle filtre",
+    "festivalLabel": "Festival",
+    "festivalPlaceholder": "Søk etter festivalnavn",
+    "placeLabel": "Sted",
+    "placePlaceholder": "By, land eller spillested",
+    "artistLabel": "Artist eller band",
+    "artistPlaceholder": "Søk i programmet",
+    "dateFrom": "Fra dato",
+    "dateTo": "Til dato"
   },
   "FestivalSheet": {
     "heading": "Utforsk festivaler",

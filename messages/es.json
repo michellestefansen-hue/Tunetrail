@@ -2,15 +2,22 @@
   "Header": {
     "title": "Tunetrail"
   },
-  "Search": {
-    "placeholder": "Buscar un lugar o festival...",
-    "filterLabel": "Filtro"
-  },
   "Filters": {
     "category": "Categoría",
     "dateRange": "Rango de fechas",
     "reset": "Restablecer",
-    "resetDates": "Restablecer fechas"
+    "resetDates": "Restablecer fechas",
+    "title": "Filtro",
+    "close": "Cerrar filtros",
+    "clearAll": "Borrar todos los filtros",
+    "festivalLabel": "Festival",
+    "festivalPlaceholder": "Buscar por nombre de festival",
+    "placeLabel": "Lugar",
+    "placePlaceholder": "Ciudad, país o recinto",
+    "artistLabel": "Artista o banda",
+    "artistPlaceholder": "Buscar en el cartel",
+    "dateFrom": "Desde",
+    "dateTo": "Hasta"
   },
   "FestivalSheet": {
     "heading": "Explorar festivales",

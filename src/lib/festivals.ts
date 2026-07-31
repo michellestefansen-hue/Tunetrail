@@ -126,28 +126,44 @@ export function ticketUrl(festival: Festival): string | null {
 }
 
 export type FestivalFilters = {
-  query?: string;
+  /** Matches the festival's own name. */
+  festivalQuery?: string;
+  /** Matches where it is held — city, region, country or venue. */
+  placeQuery?: string;
+  /** Matches any artist billed in the surfaced edition's programme. */
+  artistQuery?: string;
   dateFrom?: string | null; // 'YYYY-MM-DD'
   dateTo?: string | null;
   categories?: FestivalCategory[] | null;
 };
 
+/** Names billed in the edition that the UI surfaces for this festival. */
+export function festivalArtistNames(festival: Festival): string[] {
+  const edition = currentEdition(festival);
+  return (edition?.program ?? []).flatMap((day) => day.artists.map((a) => a.name));
+}
+
 export function filterFestivals(festivals: Festival[], filters: FestivalFilters): Festival[] {
-  const query = filters.query?.trim().toLowerCase() ?? "";
+  const name = filters.festivalQuery?.trim().toLowerCase() ?? "";
+  const place = filters.placeQuery?.trim().toLowerCase() ?? "";
+  const artist = filters.artistQuery?.trim().toLowerCase() ?? "";
 
   return festivals.filter((festival) => {
-    if (query) {
-      const haystack = [
-        festival.name,
-        festival.city,
-        festival.region,
-        festival.country,
-        festival.venue_name,
-      ]
+    if (name && !festival.name.toLowerCase().includes(name)) return false;
+
+    if (place) {
+      const haystack = [festival.city, festival.region, festival.country, festival.venue_name]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
-      if (!haystack.includes(query)) return false;
+      if (!haystack.includes(place)) return false;
+    }
+
+    if (artist) {
+      const billed = festivalArtistNames(festival).some((n) =>
+        n.toLowerCase().includes(artist),
+      );
+      if (!billed) return false;
     }
 
     if (filters.categories && filters.categories.length > 0) {

@@ -134,6 +134,15 @@ export default async function HomePage({
           {tg("hubIntro", { total: count ?? 0 })}
         </p>
 
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href="/kart"
+            className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-5 py-3 text-sm font-semibold text-white"
+          >
+            {tg("exploreAll")}
+          </Link>
+        </div>
+
         <div className="mt-8 flex flex-col gap-3">
           {entries.map((e) => (
             <Link
@@ -150,15 +159,6 @@ export default async function HomePage({
               </p>
             </Link>
           ))}
-        </div>
-
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            href="/kart"
-            className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-5 py-3 text-sm font-semibold text-white"
-          >
-            {tg("exploreAll")}
-          </Link>
         </div>
       </div>
     </div>

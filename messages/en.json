@@ -266,6 +266,7 @@
   "Countries": {
     "Albania": "Albania",
     "Belgia": "Belgium",
+    "Bulgaria": "Bulgaria",
     "Danmark": "Denmark",
     "Estland": "Estonia",
     "Finland": "Finland",
@@ -275,8 +276,10 @@
     "Island": "Iceland",
     "Italia": "Italy",
     "Kroatia": "Croatia",
+    "Luxembourg": "Luxembourg",
     "Malta": "Malta",
     "Nederland": "Netherlands",
+    "Nord-Makedonia": "North Macedonia",
     "Norge": "Norway",
     "Polen": "Poland",
     "Portugal": "Portugal",
@@ -289,9 +292,9 @@
     "Sveits": "Switzerland",
     "Sverige": "Sweden",
     "Tsjekkia": "Czechia",
+    "Tyrkia": "Turkey",
     "Tyskland": "Germany",
     "Ungarn": "Hungary",
-    "Østerrike": "Austria",
-    "Bulgaria": "Bulgaria"
+    "Østerrike": "Austria"
   }
 }

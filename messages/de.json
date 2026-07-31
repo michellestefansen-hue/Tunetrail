@@ -17,7 +17,9 @@
     "artistLabel": "Künstler oder Band",
     "artistPlaceholder": "Im Line-up suchen",
     "dateFrom": "Von",
-    "dateTo": "Bis"
+    "dateTo": "Bis",
+    "noMatch": "Kein Treffer in der Datenbank",
+    "removeFilter": "{value} entfernen"
   },
   "FestivalSheet": {
     "heading": "Festivals entdecken",

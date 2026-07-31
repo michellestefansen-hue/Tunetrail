@@ -17,7 +17,9 @@
     "artistLabel": "Artist eller band",
     "artistPlaceholder": "Søk i programmet",
     "dateFrom": "Fra dato",
-    "dateTo": "Til dato"
+    "dateTo": "Til dato",
+    "noMatch": "Ingen treff i databasen",
+    "removeFilter": "Fjern {value}"
   },
   "FestivalSheet": {
     "heading": "Utforsk festivaler",

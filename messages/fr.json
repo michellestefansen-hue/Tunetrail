@@ -17,7 +17,9 @@
     "artistLabel": "Artiste ou groupe",
     "artistPlaceholder": "Rechercher dans le programme",
     "dateFrom": "Du",
-    "dateTo": "Au"
+    "dateTo": "Au",
+    "noMatch": "Aucun résultat dans la base de données",
+    "removeFilter": "Retirer {value}"
   },
   "FestivalSheet": {
     "heading": "Explorer les festivals",

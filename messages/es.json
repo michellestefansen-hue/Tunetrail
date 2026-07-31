@@ -17,7 +17,9 @@
     "artistLabel": "Artista o banda",
     "artistPlaceholder": "Buscar en el cartel",
     "dateFrom": "Desde",
-    "dateTo": "Hasta"
+    "dateTo": "Hasta",
+    "noMatch": "Sin coincidencias en la base de datos",
+    "removeFilter": "Quitar {value}"
   },
   "FestivalSheet": {
     "heading": "Explorar festivales",

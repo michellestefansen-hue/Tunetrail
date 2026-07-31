@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { Header } from "@/components/Header";
@@ -16,6 +16,7 @@ import { FestivalSheet } from "@/components/FestivalSheet";
 import {
   fetchFestivals,
   filterFestivals,
+  buildSuggestions,
   FESTIVAL_CATEGORIES,
   type Festival,
   type FestivalCategory,
@@ -47,9 +48,6 @@ function MapView() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(() => ({
     ...EMPTY_FILTERS,
-    // A guide's "explore on the map" CTA passes a place (a country or region),
-    // so it seeds the place field rather than the festival-name one.
-    placeQuery: initialQuery,
     categories:
       initialCategory && (FESTIVAL_CATEGORIES as string[]).includes(initialCategory)
         ? [initialCategory as FestivalCategory]
@@ -57,8 +55,7 @@ function MapView() {
   }));
   const [searchLocation, setSearchLocation] = useState<[number, number] | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
-
-  const { placeQuery } = filters;
+  const seededPlaces = useRef(false);
 
   useEffect(() => {
     fetchFestivals()
@@ -66,56 +63,56 @@ function MapView() {
       .catch((err) => console.error("Failed to load festivals", err));
   }, []);
 
-  // Geocode the place field so a place name (e.g. "Kristiansand") flies the
-  // map there; the viewport-synced list then naturally shows what's nearby.
+  const suggestions = useMemo(() => buildSuggestions(festivals), [festivals]);
+
+  // A guide's "explore on the map" CTA arrives as ?q=, comma-separated for
+  // regions that span several countries. Seed it as place chips once the data
+  // is in, dropping anything the data cannot actually match — a chip must
+  // always correspond to a real value.
   useEffect(() => {
-    const trimmed = placeQuery.trim();
-    if (!trimmed) {
+    if (seededPlaces.current || festivals.length === 0 || !initialQuery) return;
+    seededPlaces.current = true;
+    const valid = initialQuery
+      .split(",")
+      .map((v) => v.trim())
+      .filter((v) => suggestions.places.includes(v));
+    if (valid.length > 0) setFilters((f) => ({ ...f, places: valid }));
+  }, [festivals, initialQuery, suggestions]);
+
+  // Fly the map to a single chosen place. With several places selected there
+  // is no one point to fly to, so the fitted results speak for themselves.
+  const soloPlace = filters.places.length === 1 ? filters.places[0] : null;
+  useEffect(() => {
+    if (!soloPlace) {
       setSearchLocation(null);
       return;
     }
-
     const controller = new AbortController();
-    const timer = setTimeout(() => {
-      fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(trimmed)}`,
-        { signal: controller.signal },
-      )
-        .then((res) => res.json())
-        .then((results: { lon: string; lat: string }[]) => {
-          if (results.length > 0) {
-            setSearchLocation([parseFloat(results[0].lon), parseFloat(results[0].lat)]);
-          } else {
-            setSearchLocation(null);
-          }
-        })
-        .catch(() => {});
-    }, 500);
+    fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(soloPlace)}`,
+      { signal: controller.signal },
+    )
+      .then((res) => res.json())
+      .then((results: { lon: string; lat: string }[]) => {
+        if (results.length > 0) {
+          setSearchLocation([parseFloat(results[0].lon), parseFloat(results[0].lat)]);
+        } else {
+          setSearchLocation(null);
+        }
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [soloPlace]);
 
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [placeQuery]);
-
-  // A place can be written two ways: as text a festival record actually
-  // stores ("Frankrike"), or as somewhere only the map knows ("Kristiansand",
-  // where no festival's own city says that). When the text matches nothing but
-  // the geocoder did resolve it, drop the text test and let the map fly there
-  // — the viewport scoping below then surfaces what is actually nearby.
-  const strict = filterFestivals(festivals, filters);
-  const placeIsMapOnly = Boolean(searchLocation) && strict.length === 0;
-  const visibleFestivals = placeIsMapOnly
-    ? filterFestivals(festivals, { ...filters, placeQuery: "" })
-    : strict;
-
-  // Searching by festival name or artist is a lookup, not a browse: those
-  // results must not be cut down to whatever the map happens to be showing,
-  // since the match may well sit outside the current viewport.
-  const isLookup = Boolean(filters.festivalQuery.trim() || filters.artistQuery.trim());
+  // Every chip is an exact value taken from the data, so a filtered result is
+  // always the true, complete answer. Showing only the part of it that happens
+  // to fall inside the viewport would hide real matches, so the viewport
+  // scoping applies solely while browsing unfiltered.
+  const visibleFestivals = filterFestivals(festivals, filters);
+  const isFiltered = activeFilterCount(filters) > 0;
 
   const festivalsInView = useMemo(() => {
-    if (!mapBounds || isLookup) return visibleFestivals;
+    if (!mapBounds || isFiltered) return visibleFestivals;
     return visibleFestivals.filter(
       (f) =>
         f.longitude >= mapBounds.west &&
@@ -124,7 +121,7 @@ function MapView() {
         f.latitude <= mapBounds.north,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleFestivals, mapBounds, isLookup]);
+  }, [visibleFestivals, mapBounds, isFiltered]);
 
   const handleSelectFestival = useCallback(
     (festival: Festival) => {
@@ -155,6 +152,7 @@ function MapView() {
         onClose={() => setFiltersOpen(false)}
         filters={filters}
         onChange={setFilters}
+        suggestions={suggestions}
       />
 
       <FestivalSheet festivals={festivalsInView} />

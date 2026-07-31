@@ -2,22 +2,27 @@
 
 import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
-import { FESTIVAL_CATEGORIES, type FestivalCategory } from "@/lib/festivals";
+import { XMarkIcon } from "@heroicons/react/24/solid";
+import { ChipField } from "@/components/ChipField";
+import {
+  FESTIVAL_CATEGORIES,
+  type FestivalCategory,
+  type Suggestions,
+} from "@/lib/festivals";
 
 export type FilterState = {
-  festivalQuery: string;
-  placeQuery: string;
-  artistQuery: string;
+  festivalNames: string[];
+  places: string[];
+  artists: string[];
   dateFrom: string | null;
   dateTo: string | null;
   categories: FestivalCategory[];
 };
 
 export const EMPTY_FILTERS: FilterState = {
-  festivalQuery: "",
-  placeQuery: "",
-  artistQuery: "",
+  festivalNames: [],
+  places: [],
+  artists: [],
   dateFrom: null,
   dateTo: null,
   categories: [],
@@ -26,38 +31,11 @@ export const EMPTY_FILTERS: FilterState = {
 /** How many filters the user has actually set — drives the button's badge. */
 export function activeFilterCount(f: FilterState): number {
   return (
-    (f.festivalQuery.trim() ? 1 : 0) +
-    (f.placeQuery.trim() ? 1 : 0) +
-    (f.artistQuery.trim() ? 1 : 0) +
+    f.festivalNames.length +
+    f.places.length +
+    f.artists.length +
     (f.dateFrom || f.dateTo ? 1 : 0) +
     f.categories.length
-  );
-}
-
-function Field({
-  label,
-  placeholder,
-  value,
-  onChange,
-}: {
-  label: string;
-  placeholder: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs font-medium text-[#6B5E59]">{label}</span>
-      <div className="mt-1.5 flex items-center gap-2 rounded-full border border-black/10 bg-white px-3.5 py-2.5">
-        <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-[#FF2D78]" />
-        <input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full bg-transparent text-sm text-[#2D1A12] placeholder:text-[#B5A9A2] focus:outline-none"
-        />
-      </div>
-    </label>
   );
 }
 
@@ -66,11 +44,13 @@ export function FilterDrawer({
   onClose,
   filters,
   onChange,
+  suggestions,
 }: {
   open: boolean;
   onClose: () => void;
   filters: FilterState;
   onChange: (next: FilterState) => void;
+  suggestions: Suggestions;
 }) {
   const t = useTranslations("Filters");
   const tCategories = useTranslations("Categories");
@@ -137,23 +117,32 @@ export function FilterDrawer({
         </div>
 
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-5">
-          <Field
+          <ChipField
             label={t("festivalLabel")}
             placeholder={t("festivalPlaceholder")}
-            value={filters.festivalQuery}
-            onChange={(v) => set("festivalQuery", v)}
+            emptyHint={t("noMatch")}
+            removeLabel={(value) => t("removeFilter", { value })}
+            suggestions={suggestions.festivals}
+            selected={filters.festivalNames}
+            onChange={(v) => set("festivalNames", v)}
           />
-          <Field
+          <ChipField
             label={t("placeLabel")}
             placeholder={t("placePlaceholder")}
-            value={filters.placeQuery}
-            onChange={(v) => set("placeQuery", v)}
+            emptyHint={t("noMatch")}
+            removeLabel={(value) => t("removeFilter", { value })}
+            suggestions={suggestions.places}
+            selected={filters.places}
+            onChange={(v) => set("places", v)}
           />
-          <Field
+          <ChipField
             label={t("artistLabel")}
             placeholder={t("artistPlaceholder")}
-            value={filters.artistQuery}
-            onChange={(v) => set("artistQuery", v)}
+            emptyHint={t("noMatch")}
+            removeLabel={(value) => t("removeFilter", { value })}
+            suggestions={suggestions.artists}
+            selected={filters.artists}
+            onChange={(v) => set("artists", v)}
           />
 
           <div className="border-t border-black/5 pt-4">

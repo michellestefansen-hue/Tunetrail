@@ -126,12 +126,12 @@ export function ticketUrl(festival: Festival): string | null {
 }
 
 export type FestivalFilters = {
-  /** Matches the festival's own name. */
-  festivalQuery?: string;
-  /** Matches where it is held — city, region, country or venue. */
-  placeQuery?: string;
-  /** Matches any artist billed in the surfaced edition's programme. */
-  artistQuery?: string;
+  /** Exact festival names. Several are OR-ed together. */
+  festivalNames?: string[];
+  /** Exact city, region, country or venue values. OR-ed together. */
+  places?: string[];
+  /** Exact artist names from the surfaced edition. OR-ed together. */
+  artists?: string[];
   dateFrom?: string | null; // 'YYYY-MM-DD'
   dateTo?: string | null;
   categories?: FestivalCategory[] | null;
@@ -143,27 +143,50 @@ export function festivalArtistNames(festival: Festival): string[] {
   return (edition?.program ?? []).flatMap((day) => day.artists.map((a) => a.name));
 }
 
+/** Every place string a festival can legitimately be matched on. */
+export function festivalPlaceNames(festival: Festival): string[] {
+  return [festival.city, festival.region, festival.country, festival.venue_name].filter(
+    (v): v is string => Boolean(v),
+  );
+}
+
+export type Suggestions = { festivals: string[]; places: string[]; artists: string[] };
+
+/**
+ * The only values the filter fields will accept, derived from the loaded
+ * festivals so a chip can never describe something the data cannot match.
+ */
+export function buildSuggestions(festivals: Festival[]): Suggestions {
+  const names = new Set<string>();
+  const places = new Set<string>();
+  const artists = new Set<string>();
+
+  for (const festival of festivals) {
+    if (festival.name) names.add(festival.name);
+    for (const p of festivalPlaceNames(festival)) places.add(p);
+    for (const a of festivalArtistNames(festival)) artists.add(a);
+  }
+
+  const sort = (set: Set<string>) => [...set].sort((a, b) => a.localeCompare(b));
+  return { festivals: sort(names), places: sort(places), artists: sort(artists) };
+}
+
 export function filterFestivals(festivals: Festival[], filters: FestivalFilters): Festival[] {
-  const name = filters.festivalQuery?.trim().toLowerCase() ?? "";
-  const place = filters.placeQuery?.trim().toLowerCase() ?? "";
-  const artist = filters.artistQuery?.trim().toLowerCase() ?? "";
+  const names = filters.festivalNames ?? [];
+  const places = filters.places ?? [];
+  const artists = filters.artists ?? [];
 
   return festivals.filter((festival) => {
-    if (name && !festival.name.toLowerCase().includes(name)) return false;
+    if (names.length > 0 && !names.includes(festival.name)) return false;
 
-    if (place) {
-      const haystack = [festival.city, festival.region, festival.country, festival.venue_name]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      if (!haystack.includes(place)) return false;
+    if (places.length > 0) {
+      const own = festivalPlaceNames(festival);
+      if (!places.some((p) => own.includes(p))) return false;
     }
 
-    if (artist) {
-      const billed = festivalArtistNames(festival).some((n) =>
-        n.toLowerCase().includes(artist),
-      );
-      if (!billed) return false;
+    if (artists.length > 0) {
+      const billed = festivalArtistNames(festival);
+      if (!artists.some((a) => billed.includes(a))) return false;
     }
 
     if (filters.categories && filters.categories.length > 0) {

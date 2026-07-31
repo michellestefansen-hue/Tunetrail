@@ -15,7 +15,11 @@ export type Guide = {
   key: GuideKey;
   /** Curated, ranked slugs. Verified to exist and to carry a 2026 edition. */
   festivalSlugs: string[];
-  /** Seeds the map's search box — geocoded, so the map also flies there. */
+  /**
+   * Seeds the map's place filter. Comma-separated for regions spanning
+   * several countries. Each value must exist in the festival data, since the
+   * map only accepts filters it can actually match.
+   */
   mapQuery?: string;
   /** Seeds the map's category filter. */
   mapCategory?: FestivalCategory;
@@ -137,7 +141,9 @@ export const GUIDES: Record<GuideKey, Guide> = {
   },
   norden: {
     key: "norden",
-    mapQuery: "Scandinavia",
+    // The map filters on values the festival records actually hold, and no
+    // record says "Scandinavia" — name the countries instead.
+    mapQuery: "Norge,Sverige,Danmark,Finland,Island",
     festivalSlugs: [
       "roskilde-festival",
       "smukfest",

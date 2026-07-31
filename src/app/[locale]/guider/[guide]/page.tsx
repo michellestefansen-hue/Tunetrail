@@ -88,7 +88,13 @@ export default async function GuidePage({
   const bcp = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
   const countryName = (country: string | null) => (country ? tCountries(country) : null);
 
-  const faq = t.raw("faq") as FaqItem[];
+  // `t.raw` returns the strings unformatted, so any {year} placeholder inside
+  // the FAQ survives into the visible copy *and* into the FAQPage JSON-LD.
+  // Interpolate it here rather than in the markup, so both paths stay in sync.
+  const faq = (t.raw("faq") as FaqItem[]).map((item) => ({
+    q: item.q.replaceAll("{year}", String(year)),
+    a: item.a.replaceAll("{year}", String(year)),
+  }));
   const months = groupByMonth(festivals, locale, year);
   const guideUrl = `${SITE_URL}${getPathname({ locale, href: guidePath(key) })}`;
   const updated = new Date().toISOString();
@@ -236,7 +242,7 @@ export default async function GuidePage({
           </table>
         </div>
 
-        {t("intro")
+        {t("intro", { year })
           .split("\n\n")
           .map((para, i) => (
             <p key={i} className="mt-4 text-sm leading-relaxed text-[#6B5E59]">

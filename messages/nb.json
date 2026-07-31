@@ -33,7 +33,7 @@
     "metaTitleNoEdition": "{name} | Tunetrail",
     "metaWhen": " ({range})",
     "metaWhere": " i {place}",
-    "metaDescription": "{name}{when}{where}. Se fullt program med artister på Tunetrail."
+    "metaDescription": "{name}{when}{where}. Oppdatert program, artister og billettinfo på ett sted."
   },
   "Map": {
     "clusterMore": "+{count} flere"

@@ -33,7 +33,7 @@
     "metaTitleNoEdition": "{name} | Tunetrail",
     "metaWhen": " ({range})",
     "metaWhere": " en {place}",
-    "metaDescription": "{name}{when}{where}. Consulta el programa completo en Tunetrail."
+    "metaDescription": "{name}{when}{where}. Programa, cartel e información de entradas actualizados en un solo lugar."
   },
   "Map": {
     "clusterMore": "+{count} más"

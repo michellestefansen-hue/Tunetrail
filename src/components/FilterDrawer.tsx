@@ -5,11 +5,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { ChipField } from "@/components/ChipField";
 import {
-  FESTIVAL_CATEGORIES,
+  FESTIVAL_TAGS,
   BCP47_LOCALE,
   scopeRange,
   scopeOfRange,
-  type FestivalCategory,
+  type FestivalTag,
   type Suggestions,
   type TimeScope,
 } from "@/lib/festivals";
@@ -20,7 +20,7 @@ export type FilterState = {
   artists: string[];
   dateFrom: string | null;
   dateTo: string | null;
-  categories: FestivalCategory[];
+  tags: FestivalTag[];
 };
 
 /** Hiding what has already finished is the useful default: today, 314 of the
@@ -32,7 +32,7 @@ export const EMPTY_FILTERS: FilterState = {
   countries: [],
   artists: [],
   ...scopeRange(DEFAULT_TIME_SCOPE),
-  categories: [],
+  tags: [],
 };
 
 /**
@@ -47,7 +47,7 @@ export function activeFilterCount(f: FilterState): number {
     f.festivalNames.length +
     f.countries.length +
     f.artists.length +
-    f.categories.length
+    f.tags.length
   );
 }
 
@@ -106,7 +106,7 @@ export function FilterDrawer({
   suggestions: Suggestions;
 }) {
   const t = useTranslations("Filters");
-  const tCategories = useTranslations("Categories");
+  const tTags = useTranslations("Tags");
   const tCountries = useTranslations("Countries");
   const locale = useLocale();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -131,12 +131,12 @@ export function FilterDrawer({
         : [...filters.countries, value],
     );
 
-  const toggleCategory = (value: FestivalCategory) =>
+  const toggleTag = (value: FestivalTag) =>
     set(
-      "categories",
-      filters.categories.includes(value)
-        ? filters.categories.filter((v) => v !== value)
-        : [...filters.categories, value],
+      "tags",
+      filters.tags.includes(value)
+        ? filters.tags.filter((v) => v !== value)
+        : [...filters.tags, value],
     );
 
   // The records store country names in Norwegian; the chips show the reader's
@@ -271,11 +271,11 @@ export function FilterDrawer({
           />
 
           <ChipToggles
-            label={t("category")}
-            options={FESTIVAL_CATEGORIES}
-            selected={filters.categories}
-            onToggle={toggleCategory}
-            render={(v) => tCategories(v)}
+            label={t("tagsLabel")}
+            options={FESTIVAL_TAGS}
+            selected={filters.tags}
+            onToggle={toggleTag}
+            render={(v) => tTags(v)}
           />
         </div>
 

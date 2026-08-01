@@ -1,13 +1,12 @@
-import type { FestivalCategory } from "@/lib/festivals";
+import type { FestivalTag } from "@/lib/festivals";
 
 /**
  * Editorial landing pages ("guider"). The festival order is curated by hand —
- * the database has no popularity/capacity data, and `festivals.category` is
- * keyword-derived and unreliable (Copenhell and Brutal Assault land in the
- * catch-all, Sziget is mislabelled Metal), so a category query can't produce a
- * defensible ranking. Everything *inside* each entry (dates, line-up, tickets,
- * images) is read live from the database at build time, so the pages stay
- * current without the ranking drifting.
+ * the database has no popularity/capacity data, so even now that festivals
+ * carry real, human-assigned tags, a tag query alone still can't produce a
+ * defensible ranking. Everything *inside* each entry (dates, line-up,
+ * tickets, images) is read live from the database at build time, so the
+ * pages stay current without the ranking drifting.
  */
 export type GuideKey = "rock-metal" | "elektronisk" | "jazz" | "frankrike" | "norden";
 
@@ -21,8 +20,8 @@ export type Guide = {
    * map only accepts filters it can actually match.
    */
   mapQuery?: string;
-  /** Seeds the map's category filter. */
-  mapCategory?: FestivalCategory;
+  /** Seeds the map's tag filter — a festival matching ANY of these shows. */
+  mapTags?: FestivalTag[];
 };
 
 export const GUIDE_KEYS: GuideKey[] = [
@@ -36,7 +35,7 @@ export const GUIDE_KEYS: GuideKey[] = [
 export const GUIDES: Record<GuideKey, Guide> = {
   "rock-metal": {
     key: "rock-metal",
-    mapCategory: "Metal",
+    mapTags: ["Rock", "Metal"],
     festivalSlugs: [
       "wacken-open-air",
       "hellfest",
@@ -59,7 +58,7 @@ export const GUIDES: Record<GuideKey, Guide> = {
   },
   elektronisk: {
     key: "elektronisk",
-    mapCategory: "Elektronisk & Dans",
+    mapTags: ["Elektronisk & Dans", "Techno & House"],
     festivalSlugs: [
       "tomorrowland",
       "defqon-1-festival",
@@ -82,7 +81,7 @@ export const GUIDES: Record<GuideKey, Guide> = {
   },
   jazz: {
     key: "jazz",
-    mapCategory: "Jazz & Soul",
+    mapTags: ["Jazz", "Blues", "Soul & Funk"],
     festivalSlugs: [
       "montreux-jazz-festival",
       "north-sea-jazz",
@@ -172,7 +171,7 @@ export function guidePath(key: GuideKey): GuidePath {
 export function guideMapQuery(guide: Guide): Record<string, string> {
   const query: Record<string, string> = {};
   if (guide.mapQuery) query.q = guide.mapQuery;
-  if (guide.mapCategory) query.category = guide.mapCategory;
+  if (guide.mapTags?.length) query.tags = guide.mapTags.join(",");
   return query;
 }
 

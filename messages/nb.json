@@ -3,7 +3,6 @@
     "title": "Tunetrail"
   },
   "Filters": {
-    "category": "Kategori",
     "dateRange": "Datoperiode",
     "reset": "Nullstill",
     "resetDates": "Nullstill datoer",
@@ -21,7 +20,8 @@
     "countryLabel": "Land",
     "whenLabel": "Når",
     "scopeUpcoming": "Fra i dag",
-    "scopeYear": "Hele {year}"
+    "scopeYear": "Hele {year}",
+    "tagsLabel": "Tagger"
   },
   "FestivalSheet": {
     "heading": "Utforsk festivaler",
@@ -49,20 +49,21 @@
   "Map": {
     "clusterMore": "+{count} flere"
   },
-  "Categories": {
-    "Pop & Mainstream": "Pop & Mainstream",
-    "Rock & Alternativ": "Rock & Alternativ",
+  "Tags": {
+    "Rock": "Rock",
     "Metal": "Metal",
     "Punk & Hardcore": "Punk & Hardcore",
-    "Indie": "Indie",
+    "Alternativ & Indie": "Alternativ & Indie",
+    "Pop & Mainstream": "Pop & Mainstream",
     "Elektronisk & Dans": "Elektronisk & Dans",
     "Techno & House": "Techno & House",
     "Hip-Hop & R&B": "Hip-Hop & R&B",
-    "Jazz & Soul": "Jazz & Soul",
+    "Jazz": "Jazz",
+    "Blues": "Blues",
+    "Soul & Funk": "Soul & Funk",
     "Klassisk": "Klassisk",
     "Folk & Americana": "Folk & Americana",
-    "Reggae & World": "Reggae & World",
-    "Blandet/Flersjanger": "Blandet/Flersjanger"
+    "Verden & Reggae": "Verden & Reggae"
   },
   "LanguageSwitcher": {
     "nb": "Norsk",

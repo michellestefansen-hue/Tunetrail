@@ -85,7 +85,7 @@ export default async function GuidePage({
   const year = guideYear(festivals);
   const t = await getTranslations({ locale, namespace: `Guides.${key}` });
   const tg = await getTranslations({ locale, namespace: "Guides" });
-  const tc = await getTranslations({ locale, namespace: "Categories" });
+  const tc = await getTranslations({ locale, namespace: "Tags" });
   const tCountries = await getTranslations({ locale, namespace: "Countries" });
   const bcp = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
   const countryName = (country: string | null) => (country ? tCountries(country) : null);
@@ -221,7 +221,7 @@ export default async function GuidePage({
                     <td className="px-4 py-3 text-stone-600">{countryName(f.country)}</td>
                     <td className="px-4 py-3 text-stone-600">{dateLabel(f)}</td>
                     <td className="px-4 py-3 text-stone-600">
-                      {f.category ? tc(f.category) : "—"}
+                      {f.tags && f.tags.length > 0 ? f.tags.map((tag) => tc(tag)).join(", ") : "—"}
                     </td>
                     <td className="px-4 py-3">
                       {edition?.ticket_url ? (

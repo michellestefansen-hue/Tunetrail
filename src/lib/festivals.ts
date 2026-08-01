@@ -16,35 +16,43 @@ export type FestivalEdition = {
   program: ProgramDay[];
 };
 
-export type FestivalCategory =
-  | "Pop & Mainstream"
-  | "Rock & Alternativ"
+/**
+ * A festival can carry several of these at once (Wacken is both Rock and
+ * Metal; a punk fest is often Punk & Hardcore and Rock together). There is
+ * deliberately no catch-all "mixed genre" tag — no tags means "not
+ * classified yet", not a genre in itself.
+ */
+export type FestivalTag =
+  | "Rock"
   | "Metal"
   | "Punk & Hardcore"
-  | "Indie"
+  | "Alternativ & Indie"
+  | "Pop & Mainstream"
   | "Elektronisk & Dans"
   | "Techno & House"
   | "Hip-Hop & R&B"
-  | "Jazz & Soul"
+  | "Jazz"
+  | "Blues"
+  | "Soul & Funk"
   | "Klassisk"
   | "Folk & Americana"
-  | "Reggae & World"
-  | "Blandet/Flersjanger";
+  | "Verden & Reggae";
 
-export const FESTIVAL_CATEGORIES: FestivalCategory[] = [
-  "Pop & Mainstream",
-  "Rock & Alternativ",
+export const FESTIVAL_TAGS: FestivalTag[] = [
+  "Rock",
   "Metal",
   "Punk & Hardcore",
-  "Indie",
+  "Alternativ & Indie",
+  "Pop & Mainstream",
   "Elektronisk & Dans",
   "Techno & House",
   "Hip-Hop & R&B",
-  "Jazz & Soul",
+  "Jazz",
+  "Blues",
+  "Soul & Funk",
   "Klassisk",
   "Folk & Americana",
-  "Reggae & World",
-  "Blandet/Flersjanger",
+  "Verden & Reggae",
 ];
 
 export type Festival = {
@@ -60,12 +68,12 @@ export type Festival = {
   longitude: number;
   description: string | null;
   image_url: string | null;
-  category: FestivalCategory | null;
+  tags: FestivalTag[] | null;
   festival_editions: FestivalEdition[];
 };
 
 export const FESTIVAL_SELECT =
-  "id, name, slug, website_url, city, region, venue_name, country, latitude, longitude, description, image_url, category, festival_editions(id, year, date_from, date_to, ticket_url, program)";
+  "id, name, slug, website_url, city, region, venue_name, country, latitude, longitude, description, image_url, tags, festival_editions(id, year, date_from, date_to, ticket_url, program)";
 
 export async function fetchFestivals(): Promise<Festival[]> {
   const supabase = createClient();
@@ -174,7 +182,8 @@ export type FestivalFilters = {
   artists?: string[];
   dateFrom?: string | null; // 'YYYY-MM-DD'
   dateTo?: string | null;
-  categories?: FestivalCategory[] | null;
+  /** Matches if the festival carries ANY of these tags — an OR, not an AND. */
+  tags?: FestivalTag[] | null;
 };
 
 /** Names billed in the edition that the UI surfaces for this festival. */
@@ -225,8 +234,8 @@ export function filterFestivals(festivals: Festival[], filters: FestivalFilters)
       if (!artists.some((a) => billed.includes(a))) return false;
     }
 
-    if (filters.categories && filters.categories.length > 0) {
-      if (!festival.category || !filters.categories.includes(festival.category)) return false;
+    if (filters.tags && filters.tags.length > 0) {
+      if (!festival.tags || !filters.tags.some((t) => festival.tags!.includes(t))) return false;
     }
 
     const range = editionRange(currentEdition(festival));

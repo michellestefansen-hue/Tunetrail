@@ -94,7 +94,7 @@ export function FestivalSheet({ festivals }: { festivals: Festival[] }) {
 
 function FestivalList({ festivals }: { festivals: Festival[] }) {
   const t = useTranslations("FestivalSheet");
-  const tCategories = useTranslations("Categories");
+  const tTags = useTranslations("Tags");
   const tFestivalPage = useTranslations("FestivalPage");
   const tCountries = useTranslations("Countries");
   const locale = useLocale();
@@ -123,9 +123,9 @@ function FestivalList({ festivals }: { festivals: Festival[] }) {
                   .filter(Boolean)
                   .join(", ")}
               </p>
-              {festival.category && (
+              {festival.tags && festival.tags.length > 0 && (
                 <p className="mt-1 truncate text-[11px] font-medium text-[#FF4E50]">
-                  {tCategories(festival.category)}
+                  {festival.tags.map((tag) => tTags(tag)).join(" · ")}
                 </p>
               )}
             </div>

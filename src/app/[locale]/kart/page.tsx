@@ -17,9 +17,9 @@ import {
   fetchFestivals,
   filterFestivals,
   buildSuggestions,
-  FESTIVAL_CATEGORIES,
+  FESTIVAL_TAGS,
   type Festival,
-  type FestivalCategory,
+  type FestivalTag,
 } from "@/lib/festivals";
 import type { MapBounds } from "@/components/map/TunetrailMap";
 
@@ -38,20 +38,19 @@ export default function Home() {
 
 function MapView() {
   const router = useRouter();
-  // Guides link here with ?q= and ?category= so their CTA lands on a filtered
+  // Guides link here with ?q= and ?tags= so their CTA lands on a filtered
   // map. Read once, as initial state — after that the UI owns the filters.
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";
-  const initialCategory = searchParams.get("category");
+  const initialTags = searchParams.get("tags")?.split(",") ?? [];
 
   const [festivals, setFestivals] = useState<Festival[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(() => ({
     ...EMPTY_FILTERS,
-    categories:
-      initialCategory && (FESTIVAL_CATEGORIES as string[]).includes(initialCategory)
-        ? [initialCategory as FestivalCategory]
-        : [],
+    tags: initialTags.filter((v): v is FestivalTag =>
+      (FESTIVAL_TAGS as string[]).includes(v),
+    ),
   }));
   const [searchLocation, setSearchLocation] = useState<[number, number] | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);

@@ -3,7 +3,6 @@
     "title": "Tunetrail"
   },
   "Filters": {
-    "category": "Catégorie",
     "dateRange": "Période",
     "reset": "Réinitialiser",
     "resetDates": "Réinitialiser les dates",
@@ -21,7 +20,8 @@
     "countryLabel": "Pays",
     "whenLabel": "Quand",
     "scopeUpcoming": "À partir d'aujourd'hui",
-    "scopeYear": "Toute l'année {year}"
+    "scopeYear": "Toute l'année {year}",
+    "tagsLabel": "Tags"
   },
   "FestivalSheet": {
     "heading": "Explorer les festivals",
@@ -49,20 +49,21 @@
   "Map": {
     "clusterMore": "+{count} de plus"
   },
-  "Categories": {
-    "Pop & Mainstream": "Pop & Mainstream",
-    "Rock & Alternativ": "Rock & Alternatif",
+  "Tags": {
+    "Rock": "Rock",
     "Metal": "Metal",
     "Punk & Hardcore": "Punk & Hardcore",
-    "Indie": "Indie",
+    "Alternativ & Indie": "Alternatif & Indie",
+    "Pop & Mainstream": "Pop & Mainstream",
     "Elektronisk & Dans": "Électronique & Dance",
     "Techno & House": "Techno & House",
     "Hip-Hop & R&B": "Hip-Hop & R&B",
-    "Jazz & Soul": "Jazz & Soul",
+    "Jazz": "Jazz",
+    "Blues": "Blues",
+    "Soul & Funk": "Soul & Funk",
     "Klassisk": "Classique",
     "Folk & Americana": "Folk & Americana",
-    "Reggae & World": "Reggae & World",
-    "Blandet/Flersjanger": "Varié/Multi-genre"
+    "Verden & Reggae": "Monde & Reggae"
   },
   "LanguageSwitcher": {
     "nb": "Norsk",

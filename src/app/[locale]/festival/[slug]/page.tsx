@@ -157,7 +157,7 @@ export default async function FestivalPage({
   if (!festival) notFound();
 
   const t = await getTranslations({ locale, namespace: "FestivalPage" });
-  const tCategories = await getTranslations({ locale, namespace: "Categories" });
+  const tTags = await getTranslations({ locale, namespace: "Tags" });
   const tCountries = await getTranslations({ locale, namespace: "Countries" });
   const tg = await getTranslations({ locale, namespace: "Guides" });
   const year = new Date().getFullYear();
@@ -208,12 +208,19 @@ export default async function FestivalPage({
       </div>
 
       <div className="mx-auto max-w-2xl rounded-t-3xl bg-[#FFF9F0] px-5 pt-5">
-        {festival.category && (
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#FF4E50]">
-            {tCategories(festival.category)}
-          </p>
+        {festival.tags && festival.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {festival.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-[#FBEAF0] px-2.5 py-1 text-xs font-semibold text-[#993556]"
+              >
+                {tTags(tag)}
+              </span>
+            ))}
+          </div>
         )}
-        <h1 className="mt-1 text-3xl">{festival.name}</h1>
+        <h1 className="mt-2 text-3xl">{festival.name}</h1>
 
         <p className="mt-3 flex items-center gap-1.5 text-sm text-stone-500">
           <MapPinIcon className="h-4 w-4 text-[#FF2D78]" />

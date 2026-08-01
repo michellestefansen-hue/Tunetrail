@@ -11,7 +11,6 @@ update festivals fest set
   latitude    = coalesce(v.lat, fest.latitude),
   longitude   = coalesce(v.lon, fest.longitude)
 from (values
-  ('woodstower', 'Woodstower', 'Frankrike', null, null, null, 'Blandet/Flersjanger', 'http://woodstower.com', 'https://commons.wikimedia.org/wiki/Special:FilePath/Amelie-les-crayons-woodstower-lyon-2008.jpg?width=1000', 45.810757, 4.93829),
   ('crossover-festival', 'crossover festival', 'Frankrike', 'Nice', null, null, 'Blandet/Flersjanger', 'https://festival-crossover.com/', 'https://festival-crossover.com/wp-content/uploads/2021/12/logo-crossover-2026-768x323.png', 43.701944444, 7.268333333),
   ('indiependence', 'Indiependence', 'Irland', null, null, null, 'Indie', 'http://indiependencefestival.com/', null, 52.276607, -8.264401),
   ('longitude-festival', 'Longitude Festival', 'Irland', null, null, null, 'Blandet/Flersjanger', null, 'https://commons.wikimedia.org/wiki/Special:FilePath/Longitude2019.jpg?width=1000', 53.276345052, -6.270457506),

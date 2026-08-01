@@ -18,7 +18,10 @@
     "dateTo": "Bis",
     "noMatch": "Kein Treffer in der Datenbank",
     "removeFilter": "{value} entfernen",
-    "countryLabel": "Land"
+    "countryLabel": "Land",
+    "whenLabel": "Wann",
+    "scopeUpcoming": "Ab heute",
+    "scopeYear": "Ganzes {year}"
   },
   "FestivalSheet": {
     "heading": "Festivals entdecken",

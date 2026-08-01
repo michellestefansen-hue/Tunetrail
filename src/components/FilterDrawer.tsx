@@ -9,9 +9,11 @@ import {
   BCP47_LOCALE,
   type FestivalCategory,
   type Suggestions,
+  type TimeScope,
 } from "@/lib/festivals";
 
 export type FilterState = {
+  timeScope: TimeScope;
   festivalNames: string[];
   countries: string[];
   artists: string[];
@@ -20,7 +22,12 @@ export type FilterState = {
   categories: FestivalCategory[];
 };
 
+/** Hiding what has already finished is the useful default: today, 314 of the
+ *  508 dated 2026 editions are in the past. */
+export const DEFAULT_TIME_SCOPE: TimeScope = "upcoming";
+
 export const EMPTY_FILTERS: FilterState = {
+  timeScope: DEFAULT_TIME_SCOPE,
   festivalNames: [],
   countries: [],
   artists: [],
@@ -29,9 +36,14 @@ export const EMPTY_FILTERS: FilterState = {
   categories: [],
 };
 
-/** How many filters the user has actually set — drives the button's badge. */
+/**
+ * How many filters the user has actually set — drives the button's badge.
+ * The time scope only counts when moved off its default, so an untouched
+ * filter still reads as "no filters".
+ */
 export function activeFilterCount(f: FilterState): number {
   return (
+    (f.timeScope !== DEFAULT_TIME_SCOPE ? 1 : 0) +
     f.festivalNames.length +
     f.countries.length +
     f.artists.length +
@@ -140,6 +152,7 @@ export function FilterDrawer({
   }, [suggestions.countries, tCountries, locale]);
 
   const count = activeFilterCount(filters);
+  const year = new Date().getFullYear();
 
   return (
     <>
@@ -216,6 +229,33 @@ export function FilterDrawer({
           />
 
           <div className="border-t border-black/5 pt-4">
+            <span className="block text-xs font-medium text-[#6B5E59]">{t("whenLabel")}</span>
+            <div
+              role="radiogroup"
+              aria-label={t("whenLabel")}
+              className="mt-2 inline-flex rounded-full bg-[#F0E9DC] p-0.5"
+            >
+              {(["upcoming", "year"] as TimeScope[]).map((scope) => {
+                const active = filters.timeScope === scope;
+                return (
+                  <button
+                    key={scope}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => set("timeScope", scope)}
+                    className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                      active ? "bg-white text-[#FF2D78] shadow-sm" : "text-[#8A7F72]"
+                    }`}
+                  >
+                    {scope === "upcoming" ? t("scopeUpcoming") : t("scopeYear", { year })}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="pt-1">
             <span className="text-xs font-medium text-[#6B5E59]">{t("dateRange")}</span>
             <div className="mt-2 flex items-center gap-2">
               <input

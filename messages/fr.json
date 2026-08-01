@@ -18,7 +18,10 @@
     "dateTo": "Au",
     "noMatch": "Aucun résultat dans la base de données",
     "removeFilter": "Retirer {value}",
-    "countryLabel": "Pays"
+    "countryLabel": "Pays",
+    "whenLabel": "Quand",
+    "scopeUpcoming": "À partir d'aujourd'hui",
+    "scopeYear": "Toute l'année {year}"
   },
   "FestivalSheet": {
     "heading": "Explorer les festivals",

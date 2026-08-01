@@ -18,7 +18,10 @@
     "dateTo": "Til dato",
     "noMatch": "Ingen treff i databasen",
     "removeFilter": "Fjern {value}",
-    "countryLabel": "Land"
+    "countryLabel": "Land",
+    "whenLabel": "Når",
+    "scopeUpcoming": "Fra i dag",
+    "scopeYear": "Hele {year}"
   },
   "FestivalSheet": {
     "heading": "Utforsk festivaler",

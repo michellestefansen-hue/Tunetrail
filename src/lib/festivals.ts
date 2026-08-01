@@ -125,7 +125,32 @@ export function ticketUrl(festival: Festival): string | null {
   return currentEdition(festival)?.ticket_url ?? null;
 }
 
+/**
+ * The edition's own start/end dates, falling back to its programme days when
+ * the record has none. Using only the programme dates — as this once did —
+ * silently drops the 62 festivals that have real dates but no line-up yet.
+ */
+export function editionRange(edition: FestivalEdition | null): [string, string] | null {
+  if (!edition) return null;
+  if (edition.date_from) return [edition.date_from, edition.date_to ?? edition.date_from];
+  const days = editionDates(edition);
+  if (days.length === 0) return null;
+  return [days[0], days[days.length - 1]];
+}
+
+/** Which slice of the calendar the map is showing. */
+export type TimeScope = "upcoming" | "year";
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
 export type FestivalFilters = {
+  /**
+   * "upcoming" keeps anything not yet finished, with no upper bound so next
+   * year's festivals stay reachable; "year" is the current calendar year.
+   * Festivals with no date at all are kept either way — an unknown date is
+   * not evidence the festival is over.
+   */
+  timeScope?: TimeScope;
   /** Exact festival names. Several are OR-ed together. */
   festivalNames?: string[];
   /** Exact country values, as stored on the record. OR-ed together. */
@@ -189,14 +214,22 @@ export function filterFestivals(festivals: Festival[], filters: FestivalFilters)
       if (!festival.category || !filters.categories.includes(festival.category)) return false;
     }
 
-    if (filters.dateFrom || filters.dateTo) {
-      const dates = editionDates(currentEdition(festival));
-      const overlaps = dates.some((date) => {
-        if (filters.dateFrom && date < filters.dateFrom) return false;
-        if (filters.dateTo && date > filters.dateTo) return false;
-        return true;
-      });
-      if (!overlaps) return false;
+    const range = editionRange(currentEdition(festival));
+
+    // A festival with no date at all stays visible under every time filter:
+    // we don't know when it is, which is not the same as knowing it is over.
+    if (range) {
+      const [start, end] = range;
+
+      if (filters.timeScope === "upcoming") {
+        if (end < todayISO()) return false;
+      } else if (filters.timeScope === "year") {
+        const year = String(new Date().getFullYear());
+        if (end < `${year}-01-01` || start > `${year}-12-31`) return false;
+      }
+
+      if (filters.dateFrom && end < filters.dateFrom) return false;
+      if (filters.dateTo && start > filters.dateTo) return false;
     }
 
     return true;

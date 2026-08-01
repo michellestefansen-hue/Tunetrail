@@ -195,42 +195,7 @@ export function FilterDrawer({
         </div>
 
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-5">
-          <ChipField
-            label={t("festivalLabel")}
-            placeholder={t("festivalPlaceholder")}
-            emptyHint={t("noMatch")}
-            removeLabel={(value) => t("removeFilter", { value })}
-            suggestions={suggestions.festivals}
-            selected={filters.festivalNames}
-            onChange={(v) => set("festivalNames", v)}
-          />
-          <ChipField
-            label={t("artistLabel")}
-            placeholder={t("artistPlaceholder")}
-            emptyHint={t("noMatch")}
-            removeLabel={(value) => t("removeFilter", { value })}
-            suggestions={suggestions.artists}
-            selected={filters.artists}
-            onChange={(v) => set("artists", v)}
-          />
-
-          <ChipToggles
-            label={t("countryLabel")}
-            options={countries}
-            selected={filters.countries}
-            onToggle={toggleCountry}
-            render={(v) => tCountries(v)}
-          />
-
-          <ChipToggles
-            label={t("category")}
-            options={FESTIVAL_CATEGORIES}
-            selected={filters.categories}
-            onToggle={toggleCategory}
-            render={(v) => tCategories(v)}
-          />
-
-          <div className="border-t border-black/5 pt-4">
+          <div>
             <span className="block text-xs font-medium text-[#6B5E59]">{t("whenLabel")}</span>
             <div
               role="radiogroup"
@@ -277,6 +242,41 @@ export function FilterDrawer({
               />
             </div>
           </div>
+
+          <ChipField
+            label={t("festivalLabel")}
+            placeholder={t("festivalPlaceholder")}
+            emptyHint={t("noMatch")}
+            removeLabel={(value) => t("removeFilter", { value })}
+            suggestions={suggestions.festivals}
+            selected={filters.festivalNames}
+            onChange={(v) => set("festivalNames", v)}
+          />
+          <ChipField
+            label={t("artistLabel")}
+            placeholder={t("artistPlaceholder")}
+            emptyHint={t("noMatch")}
+            removeLabel={(value) => t("removeFilter", { value })}
+            suggestions={suggestions.artists}
+            selected={filters.artists}
+            onChange={(v) => set("artists", v)}
+          />
+
+          <ChipToggles
+            label={t("countryLabel")}
+            options={countries}
+            selected={filters.countries}
+            onToggle={toggleCountry}
+            render={(v) => tCountries(v)}
+          />
+
+          <ChipToggles
+            label={t("category")}
+            options={FESTIVAL_CATEGORIES}
+            selected={filters.categories}
+            onToggle={toggleCategory}
+            render={(v) => tCategories(v)}
+          />
         </div>
 
         <div className="border-t border-black/5 px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4">

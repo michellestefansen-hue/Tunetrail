@@ -9,7 +9,9 @@ import { createClient } from "@/lib/supabase/static";
 import { fetchGuideFestivals, guideYear } from "@/lib/guideFestivals";
 import { SiteHeader } from "@/components/SiteHeader";
 
-export const revalidate = 3600;
+// Kept short because data changes by hand-run SQL right after a spreadsheet
+// edit — a long window here means "why isn't my update showing up?".
+export const revalidate = 900;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://tune-trail.org";
 

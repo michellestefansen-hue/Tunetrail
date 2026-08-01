@@ -21,7 +21,9 @@ import {
   type Festival,
 } from "@/lib/festivals";
 
-export const revalidate = 3600; // refresh each page in the background at most once an hour
+// Kept short because data changes by hand-run SQL right after a spreadsheet
+// edit — a long window here means "why isn't my update showing up?".
+export const revalidate = 900;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://tune-trail.org";
 

@@ -29,8 +29,10 @@ values
 ('C2C Festival', 'c2c-festival', 'https://clubtoclub.it/', 'Torino', 'Lingotto Fiere og flere arenaer', 'Italia', 45.0323, 7.666, array['Elektronisk & Dans','Alternativ & Indie','Techno & House','Hip-Hop & R&B','Pop & Mainstream']::text[], 'manual')
 on conflict (slug) do nothing;
 
-insert into festival_editions (festival_id, year, date_from, date_to, ticket_url, source)
-select fest.id, v.year, v.date_from::date, v.date_to::date, v.ticket_url, 'manual'
+-- program is NOT NULL, so it gets an empty array -- this source file has no
+-- artist lineup at all, only day-range calendars.
+insert into festival_editions (festival_id, year, date_from, date_to, ticket_url, program, source)
+select fest.id, v.year, v.date_from::date, v.date_to::date, v.ticket_url, '[]'::jsonb, 'manual'
 from (values
 ('quincena-musical-de-san-sebastian', 2026, '2026-08-02', '2026-08-30', 'https://tickets.quincenamusical.eus/list/events?lang=en'),
 ('festival-internacional-de-santander', 2026, '2026-08-02', '2026-08-31', 'https://festivalsantander.com/calendario-y-venta-de-entradas-2026/'),

@@ -17,6 +17,7 @@ import {
   FESTIVAL_SELECT,
   currentEdition,
   dateRangeLabel,
+  fallbackGradient,
   BCP47_LOCALE,
   type Festival,
 } from "@/lib/festivals";
@@ -190,7 +191,9 @@ export default async function FestivalPage({
             className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-[#FF4E50]" />
+          <div
+            className={`absolute inset-0 bg-gradient-to-br ${fallbackGradient(festival)}`}
+          />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#FFF9F0] to-transparent" />
 

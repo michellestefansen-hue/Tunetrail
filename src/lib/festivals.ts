@@ -55,6 +55,53 @@ export const FESTIVAL_TAGS: FestivalTag[] = [
   "Verden & Reggae",
 ];
 
+/**
+ * Stand-in artwork for the ~31% of festivals we have no photograph of.
+ *
+ * Keyed to the genre rather than to the festival, so the card still says
+ * something true about the event instead of picking a colour at random. It
+ * also sidesteps the trap of stock photography: a borrowed crowd shot can be
+ * of the wrong festival, but a colour never claims to be a place.
+ *
+ * Ordered most-distinctive first, so a festival tagged both Metal and Pop
+ * reads as Metal. Tailwind needs these as literal strings to emit the classes.
+ */
+const TAG_GRADIENTS: [FestivalTag, string][] = [
+  ["Metal", "from-zinc-800 to-red-900"],
+  ["Punk & Hardcore", "from-neutral-900 to-rose-700"],
+  ["Klassisk", "from-stone-600 to-amber-800"],
+  ["Jazz", "from-amber-700 to-yellow-600"],
+  ["Blues", "from-blue-900 to-indigo-700"],
+  ["Techno & House", "from-slate-800 to-violet-700"],
+  ["Folk & Americana", "from-lime-700 to-amber-600"],
+  ["Verden & Reggae", "from-emerald-600 to-yellow-500"],
+  ["Soul & Funk", "from-orange-500 to-fuchsia-600"],
+  ["Hip-Hop & R&B", "from-amber-500 to-purple-700"],
+  ["Elektronisk & Dans", "from-fuchsia-600 to-cyan-500"],
+  ["Alternativ & Indie", "from-teal-600 to-indigo-700"],
+  ["Rock", "from-orange-600 to-red-800"],
+  ["Pop & Mainstream", "from-pink-500 to-orange-400"],
+];
+
+/** Untagged festivals still get a stable colour rather than a grey box. */
+const UNTAGGED_GRADIENTS = [
+  "from-orange-500 to-pink-600",
+  "from-purple-600 to-indigo-500",
+  "from-rose-500 to-purple-700",
+];
+
+export function fallbackGradient(festival: {
+  id: string;
+  tags: FestivalTag[] | null;
+}): string {
+  const tags = festival.tags ?? [];
+  for (const [tag, gradient] of TAG_GRADIENTS) {
+    if (tags.includes(tag)) return gradient;
+  }
+  const sum = [...festival.id].reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return UNTAGGED_GRADIENTS[sum % UNTAGGED_GRADIENTS.length];
+}
+
 export type Festival = {
   id: string;
   name: string;

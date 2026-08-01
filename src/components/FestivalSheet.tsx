@@ -5,23 +5,10 @@ import { useLocale, useTranslations } from "next-intl";
 import { motion, useMotionValue, animate } from "framer-motion";
 import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import { Link } from "@/i18n/navigation";
-import { dateRangeLabel, type Festival } from "@/lib/festivals";
+import { dateRangeLabel, fallbackGradient, type Festival } from "@/lib/festivals";
 
 const PEEK_PX = 140;
 const OPEN_VH = 0.46;
-
-const GRADIENTS = [
-  "from-orange-500 to-pink-600",
-  "from-purple-600 to-indigo-500",
-  "from-amber-500 to-red-600",
-  "from-fuchsia-600 to-orange-500",
-  "from-rose-500 to-purple-700",
-];
-
-function gradientFor(id: string) {
-  const sum = [...id].reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return GRADIENTS[sum % GRADIENTS.length];
-}
 
 function FestivalThumbnail({
   festival,
@@ -31,8 +18,8 @@ function FestivalThumbnail({
   className: string;
 }) {
   if (festival.image_url) {
-    // eslint-disable-next-line @next/next/no-img-element
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={festival.image_url}
         alt={festival.name}
@@ -40,7 +27,9 @@ function FestivalThumbnail({
       />
     );
   }
-  return <div className={`${className} bg-gradient-to-br ${gradientFor(festival.id)}`} />;
+  return (
+    <div className={`${className} bg-gradient-to-br ${fallbackGradient(festival)}`} />
+  );
 }
 
 export function FestivalSheet({ festivals }: { festivals: Festival[] }) {

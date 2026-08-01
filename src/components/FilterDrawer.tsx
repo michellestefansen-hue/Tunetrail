@@ -7,13 +7,14 @@ import { ChipField } from "@/components/ChipField";
 import {
   FESTIVAL_CATEGORIES,
   BCP47_LOCALE,
+  scopeRange,
+  scopeOfRange,
   type FestivalCategory,
   type Suggestions,
   type TimeScope,
 } from "@/lib/festivals";
 
 export type FilterState = {
-  timeScope: TimeScope;
   festivalNames: string[];
   countries: string[];
   artists: string[];
@@ -27,27 +28,25 @@ export type FilterState = {
 export const DEFAULT_TIME_SCOPE: TimeScope = "upcoming";
 
 export const EMPTY_FILTERS: FilterState = {
-  timeScope: DEFAULT_TIME_SCOPE,
   festivalNames: [],
   countries: [],
   artists: [],
-  dateFrom: null,
-  dateTo: null,
+  ...scopeRange(DEFAULT_TIME_SCOPE),
   categories: [],
 };
 
 /**
  * How many filters the user has actually set — drives the button's badge.
- * The time scope only counts when moved off its default, so an untouched
- * filter still reads as "no filters".
+ * The default date range doesn't count, so an untouched filter still reads
+ * as "no filters".
  */
 export function activeFilterCount(f: FilterState): number {
+  const isDefaultRange = scopeOfRange(f.dateFrom, f.dateTo) === DEFAULT_TIME_SCOPE;
   return (
-    (f.timeScope !== DEFAULT_TIME_SCOPE ? 1 : 0) +
+    (isDefaultRange ? 0 : 1) +
     f.festivalNames.length +
     f.countries.length +
     f.artists.length +
-    (f.dateFrom || f.dateTo ? 1 : 0) +
     f.categories.length
   );
 }
@@ -153,6 +152,9 @@ export function FilterDrawer({
 
   const count = activeFilterCount(filters);
   const year = new Date().getFullYear();
+  // Derived, never stored: editing the dates by hand simply stops matching a
+  // preset, which leaves both buttons unselected rather than lying about it.
+  const activeScope = scopeOfRange(filters.dateFrom, filters.dateTo);
 
   return (
     <>
@@ -236,16 +238,16 @@ export function FilterDrawer({
               className="mt-2 inline-flex rounded-full bg-[#F0E9DC] p-0.5"
             >
               {(["upcoming", "year"] as TimeScope[]).map((scope) => {
-                const active = filters.timeScope === scope;
+                const active = activeScope === scope;
                 return (
                   <button
                     key={scope}
                     type="button"
                     role="radio"
                     aria-checked={active}
-                    onClick={() => set("timeScope", scope)}
+                    onClick={() => onChange({ ...filters, ...scopeRange(scope) })}
                     className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                      active ? "bg-white text-[#FF2D78] shadow-sm" : "text-[#8A7F72]"
+                      active ? "bg-[#FF2D78] text-white" : "text-[#8A7F72]"
                     }`}
                   >
                     {scope === "upcoming" ? t("scopeUpcoming") : t("scopeYear", { year })}

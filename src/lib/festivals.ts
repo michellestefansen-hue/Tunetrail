@@ -138,19 +138,34 @@ export function editionRange(edition: FestivalEdition | null): [string, string] 
   return [days[0], days[days.length - 1]];
 }
 
-/** Which slice of the calendar the map is showing. */
+export const todayISO = () => new Date().toISOString().slice(0, 10);
+
+/**
+ * The two date-range presets the map offers. They are shortcuts that fill in
+ * `dateFrom`/`dateTo` rather than a filter of their own, so a preset and a
+ * hand-picked range can never disagree about what is on screen.
+ *
+ * "upcoming" deliberately has no end: capping it at new year would empty out
+ * through autumn and hide the editions already booked for next year.
+ */
 export type TimeScope = "upcoming" | "year";
 
-const todayISO = () => new Date().toISOString().slice(0, 10);
+export function scopeRange(scope: TimeScope): { dateFrom: string; dateTo: string | null } {
+  if (scope === "upcoming") return { dateFrom: todayISO(), dateTo: null };
+  const year = new Date().getFullYear();
+  return { dateFrom: `${year}-01-01`, dateTo: `${year}-12-31` };
+}
+
+/** Which preset a range corresponds to, or null when it matches neither. */
+export function scopeOfRange(dateFrom: string | null, dateTo: string | null): TimeScope | null {
+  for (const scope of ["upcoming", "year"] as TimeScope[]) {
+    const r = scopeRange(scope);
+    if (r.dateFrom === dateFrom && r.dateTo === (dateTo ?? null)) return scope;
+  }
+  return null;
+}
 
 export type FestivalFilters = {
-  /**
-   * "upcoming" keeps anything not yet finished, with no upper bound so next
-   * year's festivals stay reachable; "year" is the current calendar year.
-   * Festivals with no date at all are kept either way — an unknown date is
-   * not evidence the festival is over.
-   */
-  timeScope?: TimeScope;
   /** Exact festival names. Several are OR-ed together. */
   festivalNames?: string[];
   /** Exact country values, as stored on the record. OR-ed together. */
@@ -216,18 +231,10 @@ export function filterFestivals(festivals: Festival[], filters: FestivalFilters)
 
     const range = editionRange(currentEdition(festival));
 
-    // A festival with no date at all stays visible under every time filter:
+    // A festival with no date at all stays visible under every date filter:
     // we don't know when it is, which is not the same as knowing it is over.
     if (range) {
       const [start, end] = range;
-
-      if (filters.timeScope === "upcoming") {
-        if (end < todayISO()) return false;
-      } else if (filters.timeScope === "year") {
-        const year = String(new Date().getFullYear());
-        if (end < `${year}-01-01` || start > `${year}-12-31`) return false;
-      }
-
       if (filters.dateFrom && end < filters.dateFrom) return false;
       if (filters.dateTo && start > filters.dateTo) return false;
     }

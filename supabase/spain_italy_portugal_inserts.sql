@@ -30,7 +30,7 @@ values
 on conflict (slug) do nothing;
 
 insert into festival_editions (festival_id, year, date_from, date_to, ticket_url, source)
-select fest.id, v.year, v.date_from, v.date_to, v.ticket_url, 'manual'
+select fest.id, v.year, v.date_from::date, v.date_to::date, v.ticket_url, 'manual'
 from (values
 ('quincena-musical-de-san-sebastian', 2026, '2026-08-02', '2026-08-30', 'https://tickets.quincenamusical.eus/list/events?lang=en'),
 ('festival-internacional-de-santander', 2026, '2026-08-02', '2026-08-31', 'https://festivalsantander.com/calendario-y-venta-de-entradas-2026/'),

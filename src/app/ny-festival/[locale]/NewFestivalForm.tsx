@@ -1,9 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { LineupFields } from "@/components/LineupFields";
 import { LocationPicker } from "@/components/LocationPicker";
 import { FESTIVAL_TAGS } from "@/lib/festivals";
+import type { ProgramDay } from "@/lib/submissions";
 import type { Match } from "@/lib/duplicates";
 import { checkDuplicates, submitNewFestival, type NewError } from "./actions";
 
@@ -48,19 +50,39 @@ function Field({
 const input =
   "w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-[#2D1A12] outline-none focus:border-black/30";
 
+/** Every calendar day the festival runs, so an empty day can still be filled. */
+function daysBetween(from: string, to: string): string[] {
+  if (!from || !to || to < from) return [];
+  const out: string[] = [];
+  const d = new Date(from + "T12:00:00");
+  const end = new Date(to + "T12:00:00");
+  while (d <= end && out.length < 60) {
+    out.push(d.toISOString().slice(0, 10));
+    d.setDate(d.getDate() + 1);
+  }
+  return out;
+}
+
 export function NewFestivalForm({
   countries,
   mapHref,
+  bcp47,
 }: {
   countries: string[];
   /** Resolved on the server: the map sits at a translated path. */
   mapHref: string;
+  bcp47: string;
 }) {
   const t = useTranslations("NewFestival");
   const tTags = useTranslations("Tags");
   const tCountries = useTranslations("Countries");
 
+  const [step, setStep] = useState<1 | 2>(1);
   const [f, setF] = useState(EMPTY);
+  // Artists are stored per date, and the day list is derived from the dates.
+  // Keeping the list in state instead would need an effect to resync it every
+  // time the range changes -- and cascading renders for no gain.
+  const [artistsByDate, setArtistsByDate] = useState<Record<string, string[]>>({});
   const [dupes, setDupes] = useState<Match[]>([]);
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState("");
@@ -89,6 +111,27 @@ export function NewFestivalForm({
 
   const visibleDupes = f.name.trim().length < 3 || !f.country ? [] : dupes;
 
+  // Narrowing the range simply stops rendering the days that fall outside it.
+  // Anything placed there is no longer submitted, which is the honest outcome:
+  // those days are not part of the festival any more.
+  const days: ProgramDay[] = useMemo(
+    () =>
+      daysBetween(f.date_from, f.date_to).map((date) => ({
+        date,
+        artists: artistsByDate[date] ?? [],
+      })),
+    [f.date_from, f.date_to, artistsByDate],
+  );
+
+  const setDays = useCallback((next: ProgramDay[]) => {
+    setArtistsByDate((prev) => ({
+      ...prev,
+      ...Object.fromEntries(next.map((d) => [d.date, d.artists])),
+    }));
+  }, []);
+
+  const artistCount = days.reduce((n, d) => n + d.artists.length, 0);
+
   function describe(e: NewError): string {
     switch (e.code) {
       case "missing":
@@ -99,6 +142,8 @@ export function NewFestivalForm({
         return t("errTooManyPending");
       case "notAuthenticated":
         return t("errNotAuthenticated");
+      case "badArtist":
+        return t("errBadArtist", { name: e.name });
       default:
         return e.message;
     }
@@ -108,7 +153,7 @@ export function NewFestivalForm({
     e.preventDefault();
     setState("sending");
     setError("");
-    const res = await submitNewFestival(f);
+    const res = await submitNewFestival({ ...f, program: days });
     if (res.ok) {
       setState("sent");
     } else {
@@ -131,8 +176,27 @@ export function NewFestivalForm({
 
   const geoQuery = [f.venue_name, f.city, f.country].filter(Boolean).join(", ");
 
+  const steps = [t("step1"), t("step2")];
+
   return (
     <form onSubmit={submit} className="space-y-6">
+      <ol className="flex gap-2 text-sm">
+        {steps.map((label, i) => (
+          <li
+            key={label}
+            className={`rounded-full px-3 py-1 ${
+              step === i + 1
+                ? "bg-[#2D1A12] font-medium text-white"
+                : "bg-black/[0.06] text-[#2D1A12]/50"
+            }`}
+          >
+            {label}
+          </li>
+        ))}
+      </ol>
+
+      {step === 1 && (
+        <>
       <Field label={t("name")} help={t("nameHelp")} required>
         <input
           className={input}
@@ -289,19 +353,77 @@ export function NewFestivalForm({
         />
       </Field>
 
-      {error && (
-        <p role="alert" className="text-sm text-red-700">
-          {error}
-        </p>
+      <button
+        type="button"
+        onClick={() => setStep(2)}
+        className="rounded-full bg-gradient-to-r from-amber-500 to-[#FF4E50] px-6 py-3 font-medium text-white"
+      >
+        {t("stepNext")}
+      </button>
+        </>
       )}
 
-      <button
-        type="submit"
-        disabled={state === "sending"}
-        className="rounded-full bg-gradient-to-r from-amber-500 to-[#FF4E50] px-6 py-3 font-medium text-white disabled:opacity-50"
-      >
-        {state === "sending" ? t("submitting") : t("submit")}
-      </button>
+      {step === 2 && (
+        <>
+          <p className="text-[#2D1A12]/70">{t("programIntro")}</p>
+
+          {days.length === 0 ? (
+            <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              {t("programNeedsDates")}
+            </p>
+          ) : (
+            <>
+              <p className="text-sm text-[#2D1A12]/50">
+                {t("programCount", { count: artistCount })}
+              </p>
+              {/* One synthetic edition: the festival has none yet, so the days
+                  come from the dates just entered rather than from the database. */}
+              <LineupFields
+                editions={[
+                  {
+                    year: Number(f.date_from.slice(0, 4)) || new Date().getFullYear(),
+                    date_from: f.date_from,
+                    date_to: f.date_to,
+                    days,
+                  },
+                ]}
+                year={Number(f.date_from.slice(0, 4)) || new Date().getFullYear()}
+                onYear={() => {}}
+                days={days}
+                onDays={setDays}
+                bcp47={bcp47}
+              />
+            </>
+          )}
+
+          {error && (
+            <p role="alert" className="text-sm text-red-700">
+              {error}
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="rounded-full border border-black/15 px-5 py-3 font-medium text-[#2D1A12]/70"
+            >
+              {t("stepBack")}
+            </button>
+            <button
+              type="submit"
+              disabled={state === "sending"}
+              className="rounded-full bg-gradient-to-r from-amber-500 to-[#FF4E50] px-6 py-3 font-medium text-white disabled:opacity-50"
+            >
+              {state === "sending"
+                ? t("submitting")
+                : artistCount === 0
+                  ? t("skipProgram")
+                  : t("submit")}
+            </button>
+          </div>
+        </>
+      )}
     </form>
   );
 }

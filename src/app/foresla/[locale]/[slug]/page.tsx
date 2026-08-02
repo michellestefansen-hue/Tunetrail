@@ -7,7 +7,7 @@ import { BCP47_LOCALE } from "@/lib/festivals";
 import { routing, type Locale } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { FIELD_NAMES, type FieldValue, type ProgramDay } from "@/lib/submissions";
-import type { Edition } from "./LineupFields";
+import type { Edition } from "@/components/LineupFields";
 import { ProposeTabs } from "./ProposeTabs";
 
 export const dynamic = "force-dynamic";

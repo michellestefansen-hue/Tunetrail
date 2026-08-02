@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { isValidTag } from "@/lib/submissions";
+import { checkArtistName, isValidTag, type ProgramDay } from "@/lib/submissions";
 import { findDuplicates, type Candidate, type Match } from "@/lib/duplicates";
 
 export type NewFestival = {
@@ -17,12 +17,15 @@ export type NewFestival = {
   longitude: number | null;
   date_from: string;
   date_to: string;
+  /** Optional: a contributor may not know the lineup yet. */
+  program: ProgramDay[];
 };
 
 export type NewError =
   | { code: "notAuthenticated" | "tooManyPending" }
   | { code: "missing"; field: string }
   | { code: "badDates" }
+  | { code: "badArtist"; name: string }
   | { code: "unknown"; message: string };
 
 export type NewResult = { ok: true } | { ok: false; error: NewError };
@@ -77,6 +80,22 @@ export async function submitNewFestival(f: NewFestival): Promise<NewResult> {
   if (tags.length === 0) return { ok: false, error: { code: "missing", field: "tags" } };
   if (f.date_to < f.date_from) return { ok: false, error: { code: "badDates" } };
 
+  // The lineup is optional, but whatever arrives is cleaned here rather than
+  // trusted from the form: no clock times inside artist names, no days outside
+  // the festival, and stage/time always null -- all three were fixed by hand
+  // across the database on 2 August 2026 and must not come back in this way.
+  const program: { date: string; day_label: null; artists: { name: string; stage: null; time: null }[] }[] = [];
+  for (const day of f.program ?? []) {
+    if (day.date < f.date_from || day.date > f.date_to) continue;
+    const artists: { name: string; stage: null; time: null }[] = [];
+    for (const raw of day.artists) {
+      const { name, errorCode } = checkArtistName(raw);
+      if (errorCode) return { ok: false, error: { code: "badArtist", name: raw } };
+      artists.push({ name, stage: null, time: null });
+    }
+    if (artists.length > 0) program.push({ date: day.date, day_label: null, artists });
+  }
+
   // A queue is only a safeguard while someone can still read it. Everything is
   // moderated, so the worst case is wasted review time rather than bad data --
   // but a cap keeps that from becoming an evening's work.
@@ -106,6 +125,7 @@ export async function submitNewFestival(f: NewFestival): Promise<NewResult> {
       longitude: f.longitude,
       date_from: f.date_from,
       date_to: f.date_to,
+      program,
     },
     base_snapshot: {},
     submitted_by: user.id,

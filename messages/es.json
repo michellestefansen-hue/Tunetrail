@@ -440,6 +440,15 @@
     "errMissing": "El campo «{field}» es obligatorio.",
     "errBadDates": "La fecha final no puede ser anterior a la inicial.",
     "errTooManyPending": "Ya tienes cinco festivales en revisión. Espera a que se procesen.",
-    "errNotAuthenticated": "Debes iniciar sesión."
+    "errNotAuthenticated": "Debes iniciar sesión.",
+    "step1": "1. Sobre el festival",
+    "step2": "2. Cartel",
+    "stepNext": "Continuar al cartel",
+    "stepBack": "← Atrás",
+    "programIntro": "Opcional. Si aún no conoces el cartel, sáltalo — el festival se añade igualmente y el cartel se puede rellenar después.",
+    "programNeedsDates": "Pon primero las fechas en el paso 1. Los días salen de ese rango.",
+    "skipProgram": "Saltar y enviar",
+    "programCount": "{count, plural, =0{Ningún artista añadido} one{# artista} other{# artistas}}",
+    "errBadArtist": "«{name}» no parece un nombre de artista. Quita la hora y el nombre del escenario."
   }
 }

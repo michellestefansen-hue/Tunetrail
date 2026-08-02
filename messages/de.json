@@ -440,6 +440,15 @@
     "errMissing": "Das Feld „{field}“ ist erforderlich.",
     "errBadDates": "Das Enddatum kann nicht vor dem Startdatum liegen.",
     "errTooManyPending": "Du hast bereits fünf Festivals in der Prüfung. Warte, bis sie bearbeitet sind.",
-    "errNotAuthenticated": "Du musst angemeldet sein."
+    "errNotAuthenticated": "Du musst angemeldet sein.",
+    "step1": "1. Über das Festival",
+    "step2": "2. Programm",
+    "stepNext": "Weiter zum Programm",
+    "stepBack": "← Zurück",
+    "programIntro": "Optional. Wenn du das Programm noch nicht kennst, überspringe es — das Festival wird trotzdem angelegt und das Programm kann später ergänzt werden.",
+    "programNeedsDates": "Setze zuerst die Termine in Schritt 1. Die Tage hier ergeben sich daraus.",
+    "skipProgram": "Überspringen und senden",
+    "programCount": "{count, plural, =0{Keine Künstler hinzugefügt} one{# Künstler} other{# Künstler}}",
+    "errBadArtist": "„{name}“ sieht nicht nach einem Künstlernamen aus. Entferne Uhrzeit und Bühnenname."
   }
 }

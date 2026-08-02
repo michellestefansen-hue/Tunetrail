@@ -440,6 +440,15 @@
     "errMissing": "Feltet «{field}» må fylles ut.",
     "errBadDates": "Sluttdato kan ikke være før startdato.",
     "errTooManyPending": "Du har allerede fem festivaler til gjennomgang. Vent til de er behandlet før du sender flere.",
-    "errNotAuthenticated": "Du må være logget inn."
+    "errNotAuthenticated": "Du må være logget inn.",
+    "step1": "1. Om festivalen",
+    "step2": "2. Program",
+    "stepNext": "Videre til program",
+    "stepBack": "← Tilbake",
+    "programIntro": "Valgfritt. Vet du ikke programmet ennå, kan du hoppe over — festivalen legges inn uansett, og programmet kan fylles ut senere.",
+    "programNeedsDates": "Sett datoer i steg 1 først. Dagene her kommer fra datointervallet.",
+    "skipProgram": "Hopp over og send inn",
+    "programCount": "{count, plural, =0{Ingen artister lagt til} one{# artist} other{# artister}}",
+    "errBadArtist": "«{name}» ser ikke ut som et artistnavn. Ta bort klokkeslett og scenenavn."
   }
 }

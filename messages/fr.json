@@ -440,6 +440,15 @@
     "errMissing": "Le champ « {field} » est obligatoire.",
     "errBadDates": "La date de fin ne peut pas précéder la date de début.",
     "errTooManyPending": "Vous avez déjà cinq festivals en attente de relecture. Attendez qu'ils soient traités.",
-    "errNotAuthenticated": "Vous devez être connecté."
+    "errNotAuthenticated": "Vous devez être connecté.",
+    "step1": "1. À propos du festival",
+    "step2": "2. Programmation",
+    "stepNext": "Continuer vers la programmation",
+    "stepBack": "← Retour",
+    "programIntro": "Facultatif. Si vous ne connaissez pas encore la programmation, passez — le festival est ajouté quand même et la programmation pourra être complétée plus tard.",
+    "programNeedsDates": "Renseignez d'abord les dates à l'étape 1. Les jours en découlent.",
+    "skipProgram": "Passer et envoyer",
+    "programCount": "{count, plural, =0{Aucun artiste ajouté} one{# artiste} other{# artistes}}",
+    "errBadArtist": "« {name} » ne ressemble pas à un nom d'artiste. Retirez l'heure et le nom de scène."
   }
 }

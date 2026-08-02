@@ -11,7 +11,7 @@ import {
 } from "@/lib/submissions";
 import { submitAll, type SubmitError } from "./actions";
 import { GeneralFields, type Values } from "./GeneralFields";
-import { LineupFields, type Edition } from "./LineupFields";
+import { LineupFields, type Edition } from "@/components/LineupFields";
 
 export function ProposeTabs({
   slug,

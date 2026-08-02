@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { BareShell } from "@/components/BareShell";
+import { BCP47_LOCALE } from "@/lib/festivals";
 import { getPathname } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
@@ -50,6 +51,7 @@ export default async function NewFestivalPage({
   // sit outside the locale tree, so the right one is resolved here rather than
   // hardcoded -- an English visitor should not be dropped on the Norwegian URL.
   const mapHref = getPathname({ locale, href: "/kart" });
+  const bcp47 = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
 
   return (
     <BareShell lang={locale}>
@@ -62,7 +64,7 @@ export default async function NewFestivalPage({
 
         <div className="mt-8">
           <NextIntlClientProvider>
-            <NewFestivalForm countries={countries} mapHref={mapHref} />
+            <NewFestivalForm countries={countries} mapHref={mapHref} bcp47={bcp47} />
           </NextIntlClientProvider>
         </div>
       </main>

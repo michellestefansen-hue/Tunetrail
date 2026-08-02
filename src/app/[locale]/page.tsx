@@ -7,6 +7,7 @@ import { routing, type Locale } from "@/i18n/routing";
 import { GUIDES, GUIDE_KEYS, guidePath } from "@/lib/guides";
 import { createClient } from "@/lib/supabase/static";
 import { fetchGuideFestivals, guideYear } from "@/lib/guideFestivals";
+import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 
 // Kept short because data changes by hand-run SQL right after a spreadsheet
@@ -106,7 +107,7 @@ export default async function HomePage({
   ];
 
   return (
-    <div className="min-h-dvh bg-[#FFF9F0] pb-20">
+    <div className="min-h-dvh bg-[#FFF9F0]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -129,7 +130,7 @@ export default async function HomePage({
         </div>
       </div>
 
-      <div className="mx-auto max-w-3xl px-5 pt-6">
+      <div className="mx-auto max-w-3xl px-5 pb-20 pt-6">
         <p className="text-base leading-relaxed text-[#2D1A12]">{tg("hubAnswer")}</p>
 
         <p className="mt-3 text-sm leading-relaxed text-[#6B5E59]">
@@ -163,6 +164,8 @@ export default async function HomePage({
           ))}
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   );
 }

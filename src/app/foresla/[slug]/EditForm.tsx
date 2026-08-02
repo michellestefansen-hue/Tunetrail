@@ -17,7 +17,6 @@ export function EditForm({
   current: Current;
 }) {
   const [values, setValues] = useState<Current>(current);
-  const [sourceUrl, setSourceUrl] = useState("");
   const [note, setNote] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState("");
@@ -35,7 +34,7 @@ export function EditForm({
     e.preventDefault();
     setState("sending");
     setError("");
-    const res = await submitEdit(slug, values as Payload, sourceUrl, note);
+    const res = await submitEdit(slug, values as Payload, note);
     if (res.ok) {
       setState("sent");
     } else {
@@ -113,29 +112,15 @@ export function EditForm({
       })}
 
       <div className="space-y-1.5 border-t border-black/10 pt-6">
-        <label htmlFor="kilde" className="block font-medium text-[#2D1A12]">
-          Hvor har du dette fra?
+        <label htmlFor="kommentar" className="block font-medium text-[#2D1A12]">
+          Kommentar <span className="font-normal text-[#2D1A12]/50">(valgfritt)</span>
         </label>
         <p className="text-sm text-[#2D1A12]/60">
-          En lenke gjør det mye raskere å godkjenne forslaget ditt.
+          Har du en lenke eller en forklaring, hjelper det den som skal godkjenne.
         </p>
-        <input
-          id="kilde"
-          type="url"
-          value={sourceUrl}
-          onChange={(e) => setSourceUrl(e.target.value)}
-          placeholder="https://…"
-          className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-[#2D1A12] outline-none focus:border-black/30"
-        />
-      </div>
-
-      <div className="space-y-1.5">
-        <label htmlFor="merknad" className="block font-medium text-[#2D1A12]">
-          Merknad <span className="font-normal text-[#2D1A12]/50">(valgfritt)</span>
-        </label>
         <textarea
-          id="merknad"
-          rows={2}
+          id="kommentar"
+          rows={3}
           value={note}
           onChange={(e) => setNote(e.target.value)}
           className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-[#2D1A12] outline-none focus:border-black/30"

@@ -5,8 +5,8 @@ import { routing } from "./i18n/routing";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
-/** Sign-in and moderation live outside the translated URL tree. */
-const UNLOCALISED = ["/logg-inn", "/auth", "/admin"];
+/** Sign-in, contributing and moderation live outside the translated URL tree. */
+const UNLOCALISED = ["/logg-inn", "/auth", "/admin", "/foresla"];
 
 export default async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;

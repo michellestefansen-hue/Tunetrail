@@ -317,6 +317,17 @@ export default async function FestivalPage({
             </ul>
           </section>
         )}
+
+        {/* Deliberately plain and last: correcting data is a side errand, not
+            something to compete with the line-up for attention. */}
+        <section className="mt-10 border-t border-stone-200 pt-5">
+          <a
+            href={`/foresla/${slug}`}
+            className="text-sm text-stone-500 hover:text-stone-800 hover:underline"
+          >
+            Noe feil her? Foreslå en endring
+          </a>
+        </section>
       </div>
     </div>
   );

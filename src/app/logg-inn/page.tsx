@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<{ neste?: string }>;
+  searchParams: Promise<{ neste?: string; feil?: string }>;
 }): Promise<Metadata> {
   const { neste } = await searchParams;
   const locale = localeFromNeste(neste);
@@ -21,9 +21,9 @@ export async function generateMetadata({
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ neste?: string }>;
+  searchParams: Promise<{ neste?: string; feil?: string }>;
 }) {
-  const { neste } = await searchParams;
+  const { neste, feil } = await searchParams;
   // /admin's own redirect has no locale to read -- it's Norwegian-only by
   // design, and localeFromNeste falls back to Norwegian for exactly that case.
   const locale = localeFromNeste(neste);
@@ -34,7 +34,7 @@ export default async function LoginPage({
       <main className="mx-auto flex min-h-dvh max-w-md items-center px-6">
         <div className="w-full">
           <NextIntlClientProvider>
-            <LoginForm neste={neste ?? "/"} />
+            <LoginForm neste={neste ?? "/"} feil={feil} />
           </NextIntlClientProvider>
         </div>
       </main>

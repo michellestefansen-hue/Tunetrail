@@ -392,6 +392,9 @@
     "submitSending": "Enviando …",
     "sentHeading": "Revisa tu correo",
     "sentBody": "Hemos enviado un enlace a <b>{email}</b>. Haz clic en él para iniciar sesión.",
-    "sentHint": "¿No lo encuentras? Revisa la carpeta de spam. El enlace es válido durante una hora."
+    "sentHint": "¿No lo encuentras? Revisa la carpeta de spam. El enlace es válido durante una hora.",
+    "linkFailedHeading": "El inicio de sesión no se completó",
+    "errMissingCode": "Al enlace le faltaba el código de acceso. Pide uno nuevo abajo.",
+    "errInvalidLink": "El enlace no era válido, caducó o ya se usó. Pide uno nuevo — y ábrelo en el mismo navegador desde el que lo pediste."
   }
 }

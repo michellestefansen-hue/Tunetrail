@@ -4,11 +4,21 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export function LoginForm({ neste }: { neste: string }) {
+export function LoginForm({ neste, feil }: { neste: string; feil?: string }) {
   const t = useTranslations("Login");
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [message, setMessage] = useState("");
+
+  // The callback route redirects here with ?feil= when a link fails. Without
+  // showing it, a failed sign-in looks like the form simply bounced you back
+  // for no reason -- which is exactly how it looked before this was added.
+  const linkError =
+    feil === "mangler-kode"
+      ? t("errMissingCode")
+      : feil === "ugyldig-lenke"
+        ? t("errInvalidLink")
+        : null;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,6 +56,16 @@ export function LoginForm({ neste }: { neste: string }) {
         <h1 className="text-2xl font-bold text-[#2D1A12]">{t("heading")}</h1>
         <p className="text-[#2D1A12]/70">{t("intro")}</p>
       </div>
+
+      {linkError && (
+        <div
+          role="alert"
+          className="space-y-1 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3"
+        >
+          <p className="font-medium text-amber-900">{t("linkFailedHeading")}</p>
+          <p className="text-sm text-amber-900/80">{linkError}</p>
+        </div>
+      )}
 
       <input
         type="email"

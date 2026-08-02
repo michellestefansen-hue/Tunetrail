@@ -392,6 +392,9 @@
     "submitSending": "Sending …",
     "sentHeading": "Check your email",
     "sentBody": "We've sent a link to <b>{email}</b>. Click it to sign in.",
-    "sentHint": "Can't find it? Check your spam folder. The link is valid for one hour."
+    "sentHint": "Can't find it? Check your spam folder. The link is valid for one hour.",
+    "linkFailedHeading": "Sign-in didn't go through",
+    "errMissingCode": "The link was missing its sign-in code. Request a new one below.",
+    "errInvalidLink": "The link was invalid, expired or already used. Request a new one — and open it in the same browser you requested it from."
   }
 }

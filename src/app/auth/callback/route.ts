@@ -10,15 +10,19 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const next = searchParams.get("neste") ?? "/";
 
-  if (!code) {
-    return NextResponse.redirect(`${origin}/logg-inn?feil=mangler-kode`);
-  }
+  // Carry `neste` back to the sign-in page on failure, so a second attempt
+  // still ends up where the visitor was originally heading -- and so the page
+  // can render the message in the right language.
+  const back = (reason: string) =>
+    NextResponse.redirect(
+      `${origin}/logg-inn?feil=${reason}&neste=${encodeURIComponent(next)}`,
+    );
+
+  if (!code) return back("mangler-kode");
 
   const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
-  if (error) {
-    return NextResponse.redirect(`${origin}/logg-inn?feil=ugyldig-lenke`);
-  }
+  if (error) return back("ugyldig-lenke");
 
   // Only ever redirect to a path on this site: an absolute URL here would let
   // a crafted sign-in link bounce a freshly authenticated visitor elsewhere.

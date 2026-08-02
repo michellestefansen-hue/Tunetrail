@@ -7,6 +7,7 @@ import {
   GlobeAltIcon,
   TicketIcon,
   MapPinIcon,
+  CalendarDateRangeIcon,
 } from "@heroicons/react/24/solid";
 import { createClient } from "@/lib/supabase/static";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -230,11 +231,10 @@ export default async function FestivalPage({
           {[festival.venue_name ?? festival.city, countryName].filter(Boolean).join(", ")}
         </p>
 
-        {festival.description && (
-          <p className="mt-4 text-sm leading-relaxed text-[#6B5E59]">
-            {festival.description}
-          </p>
-        )}
+        <p className="mt-1.5 flex items-center gap-1.5 text-sm text-stone-500">
+          <CalendarDateRangeIcon className="h-4 w-4 text-[#FF2D78]" />
+          {dateRangeLabel(festival, locale) ?? t("noDateSet")}
+        </p>
 
         <div className="mt-5 flex flex-wrap gap-2">
           {festival.website_url && (
@@ -260,6 +260,12 @@ export default async function FestivalPage({
             </a>
           )}
         </div>
+
+        {festival.description && (
+          <p className="mt-4 text-sm leading-relaxed text-[#6B5E59]">
+            {festival.description}
+          </p>
+        )}
 
         <h2 className="mt-8 text-xl">{t("program")}</h2>
         <div className="mt-4 flex flex-col gap-5">

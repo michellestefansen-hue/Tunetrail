@@ -392,6 +392,9 @@
     "submitSending": "Envoi en cours …",
     "sentHeading": "Vérifiez vos e-mails",
     "sentBody": "Nous avons envoyé un lien à <b>{email}</b>. Cliquez-y pour vous connecter.",
-    "sentHint": "Vous ne le trouvez pas ? Vérifiez vos spams. Le lien est valable une heure."
+    "sentHint": "Vous ne le trouvez pas ? Vérifiez vos spams. Le lien est valable une heure.",
+    "linkFailedHeading": "La connexion n'a pas abouti",
+    "errMissingCode": "Le lien ne contenait pas le code de connexion. Demandez-en un nouveau ci-dessous.",
+    "errInvalidLink": "Le lien était invalide, expiré ou déjà utilisé. Demandez-en un nouveau — et ouvrez-le dans le même navigateur que celui d'où vous l'avez demandé."
   }
 }

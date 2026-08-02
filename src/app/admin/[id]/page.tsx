@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { EDITABLE_FIELDS } from "@/lib/submissions";
+import { EDITABLE_FIELDS, type ProgramOps } from "@/lib/submissions";
+import { ProgramReview } from "./ProgramReview";
 import { ReviewForm, type FieldDiff } from "./ReviewForm";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export default async function ReviewPage({
   const { data } = await supabase
     .from("submissions")
     .select(
-      "id, status, payload, base_snapshot, source_url, note, created_at, festival_id, festivals(name, slug), profiles!submissions_submitted_by_fkey(display_name)",
+      "id, kind, edition_year, status, payload, base_snapshot, source_url, note, created_at, festival_id, festivals(name, slug), profiles!submissions_submitted_by_fkey(display_name)",
     )
     .eq("id", id)
     .single();
@@ -32,6 +33,8 @@ export default async function ReviewPage({
 
   const s = data as unknown as {
     id: string;
+    kind: string;
+    edition_year: number | null;
     status: string;
     payload: Record<string, unknown>;
     base_snapshot: Record<string, unknown>;
@@ -43,15 +46,18 @@ export default async function ReviewPage({
     profiles: { display_name: string | null } | null;
   };
 
-  const fields = Object.keys(s.payload ?? {});
+  const isProgram = s.kind === "program_edit";
+  const fields = isProgram ? [] : Object.keys(s.payload ?? {});
 
   // Read today's values so the queue compares against reality, not against
   // whatever was true when the proposal was written.
-  const { data: current } = await supabase
-    .from("festivals")
-    .select(fields.join(", ") || "id")
-    .eq("id", s.festival_id)
-    .single();
+  const { data: current } = fields.length
+    ? await supabase
+        .from("festivals")
+        .select(fields.join(", "))
+        .eq("id", s.festival_id)
+        .single()
+    : { data: null };
   const now = (current ?? {}) as Record<string, unknown>;
 
   const diffs: FieldDiff[] = fields.map((field) => ({
@@ -122,7 +128,15 @@ export default async function ReviewPage({
           Dette forslaget er allerede behandlet ({s.status}).
         </p>
       ) : (
-        <ReviewForm id={s.id} diffs={diffs} />
+        isProgram ? (
+          <ProgramReview
+            id={s.id}
+            year={s.edition_year ?? 0}
+            ops={s.payload as unknown as ProgramOps}
+          />
+        ) : (
+          <ReviewForm id={s.id} diffs={diffs} />
+        )
       )}
     </div>
   );

@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 type Row = {
   id: string;
   kind: string;
+  edition_year: number | null;
   created_at: string;
   payload: Record<string, unknown>;
   source_url: string | null;
@@ -19,7 +20,7 @@ export default async function AdminQueue() {
   const { data } = await supabase
     .from("submissions")
     .select(
-      "id, kind, created_at, payload, source_url, festivals(name, slug), profiles!submissions_submitted_by_fkey(display_name)",
+      "id, kind, edition_year, created_at, payload, source_url, festivals(name, slug), profiles!submissions_submitted_by_fkey(display_name)",
     )
     .eq("status", "pending")
     .order("created_at", { ascending: true });
@@ -44,7 +45,25 @@ export default async function AdminQueue() {
       ) : (
         <ul className="space-y-3">
           {rows.map((r) => {
-            const fields = Object.keys(r.payload ?? {});
+            // A programme proposal is counted in operations, a detail edit in
+            // fields -- "+12 lagt til" says more at a glance than "3 felt".
+            const p = r.payload as {
+              add?: unknown[];
+              remove?: unknown[];
+              move?: unknown[];
+            };
+            const summary =
+              r.kind === "program_edit"
+                ? [
+                    p.add?.length ? `+${p.add.length}` : null,
+                    p.remove?.length ? `−${p.remove.length}` : null,
+                    p.move?.length ? `${p.move.length} flyttet` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || "ingen endringer"
+                : `${Object.keys(r.payload ?? {}).length} felt: ${Object.keys(
+                    r.payload ?? {},
+                  ).join(", ")}`;
             return (
               <li key={r.id}>
                 <Link
@@ -64,10 +83,12 @@ export default async function AdminQueue() {
                       })}
                     </span>
                   </div>
-                  <div className="mt-1 text-sm text-[#2D1A12]/60">
-                    {fields.length} felt: {fields.join(", ")}
-                    {r.profiles?.display_name && ` · fra ${r.profiles.display_name}`}
-                    {r.source_url && " · med kilde"}
+                  <div className="mt-1 flex flex-wrap items-center gap-x-1.5 text-sm text-[#2D1A12]/60">
+                    <span className="rounded bg-black/[0.06] px-1.5 py-0.5 text-xs">
+                      {r.kind === "program_edit" ? `Program ${r.edition_year ?? ""}` : "Detaljer"}
+                    </span>
+                    <span>{summary}</span>
+                    {r.profiles?.display_name && <span>· fra {r.profiles.display_name}</span>}
                   </div>
                 </Link>
               </li>

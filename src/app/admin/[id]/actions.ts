@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import type { ProgramOps } from "@/lib/submissions";
 
 export type ReviewResult =
   | { ok: true; applied: string[]; conflicted: string[]; skipped: string[] }
@@ -34,6 +35,34 @@ export async function approveFields(
     applied: r.applied ?? [],
     conflicted: r.conflicted ?? [],
     skipped: r.skipped ?? [],
+  };
+}
+
+export async function approveProgram(
+  id: string,
+  ops: ProgramOps,
+  reviewNote: string,
+): Promise<ReviewResult> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("apply_program_submission", {
+    p_submission_id: id,
+    p_ops: ops,
+    p_review_note: reviewNote.trim() || null,
+  });
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin");
+  const r = (data ?? {}) as { added?: number; removed?: number; moved?: number };
+  return {
+    ok: true,
+    applied: [
+      `${r.added ?? 0} lagt til`,
+      `${r.removed ?? 0} fjernet`,
+      `${r.moved ?? 0} flyttet`,
+    ],
+    conflicted: [],
+    skipped: [],
   };
 }
 

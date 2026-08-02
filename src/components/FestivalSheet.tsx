@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion, useMotionValue, animate } from "framer-motion";
-import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
+import { ChevronUpIcon, ChevronDownIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { Link } from "@/i18n/navigation";
 import { dateRangeLabel, fallbackGradient, type Festival } from "@/lib/festivals";
 
@@ -90,8 +90,27 @@ function FestivalList({ festivals }: { festivals: Festival[] }) {
 
   return (
     <div className="flex h-full flex-col overflow-y-auto px-5 pb-6 pt-1">
-      <h2 className="text-2xl">{t("heading")}</h2>
-      <p className="mt-1 text-sm text-stone-500">{t("subheading")}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="text-2xl">{t("heading")}</h2>
+          <p className="mt-1 text-sm text-stone-500">{t("subheading")}</p>
+        </div>
+
+        {/* Outlined, not filled: contributing sits alongside browsing rather
+            than competing with the Program buttons further down the list. */}
+        <a
+          href={`/ny-festival/${locale}`}
+          // The label collapses to a bare plus on narrow screens, so the name
+          // has to live here too -- otherwise the button is unreadable to a
+          // screen reader and unlabelled on hover.
+          aria-label={t("addFestival")}
+          title={t("addFestival")}
+          className="mt-0.5 flex shrink-0 items-center gap-1.5 rounded-full border border-stone-300 px-3.5 py-2 text-sm font-medium text-stone-600 transition hover:border-stone-400 hover:text-stone-800"
+        >
+          <PlusIcon className="h-4 w-4 text-[#FF2D78]" />
+          <span className="hidden sm:inline">{t("addFestival")}</span>
+        </a>
+      </div>
 
       <div className="mt-4 flex flex-col gap-3">
         {festivals.map((festival) => (

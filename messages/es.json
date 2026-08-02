@@ -25,11 +25,12 @@
   },
   "FestivalSheet": {
     "heading": "Explorar festivales",
-    "subheading": "Descubre festivales de música por toda Europa",
+    "subheading": "Planea tu próxima aventura y ayuda a la comunidad a mantener el mapa al día.",
     "hide": "Ocultar festivales",
     "show": "Mostrar festivales",
     "programCta": "Programa",
-    "empty": "Ningún festival coincide con tu búsqueda."
+    "empty": "Ningún festival coincide con tu búsqueda.",
+    "addFestival": "Añadir festival"
   },
   "FestivalPage": {
     "backToMap": "Mapa",

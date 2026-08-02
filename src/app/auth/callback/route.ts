@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("neste") ?? "/admin";
+  const next = searchParams.get("neste") ?? "/";
 
   if (!code) {
     return NextResponse.redirect(`${origin}/logg-inn?feil=mangler-kode`);
@@ -22,6 +22,6 @@ export async function GET(request: NextRequest) {
 
   // Only ever redirect to a path on this site: an absolute URL here would let
   // a crafted sign-in link bounce a freshly authenticated visitor elsewhere.
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/admin";
+  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
   return NextResponse.redirect(`${origin}${safeNext}`);
 }

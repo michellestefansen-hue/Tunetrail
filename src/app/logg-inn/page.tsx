@@ -6,7 +6,10 @@ import { createClient } from "@/lib/supabase/client";
 
 function LoginForm() {
   const params = useSearchParams();
-  const next = params.get("neste") ?? "/admin";
+  // Forsiden, ikke /admin: de aller fleste som logger inn er bidragsytere, og
+  // for dem er /admin en 404. Middleware sender med ?neste=/admin selv når det
+  // faktisk er moderering du var på vei til.
+  const next = params.get("neste") ?? "/";
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [message, setMessage] = useState("");

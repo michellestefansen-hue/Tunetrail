@@ -129,7 +129,10 @@ function MapView() {
   );
 
   return (
-    <div className="relative h-dvh w-full overflow-hidden bg-[#0b0a1f]">
+    // flex-1 rather than h-dvh: the footer is a sibling in the layout, so a
+    // fixed viewport height here would push it off-screen and add a scrollbar
+    // to a page that is meant not to have one.
+    <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-[#0b0a1f]">
       <TunetrailMap
         festivals={visibleFestivals}
         searchMarker={searchLocation}

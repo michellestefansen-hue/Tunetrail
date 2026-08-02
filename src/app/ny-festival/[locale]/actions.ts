@@ -10,6 +10,7 @@ export type NewFestival = {
   city: string;
   venue_name: string;
   website_url: string;
+  ticket_url: string;
   description: string;
   image_url: string;
   tags: string[];
@@ -118,6 +119,7 @@ export async function submitNewFestival(f: NewFestival): Promise<NewResult> {
       city: f.city.trim() || null,
       venue_name: f.venue_name.trim() || null,
       website_url: f.website_url.trim(),
+      ticket_url: f.ticket_url.trim() || null,
       description: f.description.trim() || null,
       image_url: f.image_url.trim() || null,
       tags,

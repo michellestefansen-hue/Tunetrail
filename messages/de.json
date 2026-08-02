@@ -450,6 +450,8 @@
     "programNeedsDates": "Setze zuerst die Termine in Schritt 1. Die Tage hier ergeben sich daraus.",
     "skipProgram": "Überspringen und senden",
     "programCount": "{count, plural, =0{Keine Künstler hinzugefügt} one{# Künstler} other{# Künstler}}",
-    "errBadArtist": "„{name}“ sieht nicht nach einem Künstlernamen aus. Entferne Uhrzeit und Bühnenname."
+    "errBadArtist": "„{name}“ sieht nicht nach einem Künstlernamen aus. Entferne Uhrzeit und Bühnenname.",
+    "ticket": "Ticketlink",
+    "ticketHelp": "Optional. Direkter Link zum Ticketkauf."
   }
 }

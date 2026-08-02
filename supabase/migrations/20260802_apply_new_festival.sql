@@ -93,7 +93,7 @@ begin
     extract(year from (d->>'date_from')::date)::int,
     (d->>'date_from')::date,
     (d->>'date_to')::date,
-    null,
+    d->>'ticket_url',
     prog,
     'community'
   );

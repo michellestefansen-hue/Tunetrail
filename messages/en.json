@@ -450,6 +450,8 @@
     "programNeedsDates": "Set the dates in step 1 first. The days here come from that range.",
     "skipProgram": "Skip and submit",
     "programCount": "{count, plural, =0{No artists added} one{# artist} other{# artists}}",
-    "errBadArtist": "\"{name}\" doesn't look like an artist name. Remove any time or stage name."
+    "errBadArtist": "\"{name}\" doesn't look like an artist name. Remove any time or stage name.",
+    "ticket": "Ticket link",
+    "ticketHelp": "Optional. A direct link to buy tickets."
   }
 }

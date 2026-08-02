@@ -450,6 +450,8 @@
     "programNeedsDates": "Renseignez d'abord les dates à l'étape 1. Les jours en découlent.",
     "skipProgram": "Passer et envoyer",
     "programCount": "{count, plural, =0{Aucun artiste ajouté} one{# artiste} other{# artistes}}",
-    "errBadArtist": "« {name} » ne ressemble pas à un nom d'artiste. Retirez l'heure et le nom de scène."
+    "errBadArtist": "« {name} » ne ressemble pas à un nom d'artiste. Retirez l'heure et le nom de scène.",
+    "ticket": "Lien billetterie",
+    "ticketHelp": "Facultatif. Lien direct pour acheter des billets."
   }
 }

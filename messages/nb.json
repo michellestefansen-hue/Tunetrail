@@ -450,6 +450,8 @@
     "programNeedsDates": "Sett datoer i steg 1 først. Dagene her kommer fra datointervallet.",
     "skipProgram": "Hopp over og send inn",
     "programCount": "{count, plural, =0{Ingen artister lagt til} one{# artist} other{# artister}}",
-    "errBadArtist": "«{name}» ser ikke ut som et artistnavn. Ta bort klokkeslett og scenenavn."
+    "errBadArtist": "«{name}» ser ikke ut som et artistnavn. Ta bort klokkeslett og scenenavn.",
+    "ticket": "Billettlenke",
+    "ticketHelp": "Valgfritt. Direkte lenke til billettkjøp."
   }
 }

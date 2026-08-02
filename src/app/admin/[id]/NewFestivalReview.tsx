@@ -11,6 +11,7 @@ export type NewFestivalPayload = {
   city: string | null;
   venue_name: string | null;
   website_url: string | null;
+  ticket_url: string | null;
   description: string | null;
   image_url: string | null;
   tags: string[] | null;
@@ -110,6 +111,20 @@ export function NewFestivalReview({
               className="text-[#FF4E50] underline"
             >
               {p.website_url}
+            </a>
+          ) : (
+            "–"
+          )}
+        </Row>
+        <Row label="Billetter">
+          {p.ticket_url ? (
+            <a
+              href={p.ticket_url}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="text-[#FF4E50] underline"
+            >
+              {p.ticket_url}
             </a>
           ) : (
             "–"

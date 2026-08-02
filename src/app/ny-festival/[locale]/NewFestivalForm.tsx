@@ -15,6 +15,7 @@ const EMPTY = {
   city: "",
   venue_name: "",
   website_url: "",
+  ticket_url: "",
   description: "",
   image_url: "",
   tags: [] as string[],
@@ -307,6 +308,16 @@ export function NewFestivalForm({
           value={f.website_url}
           onChange={(e) => set("website_url", e.target.value)}
           required
+        />
+      </Field>
+
+      <Field label={t("ticket")} help={t("ticketHelp")}>
+        <input
+          type="url"
+          className={input}
+          placeholder="https://…"
+          value={f.ticket_url}
+          onChange={(e) => set("ticket_url", e.target.value)}
         />
       </Field>
 

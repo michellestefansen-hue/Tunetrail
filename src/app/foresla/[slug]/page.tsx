@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { BareShell } from "@/components/BareShell";
 import { createClient } from "@/lib/supabase/server";
 import { FIELD_NAMES, type FieldValue, type ProgramDay } from "@/lib/submissions";
-import type { Edition } from "./LineupEditor";
+import type { Edition } from "./LineupFields";
 import { ProposeTabs } from "./ProposeTabs";
 
 export const dynamic = "force-dynamic";

@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 type Row = {
   id: string;
   kind: string;
+  group_id: string | null;
   edition_year: number | null;
   created_at: string;
   payload: Record<string, unknown>;
@@ -20,12 +21,44 @@ export default async function AdminQueue() {
   const { data } = await supabase
     .from("submissions")
     .select(
-      "id, kind, edition_year, created_at, payload, source_url, festivals(name, slug), profiles!submissions_submitted_by_fkey(display_name)",
+      "id, kind, group_id, edition_year, created_at, payload, source_url, festivals(name, slug), profiles!submissions_submitted_by_fkey(display_name)",
     )
     .eq("status", "pending")
     .order("created_at", { ascending: true });
 
   const rows = (data ?? []) as unknown as Row[];
+
+  // A contributor who edited both tabs produced two rows on purpose -- details
+  // and programme are judged differently -- but it was one press of Send, so
+  // the queue shows it as one entry.
+  const seen = new Set<string>();
+  const entries: { lead: Row; rows: Row[] }[] = [];
+  for (const r of rows) {
+    if (r.group_id) {
+      if (seen.has(r.group_id)) continue;
+      seen.add(r.group_id);
+      entries.push({ lead: r, rows: rows.filter((x) => x.group_id === r.group_id) });
+    } else {
+      entries.push({ lead: r, rows: [r] });
+    }
+  }
+
+  function describe(r: Row): string {
+    if (r.kind !== "program_edit") {
+      const f = Object.keys(r.payload ?? {});
+      return `${f.length} felt: ${f.join(", ")}`;
+    }
+    const p = r.payload as { add?: unknown[]; remove?: unknown[]; move?: unknown[] };
+    return (
+      [
+        p.add?.length ? `+${p.add.length}` : null,
+        p.remove?.length ? `−${p.remove.length}` : null,
+        p.move?.length ? `${p.move.length} flyttet` : null,
+      ]
+        .filter(Boolean)
+        .join(" · ") || "ingen endringer"
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -44,56 +77,50 @@ export default async function AdminQueue() {
         </p>
       ) : (
         <ul className="space-y-3">
-          {rows.map((r) => {
-            // A programme proposal is counted in operations, a detail edit in
-            // fields -- "+12 lagt til" says more at a glance than "3 felt".
-            const p = r.payload as {
-              add?: unknown[];
-              remove?: unknown[];
-              move?: unknown[];
-            };
-            const summary =
-              r.kind === "program_edit"
-                ? [
-                    p.add?.length ? `+${p.add.length}` : null,
-                    p.remove?.length ? `−${p.remove.length}` : null,
-                    p.move?.length ? `${p.move.length} flyttet` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ") || "ingen endringer"
-                : `${Object.keys(r.payload ?? {}).length} felt: ${Object.keys(
-                    r.payload ?? {},
-                  ).join(", ")}`;
-            return (
-              <li key={r.id}>
-                <Link
-                  href={`/admin/${r.id}`}
-                  className="block rounded-xl border border-black/10 bg-white px-4 py-3 transition hover:border-black/25"
-                >
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <span className="font-medium text-[#2D1A12]">
-                      {r.festivals?.name ?? "Ukjent festival"}
-                    </span>
-                    <span className="text-sm text-[#2D1A12]/50">
-                      {new Date(r.created_at).toLocaleDateString("nb-NO", {
-                        day: "numeric",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
+          {entries.map(({ lead, rows: group }) => (
+            <li key={lead.group_id ?? lead.id}>
+              <Link
+                href={`/admin/${lead.id}`}
+                className="block rounded-xl border border-black/10 bg-white px-4 py-3 transition hover:border-black/25"
+              >
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="font-medium text-[#2D1A12]">
+                    {lead.festivals?.name ?? "Ukjent festival"}
+                  </span>
+                  <span className="text-sm text-[#2D1A12]/50">
+                    {new Date(lead.created_at).toLocaleDateString("nb-NO", {
+                      day: "numeric",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+
+                <div className="mt-1.5 space-y-1">
+                  {group.map((r) => (
+                    <div
+                      key={r.id}
+                      className="flex flex-wrap items-center gap-x-1.5 text-sm text-[#2D1A12]/60"
+                    >
+                      <span className="rounded bg-black/[0.06] px-1.5 py-0.5 text-xs">
+                        {r.kind === "program_edit"
+                          ? `Program ${r.edition_year ?? ""}`
+                          : "Detaljer"}
+                      </span>
+                      <span>{describe(r)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {lead.profiles?.display_name && (
+                  <div className="mt-1 text-xs text-[#2D1A12]/45">
+                    fra {lead.profiles.display_name}
                   </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-1.5 text-sm text-[#2D1A12]/60">
-                    <span className="rounded bg-black/[0.06] px-1.5 py-0.5 text-xs">
-                      {r.kind === "program_edit" ? `Program ${r.edition_year ?? ""}` : "Detaljer"}
-                    </span>
-                    <span>{summary}</span>
-                    {r.profiles?.display_name && <span>· fra {r.profiles.display_name}</span>}
-                  </div>
-                </Link>
-              </li>
-            );
-          })}
+                )}
+              </Link>
+            </li>
+          ))}
         </ul>
       )}
     </div>

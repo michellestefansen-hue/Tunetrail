@@ -24,7 +24,7 @@ export default async function ReviewPage({
   const { data } = await supabase
     .from("submissions")
     .select(
-      "id, kind, edition_year, status, payload, base_snapshot, source_url, note, created_at, festival_id, festivals(name, slug), profiles!submissions_submitted_by_fkey(display_name)",
+      "id, kind, group_id, edition_year, status, payload, base_snapshot, source_url, note, created_at, festival_id, festivals(name, slug), profiles!submissions_submitted_by_fkey(display_name)",
     )
     .eq("id", id)
     .single();
@@ -34,6 +34,7 @@ export default async function ReviewPage({
   const s = data as unknown as {
     id: string;
     kind: string;
+    group_id: string | null;
     edition_year: number | null;
     status: string;
     payload: Record<string, unknown>;
@@ -45,6 +46,23 @@ export default async function ReviewPage({
     festivals: { name: string; slug: string } | null;
     profiles: { display_name: string | null } | null;
   };
+
+  // The other half of a contribution that touched both tabs. Approving one
+  // does not touch the other, so say so -- otherwise it looks finished when it
+  // is not.
+  const { data: siblingRows } = s.group_id
+    ? await supabase
+        .from("submissions")
+        .select("id, kind, edition_year, status")
+        .eq("group_id", s.group_id)
+        .neq("id", s.id)
+    : { data: null };
+  const siblings = (siblingRows ?? []) as {
+    id: string;
+    kind: string;
+    edition_year: number | null;
+    status: string;
+  }[];
 
   const isProgram = s.kind === "program_edit";
   const fields = isProgram ? [] : Object.keys(s.payload ?? {});
@@ -98,6 +116,26 @@ export default async function ReviewPage({
           )}
         </p>
       </div>
+
+      {siblings.length > 0 && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Dette bidraget har flere deler. Godkjenning her gjelder bare denne.
+          <ul className="mt-1.5 space-y-0.5">
+            {siblings.map((sib) => (
+              <li key={sib.id}>
+                <Link href={`/admin/${sib.id}`} className="underline">
+                  {sib.kind === "program_edit"
+                    ? `Program ${sib.edition_year ?? ""}`
+                    : "Detaljer"}
+                </Link>
+                {sib.status !== "pending" && (
+                  <span className="text-amber-900/60"> — allerede behandlet</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {(s.source_url || s.note) && (
         <div className="space-y-1 rounded-xl border border-black/10 bg-white px-4 py-3 text-sm">

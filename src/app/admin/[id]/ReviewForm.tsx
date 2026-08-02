@@ -48,6 +48,19 @@ export function ReviewForm({ id, diffs }: { id: string; diffs: FieldDiff[] }) {
       setError(res.error);
       return;
     }
+
+    // Don't navigate away on a no-op. The function can decline every field --
+    // a conflict, or a name it doesn't allow -- and used to do so in complete
+    // silence, which read as "approved" when nothing had happened.
+    if (res.applied.length === 0) {
+      setError(
+        res.conflicted.length > 0
+          ? `Ingenting ble lagret. Feltet er endret av noen andre siden forslaget ble sendt: ${res.conflicted.join(", ")}. Last siden på nytt for å se dagens verdi.`
+          : "Ingenting ble lagret. Forslaget inneholdt ingen felt som kunne tas inn.",
+      );
+      return;
+    }
+
     router.push("/admin");
     router.refresh();
   }

@@ -44,6 +44,10 @@ export default async function AdminQueue() {
   }
 
   function describe(r: Row): string {
+    if (r.kind === "festival_new") {
+      const p = r.payload as { country?: string; city?: string; tags?: string[] };
+      return [p.city, p.country].filter(Boolean).join(", ") || "ny festival";
+    }
     if (r.kind !== "program_edit") {
       const f = Object.keys(r.payload ?? {});
       return `${f.length} felt: ${f.join(", ")}`;
@@ -85,7 +89,9 @@ export default async function AdminQueue() {
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-medium text-[#2D1A12]">
-                    {lead.festivals?.name ?? "Ukjent festival"}
+                    {lead.festivals?.name ??
+                      (lead.payload as { name?: string })?.name ??
+                      "Ukjent festival"}
                   </span>
                   <span className="text-sm text-[#2D1A12]/50">
                     {new Date(lead.created_at).toLocaleDateString("nb-NO", {
@@ -106,7 +112,9 @@ export default async function AdminQueue() {
                       <span className="rounded bg-black/[0.06] px-1.5 py-0.5 text-xs">
                         {r.kind === "program_edit"
                           ? `Program ${r.edition_year ?? ""}`
-                          : "Detaljer"}
+                          : r.kind === "festival_new"
+                            ? "Ny festival"
+                            : "Detaljer"}
                       </span>
                       <span>{describe(r)}</span>
                     </div>

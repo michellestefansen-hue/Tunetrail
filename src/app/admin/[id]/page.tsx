@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { findDuplicates, type Candidate, type Match } from "@/lib/duplicates";
 import type { ProgramOps } from "@/lib/submissions";
+import { NewFestivalReview, type NewFestivalPayload } from "./NewFestivalReview";
 import { ProgramReview } from "./ProgramReview";
 import { ReviewForm, type FieldDiff } from "./ReviewForm";
 
@@ -74,7 +76,30 @@ export default async function ReviewPage({
   }[];
 
   const isProgram = s.kind === "program_edit";
-  const fields = isProgram ? [] : Object.keys(s.payload ?? {});
+  const isNew = s.kind === "festival_new";
+
+  // Run the duplicate check again here. The contributor saw the same warning
+  // while typing and may have clicked past it -- this is the last chance to
+  // catch a second copy of a festival that already exists.
+  let duplicates: Match[] = [];
+  if (isNew) {
+    const p = s.payload as unknown as NewFestivalPayload;
+    const { data: pool } = await supabase
+      .from("festivals")
+      .select("slug, name, city, country, latitude, longitude")
+      .eq("country", p.country ?? "");
+    duplicates = findDuplicates(
+      {
+        name: p.name,
+        city: p.city,
+        country: p.country,
+        coords: p.latitude != null ? [p.latitude, p.longitude ?? 0] : null,
+      },
+      (pool ?? []) as Candidate[],
+    );
+  }
+
+  const fields = isProgram || isNew ? [] : Object.keys(s.payload ?? {});
 
   // Read today's values so the queue compares against reality, not against
   // whatever was true when the proposal was written.
@@ -105,7 +130,9 @@ export default async function ReviewPage({
           ← Til køen
         </Link>
         <h1 className="mt-2 text-2xl font-bold text-[#2D1A12]">
-          {s.festivals?.name ?? "Ukjent festival"}
+          {s.festivals?.name ??
+            (s.payload as { name?: string })?.name ??
+            "Ukjent festival"}
         </h1>
         <p className="mt-1 text-sm text-[#2D1A12]/60">
           Sendt {new Date(s.created_at).toLocaleString("nb-NO")}
@@ -175,7 +202,13 @@ export default async function ReviewPage({
           Dette forslaget er allerede behandlet ({s.status}).
         </p>
       ) : (
-        isProgram ? (
+        isNew ? (
+          <NewFestivalReview
+            id={s.id}
+            payload={s.payload as unknown as NewFestivalPayload}
+            duplicates={duplicates}
+          />
+        ) : isProgram ? (
           <ProgramReview
             id={s.id}
             year={s.edition_year ?? 0}

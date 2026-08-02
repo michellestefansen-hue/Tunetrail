@@ -66,6 +66,28 @@ export async function approveProgram(
   };
 }
 
+export async function approveNewFestival(
+  id: string,
+  reviewNote: string,
+): Promise<ReviewResult> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("apply_new_festival", {
+    p_submission_id: id,
+    p_review_note: reviewNote.trim() || null,
+  });
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin");
+  const r = (data ?? {}) as { slug?: string };
+  return {
+    ok: true,
+    applied: r.slug ? [r.slug] : [],
+    conflicted: [],
+    skipped: [],
+  };
+}
+
 export async function rejectSubmission(
   id: string,
   reviewNote: string,

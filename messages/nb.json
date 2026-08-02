@@ -333,7 +333,7 @@
       },
       "description": {
         "label": "Beskrivelse",
-        "help": "Et par setninger om hva slags festival dette er."
+        "help": "Et par setninger om hva slags festival dette er, helst på engelsk. Dette blir ikke oversatt."
       },
       "tags": {
         "label": "Sjangre",

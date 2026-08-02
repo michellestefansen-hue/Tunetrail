@@ -333,7 +333,7 @@
       },
       "description": {
         "label": "Description",
-        "help": "A couple of sentences about what kind of festival this is."
+        "help": "A couple of sentences about what kind of festival this is, preferably in English. This won't be translated."
       },
       "tags": {
         "label": "Genres",

@@ -333,7 +333,7 @@
       },
       "description": {
         "label": "Descripción",
-        "help": "Un par de frases sobre qué tipo de festival es."
+        "help": "Un par de frases sobre qué tipo de festival es, preferiblemente en inglés. Esto no se traduce."
       },
       "tags": {
         "label": "Géneros",

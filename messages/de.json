@@ -333,7 +333,7 @@
       },
       "description": {
         "label": "Beschreibung",
-        "help": "Ein paar Sätze darüber, was für ein Festival das ist."
+        "help": "Ein paar Sätze darüber, was für ein Festival das ist, am besten auf Englisch. Das wird nicht übersetzt."
       },
       "tags": {
         "label": "Genres",

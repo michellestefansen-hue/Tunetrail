@@ -16,27 +16,36 @@ function dayLabel(date: string) {
 type Key = string;
 const keyOf = (kind: string, i: number): Key => `${kind}:${i}`;
 
+const TICKET_KEY: Key = "ticket:0";
+
 export function ProgramReview({
   id,
   year,
   ops,
+  currentTicketUrl,
 }: {
   id: string;
   year: number;
   ops: ProgramOps;
+  /** Read fresh from festival_editions, for the same conflict check as ordinary fields. */
+  currentTicketUrl: string | null;
 }) {
   const router = useRouter();
+  const ticketConflict =
+    !!ops.ticket_url && ops.ticket_url.base !== currentTicketUrl;
 
   // Additions start accepted, removals do not. Adding a name is nearly always
   // right; taking one away is the operation worth a second look, and it is the
-  // one that loses work if it slips through.
-  const [checked, setChecked] = useState<Set<Key>>(
-    () =>
-      new Set([
-        ...ops.add.map((_, i) => keyOf("add", i)),
-        ...ops.move.map((_, i) => keyOf("move", i)),
-      ]),
-  );
+  // one that loses work if it slips through. A ticket link change starts
+  // accepted too, unless it conflicts with what is actually stored now.
+  const [checked, setChecked] = useState<Set<Key>>(() => {
+    const s = new Set([
+      ...ops.add.map((_, i) => keyOf("add", i)),
+      ...ops.move.map((_, i) => keyOf("move", i)),
+    ]);
+    if (ops.ticket_url && !ticketConflict) s.add(TICKET_KEY);
+    return s;
+  });
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -70,6 +79,7 @@ export function ProgramReview({
       add: ops.add.filter((_, i) => checked.has(keyOf("add", i))),
       remove: ops.remove.filter((_, i) => checked.has(keyOf("remove", i))),
       move: ops.move.filter((_, i) => checked.has(keyOf("move", i))),
+      ...(ops.ticket_url && checked.has(TICKET_KEY) ? { ticket_url: ops.ticket_url } : {}),
     };
     const res = await approveProgram(id, accepted, note);
     setBusy(false);
@@ -124,6 +134,49 @@ export function ProgramReview({
         Programforslag for {year}. Tilføyelser er huket av på forhånd; fjerninger er det
         ikke, fordi det er de som kan slette andres arbeid.
       </p>
+
+      {ops.ticket_url && (
+        <section
+          className={`rounded-xl border bg-white ${
+            ticketConflict ? "border-amber-400" : "border-black/10"
+          }`}
+        >
+          <label className="flex cursor-pointer items-start gap-3 px-4 py-3">
+            <input
+              type="checkbox"
+              checked={checked.has(TICKET_KEY)}
+              onChange={() => toggle(TICKET_KEY)}
+              className="mt-1 size-4 shrink-0"
+            />
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="font-medium text-[#2D1A12]">Billettlenke</div>
+              {ticketConflict && (
+                <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  Feltet er endret av noen andre etter at forslaget ble sendt.
+                  Bidragsyteren så <em>{currentTicketUrl ?? "— tomt —"}</em> som utgangspunkt,
+                  men databasen har nå noe annet.
+                </p>
+              )}
+              <div className="grid gap-2 text-sm sm:grid-cols-2">
+                <div className="rounded-lg bg-black/[0.03] px-3 py-2">
+                  <div className="text-xs uppercase tracking-wide text-[#2D1A12]/45">Nå</div>
+                  <div className="mt-0.5 break-words text-[#2D1A12]/70">
+                    {currentTicketUrl ?? "— tomt —"}
+                  </div>
+                </div>
+                <div className="rounded-lg bg-emerald-50 px-3 py-2">
+                  <div className="text-xs uppercase tracking-wide text-emerald-800/60">
+                    Foreslått
+                  </div>
+                  <div className="mt-0.5 break-words text-emerald-900">
+                    {ops.ticket_url.value ?? "— tomt —"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </label>
+        </section>
+      )}
 
       {groups.map((g) => {
         const all = g.items.every((_, i) => checked.has(keyOf(g.kind, i)));

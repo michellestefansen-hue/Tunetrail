@@ -368,7 +368,8 @@
       "editionNotFound": "No se encontró la edición.",
       "nothingChanged": "No hay ningún cambio.",
       "dateOutOfRange": "{date} está fuera de las fechas del festival.",
-      "nameError": "{name}: {reason}"
+      "nameError": "{name}: {reason}",
+      "badTicketUrl": "El enlace de entradas debe empezar por http:// o https://, o estar vacío."
     },
     "lineup": {
       "noDates": "Esta edición aún no tiene fechas registradas, así que no hay nada a lo que asignar artistas.",
@@ -382,7 +383,10 @@
       "addNew": "Añadir nuevo:",
       "uses": "{count, plural, one{# vez} other{# veces}}",
       "alreadyOnDay": "Ya está en este día."
-    }
+    },
+    "ticketLabel": "Enlace de entradas",
+    "ticketHelp": "Opcional. Enlace directo para comprar entradas de esta edición. Déjalo en blanco si aún no hay uno.",
+    "summaryTicket": "Enlace de entradas: {url}"
   },
   "Login": {
     "metaTitle": "Iniciar sesión · Tunetrail",

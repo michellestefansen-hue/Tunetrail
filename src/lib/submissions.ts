@@ -84,6 +84,13 @@ export type ProgramOps = {
   add: { date: string; name: string }[];
   remove: { date: string; name: string }[];
   move: { from: string; to: string; name: string }[];
+  /**
+   * Present only when the contributor actually changed it. `base` is what
+   * they saw at submission time, for the same conflict check the ordinary
+   * fields get -- ticket_url lives on festival_editions, so it rides along
+   * with the programme rather than getting a submission kind of its own.
+   */
+  ticket_url?: { value: string | null; base: string | null };
 };
 
 const artistKey = (n: string) =>

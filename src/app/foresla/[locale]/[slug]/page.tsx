@@ -55,7 +55,7 @@ export default async function ProposePage({
   const { data: festival } = await supabase
     .from("festivals")
     .select(
-      `name, ${FIELD_NAMES.join(", ")}, festival_editions(year, date_from, date_to, program)`,
+      `name, ${FIELD_NAMES.join(", ")}, festival_editions(year, date_from, date_to, ticket_url, program)`,
     )
     .eq("slug", slug)
     .single();
@@ -67,6 +67,7 @@ export default async function ProposePage({
       year: number;
       date_from: string | null;
       date_to: string | null;
+      ticket_url: string | null;
       program: { date: string; artists: { name: string }[] }[] | null;
     }[];
   };
@@ -86,7 +87,13 @@ export default async function ProposePage({
         date,
         artists: byDate.get(date) ?? [],
       }));
-      return { year: e.year, date_from: e.date_from!, date_to: e.date_to!, days };
+      return {
+        year: e.year,
+        date_from: e.date_from!,
+        date_to: e.date_to!,
+        days,
+        ticket_url: e.ticket_url,
+      };
     })
     // Whatever is coming up next, first -- that is what people want to fix.
     .sort((a, b) => {

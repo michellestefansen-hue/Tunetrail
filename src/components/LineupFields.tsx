@@ -9,6 +9,8 @@ export type Edition = {
   date_from: string;
   date_to: string;
   days: ProgramDay[];
+  /** Absent for a festival that doesn't exist yet -- there is nothing to link to. */
+  ticket_url?: string | null;
 };
 
 export function dayLabel(date: string, bcp47: string) {

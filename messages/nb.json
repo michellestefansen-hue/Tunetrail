@@ -368,7 +368,8 @@
       "editionNotFound": "Fant ikke utgaven.",
       "nothingChanged": "Ingenting er endret.",
       "dateOutOfRange": "{date} er utenfor festivalen.",
-      "nameError": "{name}: {reason}"
+      "nameError": "{name}: {reason}",
+      "badTicketUrl": "Billettlenken må starte med http:// eller https://, eller stå tom."
     },
     "lineup": {
       "noDates": "Denne utgaven har ingen datoer registrert ennå, så det er ikke noe å fordele artister på.",
@@ -382,7 +383,10 @@
       "addNew": "Legg til ny:",
       "uses": "{count, plural, one{# gang} other{# ganger}}",
       "alreadyOnDay": "Står allerede på denne dagen."
-    }
+    },
+    "ticketLabel": "Billettlenke",
+    "ticketHelp": "Valgfritt. Direkte lenke til billettkjøp for denne utgaven. Tom hvis den ikke finnes ennå.",
+    "summaryTicket": "Billettlenke: {url}"
   },
   "Login": {
     "metaTitle": "Logg inn · Tunetrail",

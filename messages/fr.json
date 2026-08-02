@@ -368,7 +368,8 @@
       "editionNotFound": "Édition introuvable.",
       "nothingChanged": "Rien n'a changé.",
       "dateOutOfRange": "{date} est hors des dates du festival.",
-      "nameError": "{name} : {reason}"
+      "nameError": "{name} : {reason}",
+      "badTicketUrl": "Le lien de billetterie doit commencer par http:// ou https://, ou être laissé vide."
     },
     "lineup": {
       "noDates": "Cette édition n'a encore aucune date enregistrée, il n'y a donc rien à quoi assigner des artistes.",
@@ -382,7 +383,10 @@
       "addNew": "Ajouter :",
       "uses": "{count, plural, one{# fois} other{# fois}}",
       "alreadyOnDay": "Déjà présent ce jour-là."
-    }
+    },
+    "ticketLabel": "Lien billetterie",
+    "ticketHelp": "Facultatif. Lien direct pour acheter des billets pour cette édition. Laissez vide s'il n'y en a pas encore.",
+    "summaryTicket": "Lien billetterie : {url}"
   },
   "Login": {
     "metaTitle": "Connexion · Tunetrail",

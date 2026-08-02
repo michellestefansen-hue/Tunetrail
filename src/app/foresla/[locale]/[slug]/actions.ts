@@ -22,6 +22,7 @@ export type SubmitError =
   | { code: "notAuthenticated" | "festivalNotFound" | "editionNotFound" | "nothingChanged" }
   | { code: "dateOutOfRange"; date: string }
   | { code: "nameError"; name: string; reason: ArtistNameErrorCode }
+  | { code: "badTicketUrl" }
   | { code: "unknown"; message: string };
 
 export type SubmitResult =
@@ -69,7 +70,7 @@ export async function submitAll(
   const hasFields = Object.keys(payload).length > 0;
 
   // ---- programme ---------------------------------------------------------
-  const hasProgram = programYear !== null && opsCount(ops) > 0;
+  const hasProgram = programYear !== null && (opsCount(ops) > 0 || !!ops.ticket_url);
   const cleanOps: ProgramOps = { add: [], remove: [], move: [] };
 
   if (hasProgram) {
@@ -92,6 +93,17 @@ export async function submitAll(
       if (!inRange(o.to)) return { ok: false, error: { code: "dateOutOfRange", date: o.to } };
       cleanOps.move.push({ from: o.from, to: o.to, name: o.name.trim() });
     }
+  }
+
+  // A blank link is a valid choice (clearing it); anything non-blank has to at
+  // least look like a URL, since this goes straight into an <a href> on the
+  // festival page with no further check.
+  if (ops.ticket_url) {
+    const v = ops.ticket_url.value;
+    if (v !== null && !/^https?:\/\//i.test(v)) {
+      return { ok: false, error: { code: "badTicketUrl" } };
+    }
+    cleanOps.ticket_url = { value: v, base: ops.ticket_url.base };
   }
 
   if (!hasFields && !hasProgram) return { ok: false, error: { code: "nothingChanged" } };

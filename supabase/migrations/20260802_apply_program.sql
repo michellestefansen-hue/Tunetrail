@@ -27,19 +27,22 @@ security definer
 set search_path = public
 as $$
 declare
-  s          submissions;
-  prog       jsonb;
-  op         jsonb;
-  day_idx    int;
-  art_idx    int;
+  s              submissions;
+  prog           jsonb;
+  op             jsonb;
+  day_idx        int;
+  art_idx        int;
   -- Ikke kall denne «found»: det navnet er PostgreSQLs egen, og å skygge for
   -- den ville gjort «if not found then raise» stille virkningsløs.
-  has_artist boolean;
-  n_add      int := 0;
-  n_remove   int := 0;
-  n_move     int := 0;
-  target     text;
-  nm         text;
+  has_artist     boolean;
+  n_add          int := 0;
+  n_remove       int := 0;
+  n_move         int := 0;
+  target         text;
+  nm             text;
+  cur_ticket     text;
+  ticket_applied boolean := false;
+  ticket_skipped boolean := false;
 begin
   if not exists (select 1 from profiles where id = auth.uid() and is_admin) then
     raise exception 'Bare administrator kan godkjenne forslag.';
@@ -54,11 +57,29 @@ begin
     raise exception 'Dette er ikke et programforslag.';
   end if;
 
-  select coalesce(program, '[]'::jsonb) into prog
+  select coalesce(program, '[]'::jsonb), ticket_url into prog, cur_ticket
     from festival_editions
    where festival_id = s.festival_id and year = s.edition_year
      for update;
   if not found then raise exception 'Fant ikke utgaven.'; end if;
+
+  -- ticket_url lever på denne raden, ikke i festivals, så den tas her i
+  -- stedet for gjennom apply_submission. Text-sammenligning har ikke
+  -- to_jsonb-fellen fra festival_edit: NULL is distinct from NULL er false
+  -- helt naturlig for en vanlig kolonne.
+  if p_ops ? 'ticket_url' then
+    if cur_ticket is distinct from (p_ops->'ticket_url'->>'base') then
+      ticket_skipped := true;
+    else
+      update festival_editions
+         set ticket_url = nullif(trim(p_ops->'ticket_url'->>'value'), '')
+       where festival_id = s.festival_id and year = s.edition_year;
+      insert into submission_audit (submission_id, festival_id, field, old_value, new_value)
+      values (s.id, s.festival_id, 'ticket_url:' || s.edition_year,
+              to_jsonb(cur_ticket), p_ops->'ticket_url'->'value');
+      ticket_applied := true;
+    end if;
+  end if;
 
   -- Fjern først, så flytt, så legg til. Motsatt rekkefølge ville latt en
   -- flytting fjerne navnet en tilføyelse nettopp la inn.
@@ -148,13 +169,20 @@ begin
   on conflict (name) do nothing;
 
   update submissions
-     set status = case when n_add + n_remove + n_move = 0 then 'rejected' else 'applied' end,
+     set status = case
+                    when n_add + n_remove + n_move = 0 and not ticket_applied then 'rejected'
+                    when ticket_skipped then 'partial'
+                    else 'applied'
+                  end,
          reviewed_by = auth.uid(),
          review_note = p_review_note,
          reviewed_at = now()
    where id = s.id;
 
-  return jsonb_build_object('added', n_add, 'removed', n_remove, 'moved', n_move);
+  return jsonb_build_object(
+    'added', n_add, 'removed', n_remove, 'moved', n_move,
+    'ticketApplied', ticket_applied, 'ticketSkipped', ticket_skipped
+  );
 end;
 $$;
 

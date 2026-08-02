@@ -368,7 +368,8 @@
       "editionNotFound": "Ausgabe nicht gefunden.",
       "nothingChanged": "Nichts wurde geändert.",
       "dateOutOfRange": "{date} liegt außerhalb des Festivals.",
-      "nameError": "{name}: {reason}"
+      "nameError": "{name}: {reason}",
+      "badTicketUrl": "Der Ticketlink muss mit http:// oder https:// beginnen oder leer sein."
     },
     "lineup": {
       "noDates": "Für diese Ausgabe sind noch keine Termine registriert, es gibt also nichts, dem man Künstler zuordnen könnte.",
@@ -382,7 +383,10 @@
       "addNew": "Neu hinzufügen:",
       "uses": "{count, plural, one{# Mal} other{# Mal}}",
       "alreadyOnDay": "Steht schon an diesem Tag."
-    }
+    },
+    "ticketLabel": "Ticketlink",
+    "ticketHelp": "Optional. Direkter Link zum Ticketkauf für diese Ausgabe. Leer lassen, wenn es noch keinen gibt.",
+    "summaryTicket": "Ticketlink: {url}"
   },
   "Login": {
     "metaTitle": "Anmelden · Tunetrail",

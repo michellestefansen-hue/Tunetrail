@@ -40,6 +40,9 @@ export function ProposeTabs({
       editions.map((e) => [e.year, e.days.map((d) => ({ ...d, artists: [...d.artists] }))]),
     ),
   );
+  const [ticketByYear, setTicketByYear] = useState<Record<number, string>>(() =>
+    Object.fromEntries(editions.map((e) => [e.year, e.ticket_url ?? ""])),
+  );
   const [note, setNote] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState("");
@@ -47,10 +50,19 @@ export function ProposeTabs({
 
   const edition = editions.find((e) => e.year === year) ?? editions[0];
   const days = useMemo(() => byYear[year] ?? [], [byYear, year]);
-  const ops = useMemo(
-    () => (edition ? diffProgram(edition.days, days) : { add: [], remove: [], move: [] }),
-    [edition, days],
-  );
+  const ticketUrl = ticketByYear[year] ?? "";
+  const ticketChanged = ticketUrl.trim() !== (edition?.ticket_url ?? "").trim();
+
+  const ops = useMemo(() => {
+    const base = edition ? diffProgram(edition.days, days) : { add: [], remove: [], move: [] };
+    if (!ticketChanged) return base;
+    // Rides along with the programme rather than getting its own submission
+    // kind: ticket_url lives on festival_editions, same row the days do.
+    return {
+      ...base,
+      ticket_url: { value: ticketUrl.trim() || null, base: edition?.ticket_url ?? null },
+    };
+  }, [edition, days, ticketChanged, ticketUrl]);
 
   const fieldDiff = useMemo(
     () => buildDiff(current as Record<string, unknown>, values).payload,
@@ -58,7 +70,7 @@ export function ProposeTabs({
   );
 
   const changedFields = Object.keys(fieldDiff).length;
-  const changedOps = opsCount(ops);
+  const changedOps = opsCount(ops) + (ticketChanged ? 1 : 0);
   const total = changedFields + changedOps;
 
   function describeError(e: SubmitError): string {
@@ -67,6 +79,8 @@ export function ProposeTabs({
         return t("errors.dateOutOfRange", { date: e.date });
       case "nameError":
         return t("errors.nameError", { name: e.name, reason: t(`artistName.${e.reason}`) });
+      case "badTicketUrl":
+        return t("errors.badTicketUrl");
       case "unknown":
         return e.message;
       default:
@@ -147,14 +161,33 @@ export function ProposeTabs({
             {t("noEditions")}
           </p>
         ) : (
-          <LineupFields
-            editions={editions}
-            year={year}
-            onYear={setYear}
-            days={days}
-            onDays={(next) => setByYear((prev) => ({ ...prev, [year]: next }))}
-            bcp47={bcp47}
-          />
+          <div className="space-y-6">
+            <div className="space-y-1.5">
+              <label htmlFor="billettlenke" className="block font-medium text-[#2D1A12]">
+                {t("ticketLabel")}
+              </label>
+              <p className="text-sm text-[#2D1A12]/60">{t("ticketHelp")}</p>
+              <input
+                id="billettlenke"
+                type="url"
+                placeholder="https://…"
+                value={ticketUrl}
+                onChange={(e) =>
+                  setTicketByYear((prev) => ({ ...prev, [year]: e.target.value }))
+                }
+                className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-[#2D1A12] outline-none focus:border-black/30"
+              />
+            </div>
+
+            <LineupFields
+              editions={editions}
+              year={year}
+              onYear={setYear}
+              days={days}
+              onDays={(next) => setByYear((prev) => ({ ...prev, [year]: next }))}
+              bcp47={bcp47}
+            />
+          </div>
         )}
       </div>
 
@@ -185,6 +218,11 @@ export function ProposeTabs({
               {ops.move.length > 0 && (
                 <li className="text-[#2D1A12]/70">
                   {t("summaryMoved", { count: ops.move.length, names: ops.move.map((o) => o.name).join(", ") })}
+                </li>
+              )}
+              {ticketChanged && (
+                <li className="text-[#2D1A12]/70">
+                  {t("summaryTicket", { url: ticketUrl.trim() || "–" })}
                 </li>
               )}
             </ul>

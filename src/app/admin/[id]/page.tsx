@@ -123,6 +123,20 @@ export default async function ReviewPage({
       !sameJson(s.base_snapshot[field], now[field] ?? null),
   }));
 
+  // The ticket link is the one part of a program_edit that needs "now" for
+  // comparison, same reason ordinary fields do -- it can have changed while
+  // the proposal sat waiting.
+  let currentTicketUrl: string | null = null;
+  if (isProgram) {
+    const { data: ed } = await supabase
+      .from("festival_editions")
+      .select("ticket_url")
+      .eq("festival_id", s.festival_id)
+      .eq("year", s.edition_year)
+      .single();
+    currentTicketUrl = ed?.ticket_url ?? null;
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -213,6 +227,7 @@ export default async function ReviewPage({
             id={s.id}
             year={s.edition_year ?? 0}
             ops={s.payload as unknown as ProgramOps}
+            currentTicketUrl={currentTicketUrl}
           />
         ) : (
           <ReviewForm id={s.id} diffs={diffs} />

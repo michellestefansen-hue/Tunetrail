@@ -32,7 +32,9 @@ export function LineupEditor({
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState("");
 
-  const days = byYear[edition.year] ?? [];
+  // Memoised so the fallback does not produce a fresh array each render, which
+  // would make the diff below recompute on every keystroke.
+  const days = useMemo(() => byYear[edition.year] ?? [], [byYear, edition.year]);
   const original = edition.days;
   const ops = useMemo(() => diffProgram(original, days), [original, days]);
   const changes = opsCount(ops);

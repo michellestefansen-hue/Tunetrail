@@ -10,6 +10,7 @@ import {
   CalendarDateRangeIcon,
 } from "@heroicons/react/24/solid";
 import { createClient } from "@/lib/supabase/static";
+import { FestivalProgramTabs } from "@/components/FestivalProgramTabs";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Link, getPathname } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
@@ -171,9 +172,15 @@ export default async function FestivalPage({
   );
   const countryName = festival.country ? tCountries(festival.country) : null;
   const edition = currentEdition(festival);
-  const program = edition?.program ?? [];
   const jsonLd = eventJsonLd(festival, edition, locale, countryName);
   const bcp = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
+
+  // One tab per year on record, oldest first; defaults to whichever edition
+  // the rest of the page (dates, ticket link, JSON-LD) is already built
+  // around, so the tab that opens matches what's shown above it.
+  const years = [...festival.festival_editions]
+    .sort((a, b) => a.year - b.year)
+    .map((e) => ({ year: e.year, program: e.program }));
 
   return (
     <div className="min-h-dvh bg-[#FFF9F0] pb-16">
@@ -268,40 +275,12 @@ export default async function FestivalPage({
         )}
 
         <h2 className="mt-8 text-xl">{t("program")}</h2>
-        <div className="mt-4 flex flex-col gap-5">
-          {program.length === 0 && (
-            <p className="text-sm text-stone-400">{t("programNotAnnouncedYet")}</p>
-          )}
-          {program.map((day, i) => (
-            <div key={day.date} className="rounded-2xl bg-white p-4 shadow-[0_8px_30px_rgba(45,26,18,0.08)]">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[#FF2D78]">
-                {t("day", { number: i + 1 })}
-                {day.day_label ? ` · ${day.day_label}` : ""}
-              </p>
-              <p className="mt-0.5 font-heading text-lg text-[#2D1A12]">
-                {new Date(day.date).toLocaleDateString(bcp, {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                })}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {day.artists.length > 0 ? (
-                  day.artists.map((a, idx) => (
-                    <span
-                      key={`${a.name}-${idx}`}
-                      className="rounded-full bg-stone-100 px-2.5 py-1 text-xs text-stone-700"
-                      title={[a.stage, a.time].filter(Boolean).join(" · ")}
-                    >
-                      {a.name}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-xs text-stone-400">{t("programNotAnnounced")}</span>
-                )}
-              </div>
-            </div>
-          ))}
+        <div className="mt-4">
+          <FestivalProgramTabs
+            years={years}
+            defaultYear={edition?.year ?? years[0]?.year ?? new Date().getFullYear()}
+            bcp47={bcp}
+          />
         </div>
 
         {relatedGuides.length > 0 && (

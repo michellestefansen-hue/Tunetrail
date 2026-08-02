@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { FESTIVAL_TAGS } from "@/lib/festivals";
 import { EDITABLE_FIELDS, type FieldValue } from "@/lib/submissions";
 
@@ -16,6 +17,9 @@ export function GeneralFields({
   values: Values;
   onChange: (next: Values) => void;
 }) {
+  const t = useTranslations("Propose.fields");
+  const tTags = useTranslations("Tags");
+
   function set(field: string, value: FieldValue) {
     onChange({ ...values, [field]: value });
   }
@@ -32,9 +36,9 @@ export function GeneralFields({
         return (
           <div key={field.name} className="space-y-1.5">
             <label htmlFor={field.name} className="block font-medium text-[#2D1A12]">
-              {field.label}
+              {t(`${field.name}.label`)}
             </label>
-            <p className="text-sm text-[#2D1A12]/60">{field.help}</p>
+            <p className="text-sm text-[#2D1A12]/60">{t(`${field.name}.help`)}</p>
 
             {field.input === "tags" ? (
               <div className="flex flex-wrap gap-2 pt-1">
@@ -52,7 +56,7 @@ export function GeneralFields({
                           : "border-black/15 bg-white text-[#2D1A12]/70"
                       }`}
                     >
-                      {tag}
+                      {tTags(tag)}
                     </button>
                   );
                 })}

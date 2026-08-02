@@ -44,7 +44,8 @@
     "metaTitleNoEdition": "{name} | Tunetrail",
     "metaWhen": " ({range})",
     "metaWhere": " en {place}",
-    "metaDescription": "{name}{when}{where}. Programa, cartel e información de entradas actualizados en un solo lugar."
+    "metaDescription": "{name}{when}{where}. Programa, cartel e información de entradas actualizados en un solo lugar.",
+    "proposeEdit": "¿Algo está mal aquí? Proponer un cambio"
   },
   "Map": {
     "clusterMore": "+{count} más"
@@ -308,5 +309,89 @@
     "Tyskland": "Alemania",
     "Ungarn": "Hungría",
     "Østerrike": "Austria"
+  },
+  "Propose": {
+    "metaTitle": "Proponer un cambio · Tunetrail",
+    "backTo": "← {name}",
+    "heading": "Proponer un cambio",
+    "intro": "Corrige lo que esté mal y deja el resto. Tu propuesta se revisa antes de publicarse.",
+    "tabGeneral": "General",
+    "tabProgram": "Cartel",
+    "noEditions": "Este festival aún no tiene ediciones registradas, así que no hay cartel que editar.",
+    "fields": {
+      "venue_name": {
+        "label": "Recinto",
+        "help": "El lugar donde se celebra el festival. Se muestra en la tarjeta y en la página del festival."
+      },
+      "website_url": {
+        "label": "Sitio web",
+        "help": "La página oficial del festival. Preferiblemente la principal, no una subpágina."
+      },
+      "image_url": {
+        "label": "Enlace de imagen",
+        "help": "Un enlace directo a una imagen. Preferiblemente del recinto o del público, no de un solo artista."
+      },
+      "description": {
+        "label": "Descripción",
+        "help": "Un par de frases sobre qué tipo de festival es."
+      },
+      "tags": {
+        "label": "Géneros",
+        "help": "Elige los que realmente marcan el cartel, no todo lo que aparece."
+      }
+    },
+    "summaryHeading": "Esto es lo que vas a enviar",
+    "summaryDetails": "Detalles: {fields}",
+    "summaryAdded": "+{count} añadido(s): {names}",
+    "summaryRemoved": "−{count} eliminado(s): {names}",
+    "summaryMoved": "{count} movido(s): {names}",
+    "commentLabel": "Comentario",
+    "commentOptional": "(opcional)",
+    "commentHelp": "Un enlace o una explicación ayuda a aprobarlo más rápido.",
+    "submitNone": "Todavía no hay cambios",
+    "submitSending": "Enviando …",
+    "submitCount": "{count, plural, one{Enviar # cambio} other{Enviar # cambios}}",
+    "sentHeading": "Gracias — la propuesta se ha enviado",
+    "sentBodyFields": "Propusiste cambios en los detalles. Se revisará antes de publicarse, así que los cambios no se ven de inmediato.",
+    "sentBodyProgram": "Propusiste cambios en el cartel de {year}. Se revisará antes de publicarse, así que los cambios no se ven de inmediato.",
+    "sentBodyBoth": "Propusiste cambios en los detalles y en el cartel de {year}. Se revisará antes de publicarse, así que los cambios no se ven de inmediato.",
+    "backToFestival": "Volver a {name}",
+    "artistName": {
+      "empty": "Nombre vacío.",
+      "hasTime": "Quita la hora — hace que el artista no se pueda buscar.",
+      "tooLong": "Demasiado largo para ser el nombre de un artista."
+    },
+    "errors": {
+      "notAuthenticated": "Debes iniciar sesión.",
+      "festivalNotFound": "No se encontró el festival.",
+      "editionNotFound": "No se encontró la edición.",
+      "nothingChanged": "No hay ningún cambio.",
+      "dateOutOfRange": "{date} está fuera de las fechas del festival.",
+      "nameError": "{name}: {reason}"
+    },
+    "lineup": {
+      "noDates": "Esta edición aún no tiene fechas registradas, así que no hay nada a lo que asignar artistas.",
+      "artistsCount": "{count, plural, one{# artista} other{# artistas}}",
+      "moveTo": "Mover a {name} a otro día",
+      "movePlaceholder": "mover…",
+      "remove": "Quitar a {name}"
+    },
+    "artistSearch": {
+      "placeholder": "Busca un artista o escribe un nombre nuevo",
+      "addNew": "Añadir nuevo:",
+      "uses": "{count, plural, one{# vez} other{# veces}}",
+      "alreadyOnDay": "Ya está en este día."
+    }
+  },
+  "Login": {
+    "metaTitle": "Iniciar sesión · Tunetrail",
+    "heading": "Iniciar sesión",
+    "intro": "Escribe tu correo y te enviaremos un enlace. Sin contraseña.",
+    "emailPlaceholder": "tu@ejemplo.es",
+    "submit": "Enviarme un enlace",
+    "submitSending": "Enviando …",
+    "sentHeading": "Revisa tu correo",
+    "sentBody": "Hemos enviado un enlace a <b>{email}</b>. Haz clic en él para iniciar sesión.",
+    "sentHint": "¿No lo encuentras? Revisa la carpeta de spam. El enlace es válido durante una hora."
   }
 }

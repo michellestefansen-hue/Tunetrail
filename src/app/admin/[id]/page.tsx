@@ -1,13 +1,22 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { EDITABLE_FIELDS, type ProgramOps } from "@/lib/submissions";
+import type { ProgramOps } from "@/lib/submissions";
 import { ProgramReview } from "./ProgramReview";
 import { ReviewForm, type FieldDiff } from "./ReviewForm";
 
 export const dynamic = "force-dynamic";
 
-const LABEL = Object.fromEntries(EDITABLE_FIELDS.map((f) => [f.name, f.label]));
+// Fixed Norwegian on purpose: admin is Norwegian-only regardless of what
+// language a contributor used, so it keeps its own label map instead of
+// reading the (now translated) contributor-facing field metadata.
+const LABEL: Record<string, string> = {
+  venue_name: "Arena",
+  website_url: "Nettsted",
+  image_url: "Bildelenke",
+  description: "Beskrivelse",
+  tags: "Sjangre",
+};
 
 function sameJson(a: unknown, b: unknown): boolean {
   return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);

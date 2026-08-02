@@ -1,17 +1,16 @@
+import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { BareShell } from "@/components/BareShell";
+import { BCP47_LOCALE } from "@/lib/festivals";
+import { routing, type Locale } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { FIELD_NAMES, type FieldValue, type ProgramDay } from "@/lib/submissions";
 import type { Edition } from "./LineupFields";
 import { ProposeTabs } from "./ProposeTabs";
 
 export const dynamic = "force-dynamic";
-
-export const metadata: Metadata = {
-  title: "Foreslå endring · Tunetrail",
-  robots: { index: false, follow: false },
-};
 
 /** Every calendar day the edition runs, whether or not anyone plays yet. */
 function daysBetween(from: string, to: string): string[] {
@@ -25,18 +24,33 @@ function daysBetween(from: string, to: string): string[] {
   return out;
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: rawLocale } = await params;
+  const locale = hasLocale(routing.locales, rawLocale) ? rawLocale : routing.defaultLocale;
+  const t = await getTranslations({ locale, namespace: "Propose" });
+  return { title: t("metaTitle"), robots: { index: false, follow: false } };
+}
+
 export default async function ProposePage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { slug } = await params;
+  const { locale: rawLocale, slug } = await params;
+  if (!hasLocale(routing.locales, rawLocale)) notFound();
+  const locale: Locale = rawLocale;
+  setRequestLocale(locale);
+
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect(`/logg-inn?neste=${encodeURIComponent(`/foresla/${slug}`)}`);
+  if (!user) redirect(`/logg-inn?neste=${encodeURIComponent(`/foresla/${locale}/${slug}`)}`);
 
   const { data: festival } = await supabase
     .from("festivals")
@@ -82,26 +96,29 @@ export default async function ProposePage({
       return aUp ? a.date_from.localeCompare(b.date_from) : b.date_from.localeCompare(a.date_from);
     });
 
+  const t = await getTranslations({ locale, namespace: "Propose" });
+  const bcp47 = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
+
   return (
-    <BareShell>
+    <BareShell lang={locale}>
       <main className="mx-auto max-w-2xl px-6 py-10">
         <a href={`/festival/${slug}`} className="text-sm text-[#2D1A12]/60 underline">
-          ← {row.name}
+          {t("backTo", { name: row.name })}
         </a>
 
-        <h1 className="mt-3 text-3xl font-bold text-[#2D1A12]">Foreslå endring</h1>
-        <p className="mt-2 text-[#2D1A12]/70">
-          Rett det som er feil, og la resten være. Forslaget leses gjennom før det
-          havner på siden.
-        </p>
+        <h1 className="mt-3 text-3xl font-bold text-[#2D1A12]">{t("heading")}</h1>
+        <p className="mt-2 text-[#2D1A12]/70">{t("intro")}</p>
 
         <div className="mt-8">
-          <ProposeTabs
-            slug={slug}
-            name={row.name}
-            current={current}
-            editions={editions}
-          />
+          <NextIntlClientProvider>
+            <ProposeTabs
+              slug={slug}
+              name={row.name}
+              current={current}
+              editions={editions}
+              bcp47={bcp47}
+            />
+          </NextIntlClientProvider>
         </div>
       </main>
     </BareShell>

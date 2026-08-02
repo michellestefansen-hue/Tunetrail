@@ -8,44 +8,24 @@ import { FESTIVAL_TAGS, type FestivalTag } from "@/lib/festivals";
  * hides it from the app entirely, and the slug is the URL. Those come later,
  * with their own warnings in the queue.
  */
+/**
+ * No label/help text here on purpose: the contributor-facing form renders in
+ * the visitor's own language via messages/*.json ("Propose.fields.<name>"),
+ * while the admin queue always shows Norwegian regardless — it has its own
+ * fixed label map (see src/app/admin/[id]/page.tsx). One set of literal
+ * strings would have had to serve both audiences at once.
+ */
 export type EditableField = {
   name: "venue_name" | "website_url" | "image_url" | "description" | "tags";
-  label: string;
-  help: string;
   input: "text" | "url" | "textarea" | "tags";
 };
 
 export const EDITABLE_FIELDS: EditableField[] = [
-  {
-    name: "venue_name",
-    label: "Arena",
-    help: "Stedet festivalen holder til. Vises på kortet og på festivalsiden.",
-    input: "text",
-  },
-  {
-    name: "website_url",
-    label: "Nettsted",
-    help: "Festivalens offisielle side. Helst forsiden, ikke en underside.",
-    input: "url",
-  },
-  {
-    name: "image_url",
-    label: "Bildelenke",
-    help: "Direkte lenke til et bilde. Helst av området eller publikum, ikke en enkelt artist.",
-    input: "url",
-  },
-  {
-    name: "description",
-    label: "Beskrivelse",
-    help: "Et par setninger om hva slags festival dette er.",
-    input: "textarea",
-  },
-  {
-    name: "tags",
-    label: "Sjangre",
-    help: "Velg dem som faktisk preger programmet, ikke alt som forekommer.",
-    input: "tags",
-  },
+  { name: "venue_name", input: "text" },
+  { name: "website_url", input: "url" },
+  { name: "image_url", input: "url" },
+  { name: "description", input: "textarea" },
+  { name: "tags", input: "tags" },
 ];
 
 export type FieldName = EditableField["name"];
@@ -156,13 +136,20 @@ export function opsCount(ops: ProgramOps): number {
   return ops.add.length + ops.remove.length + ops.move.length;
 }
 
-/** Rejects what the cleanup on 2 August 2026 had to undo afterwards. */
-export function checkArtistName(raw: string): { name: string; error?: string } {
+export type ArtistNameErrorCode = "empty" | "hasTime" | "tooLong";
+
+/**
+ * Rejects what the cleanup on 2 August 2026 had to undo afterwards.
+ *
+ * Returns a code, not text: this runs both in the client-side search box and
+ * on the server, and the caller in each place knows how to translate it —
+ * "Propose.artistName.<code>" in messages/*.json. A literal string here could
+ * only ever be one language.
+ */
+export function checkArtistName(raw: string): { name: string; errorCode?: ArtistNameErrorCode } {
   const name = raw.trim().replace(/\s+/g, " ");
-  if (!name) return { name, error: "Tomt navn." };
-  if (/^\s*\d{1,2}[:.]\d{2}/.test(name)) {
-    return { name, error: "Ta bort klokkeslettet — det gjør artisten usøkbar." };
-  }
-  if (name.length > 120) return { name, error: "For langt til å være et artistnavn." };
+  if (!name) return { name, errorCode: "empty" };
+  if (/^\s*\d{1,2}[:.]\d{2}/.test(name)) return { name, errorCode: "hasTime" };
+  if (name.length > 120) return { name, errorCode: "tooLong" };
   return { name };
 }

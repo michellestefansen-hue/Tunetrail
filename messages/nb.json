@@ -44,7 +44,8 @@
     "metaTitleNoEdition": "{name} | Tunetrail",
     "metaWhen": " ({range})",
     "metaWhere": " i {place}",
-    "metaDescription": "{name}{when}{where}. Oppdatert program, artister og billettinfo på ett sted."
+    "metaDescription": "{name}{when}{where}. Oppdatert program, artister og billettinfo på ett sted.",
+    "proposeEdit": "Noe feil her? Foreslå en endring"
   },
   "Map": {
     "clusterMore": "+{count} flere"
@@ -308,5 +309,89 @@
     "Tyskland": "Tyskland",
     "Ungarn": "Ungarn",
     "Østerrike": "Østerrike"
+  },
+  "Propose": {
+    "metaTitle": "Foreslå endring · Tunetrail",
+    "backTo": "← {name}",
+    "heading": "Foreslå endring",
+    "intro": "Rett det som er feil, og la resten være. Forslaget leses gjennom før det havner på siden.",
+    "tabGeneral": "Generelt",
+    "tabProgram": "Program",
+    "noEditions": "Denne festivalen har ingen utgaver registrert ennå, så det er ikke noe program å redigere.",
+    "fields": {
+      "venue_name": {
+        "label": "Arena",
+        "help": "Stedet festivalen holder til. Vises på kortet og på festivalsiden."
+      },
+      "website_url": {
+        "label": "Nettsted",
+        "help": "Festivalens offisielle side. Helst forsiden, ikke en underside."
+      },
+      "image_url": {
+        "label": "Bildelenke",
+        "help": "Direkte lenke til et bilde. Helst av området eller publikum, ikke en enkelt artist."
+      },
+      "description": {
+        "label": "Beskrivelse",
+        "help": "Et par setninger om hva slags festival dette er."
+      },
+      "tags": {
+        "label": "Sjangre",
+        "help": "Velg dem som faktisk preger programmet, ikke alt som forekommer."
+      }
+    },
+    "summaryHeading": "Dette sender du inn",
+    "summaryDetails": "Detaljer: {fields}",
+    "summaryAdded": "+{count} lagt til: {names}",
+    "summaryRemoved": "−{count} fjernet: {names}",
+    "summaryMoved": "{count} flyttet: {names}",
+    "commentLabel": "Kommentar",
+    "commentOptional": "(valgfritt)",
+    "commentHelp": "Har du en lenke eller en forklaring, hjelper det den som skal godkjenne.",
+    "submitNone": "Ingen endringer ennå",
+    "submitSending": "Sender …",
+    "submitCount": "{count, plural, one{Send # endring} other{Send # endringer}}",
+    "sentHeading": "Takk — forslaget er sendt",
+    "sentBodyFields": "Du foreslo endringer i detaljene. Det leses gjennom før det havner på siden, så endringene vises ikke med én gang.",
+    "sentBodyProgram": "Du foreslo endringer i programmet for {year}. Det leses gjennom før det havner på siden, så endringene vises ikke med én gang.",
+    "sentBodyBoth": "Du foreslo endringer i detaljene og i programmet for {year}. Det leses gjennom før det havner på siden, så endringene vises ikke med én gang.",
+    "backToFestival": "Tilbake til {name}",
+    "artistName": {
+      "empty": "Tomt navn.",
+      "hasTime": "Ta bort klokkeslettet — det gjør artisten usøkbar.",
+      "tooLong": "For langt til å være et artistnavn."
+    },
+    "errors": {
+      "notAuthenticated": "Du må være logget inn.",
+      "festivalNotFound": "Fant ikke festivalen.",
+      "editionNotFound": "Fant ikke utgaven.",
+      "nothingChanged": "Ingenting er endret.",
+      "dateOutOfRange": "{date} er utenfor festivalen.",
+      "nameError": "{name}: {reason}"
+    },
+    "lineup": {
+      "noDates": "Denne utgaven har ingen datoer registrert ennå, så det er ikke noe å fordele artister på.",
+      "artistsCount": "{count, plural, one{# artist} other{# artister}}",
+      "moveTo": "Flytt {name} til en annen dag",
+      "movePlaceholder": "flytt…",
+      "remove": "Fjern {name}"
+    },
+    "artistSearch": {
+      "placeholder": "Søk etter artist, eller skriv et nytt navn",
+      "addNew": "Legg til ny:",
+      "uses": "{count, plural, one{# gang} other{# ganger}}",
+      "alreadyOnDay": "Står allerede på denne dagen."
+    }
+  },
+  "Login": {
+    "metaTitle": "Logg inn · Tunetrail",
+    "heading": "Logg inn",
+    "intro": "Skriv e-postadressen din, så sender vi deg en lenke. Ingen passord.",
+    "emailPlaceholder": "din@epost.no",
+    "submit": "Send meg en lenke",
+    "submitSending": "Sender …",
+    "sentHeading": "Sjekk e-posten din",
+    "sentBody": "Vi har sendt en lenke til <b>{email}</b>. Klikk på den, så er du logget inn.",
+    "sentHint": "Finner du den ikke, se i søppelposten. Lenken varer i én time."
   }
 }

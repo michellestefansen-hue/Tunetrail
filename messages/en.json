@@ -44,7 +44,8 @@
     "metaTitleNoEdition": "{name} | Tunetrail",
     "metaWhen": " ({range})",
     "metaWhere": " in {place}",
-    "metaDescription": "{name}{when}{where}. Updated line-up, schedule and ticket info in one place."
+    "metaDescription": "{name}{when}{where}. Updated line-up, schedule and ticket info in one place.",
+    "proposeEdit": "Something wrong here? Suggest an edit"
   },
   "Map": {
     "clusterMore": "+{count} more"
@@ -308,5 +309,89 @@
     "Tyskland": "Germany",
     "Ungarn": "Hungary",
     "Østerrike": "Austria"
+  },
+  "Propose": {
+    "metaTitle": "Suggest an edit · Tunetrail",
+    "backTo": "← {name}",
+    "heading": "Suggest an edit",
+    "intro": "Fix what's wrong, and leave the rest. Your suggestion is reviewed before it goes live.",
+    "tabGeneral": "General",
+    "tabProgram": "Lineup",
+    "noEditions": "This festival has no editions registered yet, so there's no lineup to edit.",
+    "fields": {
+      "venue_name": {
+        "label": "Venue",
+        "help": "Where the festival takes place. Shown on the card and the festival page."
+      },
+      "website_url": {
+        "label": "Website",
+        "help": "The festival's official site. Preferably the homepage, not a subpage."
+      },
+      "image_url": {
+        "label": "Image link",
+        "help": "A direct link to an image. Preferably of the site or the crowd, not a single artist."
+      },
+      "description": {
+        "label": "Description",
+        "help": "A couple of sentences about what kind of festival this is."
+      },
+      "tags": {
+        "label": "Genres",
+        "help": "Pick the ones that actually shape the lineup, not everything that turns up."
+      }
+    },
+    "summaryHeading": "This is what you're submitting",
+    "summaryDetails": "Details: {fields}",
+    "summaryAdded": "+{count} added: {names}",
+    "summaryRemoved": "−{count} removed: {names}",
+    "summaryMoved": "{count} moved: {names}",
+    "commentLabel": "Comment",
+    "commentOptional": "(optional)",
+    "commentHelp": "A link or an explanation makes it much faster to approve.",
+    "submitNone": "No changes yet",
+    "submitSending": "Sending …",
+    "submitCount": "{count, plural, one{Send # change} other{Send # changes}}",
+    "sentHeading": "Thanks — the suggestion is sent",
+    "sentBodyFields": "You suggested changes to the details. It'll be reviewed before it goes live, so the changes don't show up right away.",
+    "sentBodyProgram": "You suggested changes to the {year} lineup. It'll be reviewed before it goes live, so the changes don't show up right away.",
+    "sentBodyBoth": "You suggested changes to the details and the {year} lineup. It'll be reviewed before it goes live, so the changes don't show up right away.",
+    "backToFestival": "Back to {name}",
+    "artistName": {
+      "empty": "Empty name.",
+      "hasTime": "Remove the time — it makes the artist unsearchable.",
+      "tooLong": "Too long to be an artist name."
+    },
+    "errors": {
+      "notAuthenticated": "You need to be signed in.",
+      "festivalNotFound": "Couldn't find the festival.",
+      "editionNotFound": "Couldn't find the edition.",
+      "nothingChanged": "Nothing has changed.",
+      "dateOutOfRange": "{date} is outside the festival.",
+      "nameError": "{name}: {reason}"
+    },
+    "lineup": {
+      "noDates": "This edition has no dates registered yet, so there's nothing to assign artists to.",
+      "artistsCount": "{count, plural, one{# artist} other{# artists}}",
+      "moveTo": "Move {name} to another day",
+      "movePlaceholder": "move…",
+      "remove": "Remove {name}"
+    },
+    "artistSearch": {
+      "placeholder": "Search for an artist, or type a new name",
+      "addNew": "Add new:",
+      "uses": "{count, plural, one{# time} other{# times}}",
+      "alreadyOnDay": "Already on this day."
+    }
+  },
+  "Login": {
+    "metaTitle": "Sign in · Tunetrail",
+    "heading": "Sign in",
+    "intro": "Enter your email and we'll send you a link. No password.",
+    "emailPlaceholder": "you@example.com",
+    "submit": "Send me a link",
+    "submitSending": "Sending …",
+    "sentHeading": "Check your email",
+    "sentBody": "We've sent a link to <b>{email}</b>. Click it to sign in.",
+    "sentHint": "Can't find it? Check your spam folder. The link is valid for one hour."
   }
 }

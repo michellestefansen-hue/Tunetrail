@@ -8,13 +8,25 @@ import {
   FIELD_NAMES,
   isValidTag,
   opsCount,
+  type ArtistNameErrorCode,
   type Payload,
   type ProgramOps,
 } from "@/lib/submissions";
 
+/**
+ * Codes, not text: this runs on the server and the UI can be in any of five
+ * languages. The client translates via "Propose.errors.<code>" — see
+ * describeSubmitError in ProposeTabs.tsx.
+ */
+export type SubmitError =
+  | { code: "notAuthenticated" | "festivalNotFound" | "editionNotFound" | "nothingChanged" }
+  | { code: "dateOutOfRange"; date: string }
+  | { code: "nameError"; name: string; reason: ArtistNameErrorCode }
+  | { code: "unknown"; message: string };
+
 export type SubmitResult =
   | { ok: true; parts: { fields: boolean; program: boolean } }
-  | { ok: false; error: string };
+  | { ok: false; error: SubmitError };
 
 /**
  * One press of Send, whatever the contributor touched.
@@ -34,7 +46,7 @@ export async function submitAll(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Du må være logget inn." };
+  if (!user) return { ok: false, error: { code: "notAuthenticated" } };
 
   const { data: festival } = await supabase
     .from("festivals")
@@ -43,7 +55,7 @@ export async function submitAll(
     )
     .eq("slug", slug)
     .single();
-  if (!festival) return { ok: false, error: "Fant ikke festivalen." };
+  if (!festival) return { ok: false, error: { code: "festivalNotFound" } };
 
   const f = festival as unknown as Record<string, unknown> & {
     id: string;
@@ -58,11 +70,11 @@ export async function submitAll(
 
   // ---- programme ---------------------------------------------------------
   const hasProgram = programYear !== null && opsCount(ops) > 0;
-  let cleanOps: ProgramOps = { add: [], remove: [], move: [] };
+  const cleanOps: ProgramOps = { add: [], remove: [], move: [] };
 
   if (hasProgram) {
     const edition = f.festival_editions.find((e) => e.year === programYear);
-    if (!edition) return { ok: false, error: "Fant ikke utgaven." };
+    if (!edition) return { ok: false, error: { code: "editionNotFound" } };
 
     // Re-checked here even though the editor already enforces it: a date
     // outside the festival's own range simply never renders, and 16 such days
@@ -70,21 +82,19 @@ export async function submitAll(
     const inRange = (d: string) => d >= edition.date_from && d <= edition.date_to;
 
     for (const o of ops.add) {
-      const { name, error } = checkArtistName(o.name);
-      if (error) return { ok: false, error: `${o.name}: ${error}` };
-      if (!inRange(o.date)) return { ok: false, error: `${o.date} er utenfor festivalen.` };
+      const { name, errorCode } = checkArtistName(o.name);
+      if (errorCode) return { ok: false, error: { code: "nameError", name: o.name, reason: errorCode } };
+      if (!inRange(o.date)) return { ok: false, error: { code: "dateOutOfRange", date: o.date } };
       cleanOps.add.push({ date: o.date, name });
     }
     for (const o of ops.remove) cleanOps.remove.push({ date: o.date, name: o.name.trim() });
     for (const o of ops.move) {
-      if (!inRange(o.to)) return { ok: false, error: `${o.to} er utenfor festivalen.` };
+      if (!inRange(o.to)) return { ok: false, error: { code: "dateOutOfRange", date: o.to } };
       cleanOps.move.push({ from: o.from, to: o.to, name: o.name.trim() });
     }
-  } else {
-    cleanOps = { add: [], remove: [], move: [] };
   }
 
-  if (!hasFields && !hasProgram) return { ok: false, error: "Ingenting er endret." };
+  if (!hasFields && !hasProgram) return { ok: false, error: { code: "nothingChanged" } };
 
   // Only group when there really are two rows; a lone proposal keeps null.
   const groupId = hasFields && hasProgram ? randomUUID() : null;
@@ -119,7 +129,7 @@ export async function submitAll(
   }
 
   const { error } = await supabase.from("submissions").insert(rows);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: { code: "unknown", message: error.message } };
 
   return { ok: true, parts: { fields: hasFields, program: hasProgram } };
 }

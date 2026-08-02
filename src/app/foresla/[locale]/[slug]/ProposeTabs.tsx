@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import {
   buildDiff,
@@ -8,7 +9,7 @@ import {
   type FieldValue,
   type ProgramDay,
 } from "@/lib/submissions";
-import { submitAll } from "./actions";
+import { submitAll, type SubmitError } from "./actions";
 import { GeneralFields, type Values } from "./GeneralFields";
 import { LineupFields, type Edition } from "./LineupFields";
 
@@ -17,12 +18,16 @@ export function ProposeTabs({
   name,
   current,
   editions,
+  bcp47,
 }: {
   slug: string;
   name: string;
   current: Record<string, FieldValue>;
   editions: Edition[];
+  bcp47: string;
 }) {
+  const t = useTranslations("Propose");
+  const tFields = useTranslations("Propose.fields");
   const [tab, setTab] = useState<"generelt" | "program">("generelt");
 
   // Everything lives here, not in the tabs. Rendering one tab unmounts the
@@ -56,6 +61,19 @@ export function ProposeTabs({
   const changedOps = opsCount(ops);
   const total = changedFields + changedOps;
 
+  function describeError(e: SubmitError): string {
+    switch (e.code) {
+      case "dateOutOfRange":
+        return t("errors.dateOutOfRange", { date: e.date });
+      case "nameError":
+        return t("errors.nameError", { name: e.name, reason: t(`artistName.${e.reason}`) });
+      case "unknown":
+        return e.message;
+      default:
+        return t(`errors.${e.code}`);
+    }
+  }
+
   async function submit() {
     setState("sending");
     setError("");
@@ -65,57 +83,56 @@ export function ProposeTabs({
       setState("sent");
     } else {
       setState("idle");
-      setError(res.error);
+      setError(describeError(res.error));
     }
   }
 
   // Tabs disappear once it is sent: there is nothing left to edit, and leaving
   // them would invite a second identical submission.
   if (state === "sent") {
-    const bits = [
-      sentParts.fields && "detaljene",
-      sentParts.program && `programmet for ${year}`,
-    ].filter(Boolean);
+    const sentKey =
+      sentParts.fields && sentParts.program
+        ? "sentBodyBoth"
+        : sentParts.program
+          ? "sentBodyProgram"
+          : "sentBodyFields";
     return (
       <div className="space-y-3 rounded-2xl border border-black/10 bg-white p-6">
-        <h2 className="text-xl font-bold text-[#2D1A12]">Takk — forslaget er sendt</h2>
-        <p className="text-[#2D1A12]/70">
-          Du foreslo endringer i {bits.join(" og ")}. Det leses gjennom før det havner på
-          siden, så endringene vises ikke med én gang.
-        </p>
+        <h2 className="text-xl font-bold text-[#2D1A12]">{t("sentHeading")}</h2>
+        <p className="text-[#2D1A12]/70">{t(sentKey, { year })}</p>
         <a href={`/festival/${slug}`} className="inline-block text-[#FF4E50] underline">
-          Tilbake til {name}
+          {t("backToFestival", { name })}
         </a>
       </div>
     );
   }
 
   const tabs = [
-    { id: "generelt" as const, label: "Generelt", n: changedFields },
-    { id: "program" as const, label: "Program", n: changedOps },
+    { id: "generelt" as const, label: t("tabGeneral"), n: changedFields },
+    { id: "program" as const, label: t("tabProgram"), n: changedOps },
   ];
 
   return (
     <div>
       <div role="tablist" className="flex gap-1 border-b border-black/10">
-        {tabs.map((t) => (
+        {tabs.map((tabDef) => (
           <button
-            key={t.id}
+            key={tabDef.id}
             role="tab"
-            aria-selected={tab === t.id}
-            onClick={() => setTab(t.id)}
+            aria-selected={tab === tabDef.id}
+            onClick={() => setTab(tabDef.id)}
             className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition ${
-              tab === t.id
+              tab === tabDef.id
                 ? "border-[#FF4E50] text-[#2D1A12]"
                 : "border-transparent text-[#2D1A12]/50 hover:text-[#2D1A12]/80"
             }`}
           >
-            {t.label}
+            {tabDef.label}
             {/* A count on the tab you are not looking at is the only sign that
                 unsent work is waiting over there. */}
-            {t.n > 0 && (
+            {tabDef.n > 0 && (
               <span className="rounded-full bg-[#FF4E50] px-1.5 py-0.5 text-xs text-white">
-                {t.n}
+                {tabDef.n}
               </span>
             )}
           </button>
@@ -127,8 +144,7 @@ export function ProposeTabs({
           <GeneralFields values={values} onChange={setValues} />
         ) : editions.length === 0 ? (
           <p className="rounded-xl border border-black/10 bg-white px-4 py-6 text-[#2D1A12]/60">
-            Denne festivalen har ingen utgaver registrert ennå, så det er ikke noe program
-            å redigere.
+            {t("noEditions")}
           </p>
         ) : (
           <LineupFields
@@ -137,6 +153,7 @@ export function ProposeTabs({
             onYear={setYear}
             days={days}
             onDays={(next) => setByYear((prev) => ({ ...prev, [year]: next }))}
+            bcp47={bcp47}
           />
         )}
       </div>
@@ -144,29 +161,30 @@ export function ProposeTabs({
       <div className="mt-8 space-y-6 border-t border-black/10 pt-6">
         {total > 0 && (
           <div className="rounded-xl border border-black/10 bg-white p-4">
-            <h3 className="font-medium text-[#2D1A12]">Dette sender du inn</h3>
+            <h3 className="font-medium text-[#2D1A12]">{t("summaryHeading")}</h3>
             <ul className="mt-2 space-y-1 text-sm">
               {changedFields > 0 && (
                 <li className="text-[#2D1A12]/70">
-                  <strong>Detaljer:</strong> {Object.keys(fieldDiff).join(", ")}
+                  {t("summaryDetails", {
+                    fields: Object.keys(fieldDiff)
+                      .map((f) => tFields(`${f}.label`))
+                      .join(", "),
+                  })}
                 </li>
               )}
               {ops.add.length > 0 && (
                 <li className="text-emerald-800">
-                  <strong>+{ops.add.length}</strong> lagt til:{" "}
-                  {ops.add.map((o) => o.name).join(", ")}
+                  {t("summaryAdded", { count: ops.add.length, names: ops.add.map((o) => o.name).join(", ") })}
                 </li>
               )}
               {ops.remove.length > 0 && (
                 <li className="text-red-800">
-                  <strong>−{ops.remove.length}</strong> fjernet:{" "}
-                  {ops.remove.map((o) => o.name).join(", ")}
+                  {t("summaryRemoved", { count: ops.remove.length, names: ops.remove.map((o) => o.name).join(", ") })}
                 </li>
               )}
               {ops.move.length > 0 && (
                 <li className="text-[#2D1A12]/70">
-                  <strong>{ops.move.length}</strong> flyttet:{" "}
-                  {ops.move.map((o) => o.name).join(", ")}
+                  {t("summaryMoved", { count: ops.move.length, names: ops.move.map((o) => o.name).join(", ") })}
                 </li>
               )}
             </ul>
@@ -175,11 +193,9 @@ export function ProposeTabs({
 
         <div className="space-y-1.5">
           <label htmlFor="kommentar" className="block font-medium text-[#2D1A12]">
-            Kommentar <span className="font-normal text-[#2D1A12]/50">(valgfritt)</span>
+            {t("commentLabel")} <span className="font-normal text-[#2D1A12]/50">{t("commentOptional")}</span>
           </label>
-          <p className="text-sm text-[#2D1A12]/60">
-            Har du en lenke eller en forklaring, hjelper det den som skal godkjenne.
-          </p>
+          <p className="text-sm text-[#2D1A12]/60">{t("commentHelp")}</p>
           <textarea
             id="kommentar"
             rows={3}
@@ -201,11 +217,7 @@ export function ProposeTabs({
           disabled={state === "sending" || total === 0}
           className="rounded-full bg-gradient-to-r from-amber-500 to-[#FF4E50] px-6 py-3 font-medium text-white disabled:opacity-40"
         >
-          {state === "sending"
-            ? "Sender …"
-            : total === 0
-              ? "Ingen endringer ennå"
-              : `Send ${total} ${total === 1 ? "endring" : "endringer"}`}
+          {state === "sending" ? t("submitSending") : total === 0 ? t("submitNone") : t("submitCount", { count: total })}
         </button>
       </div>
     </div>

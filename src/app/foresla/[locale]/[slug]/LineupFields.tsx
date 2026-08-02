@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ArtistSearch } from "@/components/ArtistSearch";
 import type { ProgramDay } from "@/lib/submissions";
 
@@ -10,8 +11,8 @@ export type Edition = {
   days: ProgramDay[];
 };
 
-export function dayLabel(date: string) {
-  return new Date(date + "T12:00:00").toLocaleDateString("nb-NO", {
+export function dayLabel(date: string, bcp47: string) {
+  return new Date(date + "T12:00:00").toLocaleDateString(bcp47, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -28,13 +29,17 @@ export function LineupFields({
   onYear,
   days,
   onDays,
+  bcp47,
 }: {
   editions: Edition[];
   year: number;
   onYear: (year: number) => void;
   days: ProgramDay[];
   onDays: (next: ProgramDay[]) => void;
+  bcp47: string;
 }) {
+  const t = useTranslations("Propose.lineup");
+
   function addArtist(date: string, name: string) {
     onDays(days.map((d) => (d.date === date ? { ...d, artists: [...d.artists, name] } : d)));
   }
@@ -80,15 +85,14 @@ export function LineupFields({
 
       {days.length === 0 ? (
         <p className="rounded-xl border border-black/10 bg-white px-4 py-6 text-[#2D1A12]/60">
-          Denne utgaven har ingen datoer registrert ennå, så det er ikke noe å fordele
-          artister på.
+          {t("noDates")}
         </p>
       ) : (
         days.map((day) => (
           <section key={day.date} className="rounded-xl border border-black/10 bg-white p-4">
-            <h3 className="font-medium text-[#2D1A12]">{dayLabel(day.date)}</h3>
+            <h3 className="font-medium text-[#2D1A12]">{dayLabel(day.date, bcp47)}</h3>
             <p className="text-xs text-[#2D1A12]/45">
-              {day.artists.length} {day.artists.length === 1 ? "artist" : "artister"}
+              {t("artistsCount", { count: day.artists.length })}
             </p>
 
             {day.artists.length > 0 && (
@@ -101,17 +105,17 @@ export function LineupFields({
                     {a}
                     {days.length > 1 && (
                       <select
-                        aria-label={`Flytt ${a} til en annen dag`}
+                        aria-label={t("moveTo", { name: a })}
                         value=""
                         onChange={(e) => e.target.value && moveArtist(day.date, e.target.value, a)}
                         className="cursor-pointer rounded bg-transparent text-xs text-[#2D1A12]/45"
                       >
-                        <option value="">flytt…</option>
+                        <option value="">{t("movePlaceholder")}</option>
                         {days
                           .filter((d) => d.date !== day.date)
                           .map((d) => (
                             <option key={d.date} value={d.date}>
-                              {dayLabel(d.date)}
+                              {dayLabel(d.date, bcp47)}
                             </option>
                           ))}
                       </select>
@@ -119,7 +123,7 @@ export function LineupFields({
                     <button
                       type="button"
                       onClick={() => removeArtist(day.date, a)}
-                      aria-label={`Fjern ${a}`}
+                      aria-label={t("remove", { name: a })}
                       className="grid size-5 place-items-center rounded-full text-[#2D1A12]/40 hover:bg-black/10 hover:text-[#2D1A12]"
                     >
                       ×

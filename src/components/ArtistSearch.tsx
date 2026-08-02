@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { checkArtistName } from "@/lib/submissions";
@@ -18,6 +19,8 @@ export function ArtistSearch({
   onPick: (name: string) => void;
   exclude: Set<string>;
 }) {
+  const t = useTranslations("Propose.artistSearch");
+  const tName = useTranslations("Propose.artistName");
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<{ name: string; uses: number }[]>([]);
   const [open, setOpen] = useState(false);
@@ -58,13 +61,13 @@ export function ArtistSearch({
   }, []);
 
   function pick(name: string) {
-    const { name: clean, error } = checkArtistName(name);
-    if (error) {
-      setError(error);
+    const { name: clean, errorCode } = checkArtistName(name);
+    if (errorCode) {
+      setError(tName(errorCode));
       return;
     }
     if (exclude.has(clean.toLowerCase())) {
-      setError("Står allerede på denne dagen.");
+      setError(t("alreadyOnDay"));
       return;
     }
     onPick(clean);
@@ -96,7 +99,7 @@ export function ArtistSearch({
             if (typed) pick(exact ? visible[0].name : typed);
           }
         }}
-        placeholder="Søk etter artist, eller skriv et nytt navn"
+        placeholder={t("placeholder")}
         className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-[#2D1A12] outline-none focus:border-black/30"
       />
 
@@ -113,7 +116,7 @@ export function ArtistSearch({
               >
                 <span className="text-[#2D1A12]">{h.name}</span>
                 <span className="shrink-0 text-xs text-[#2D1A12]/40">
-                  {h.uses} {h.uses === 1 ? "gang" : "ganger"}
+                  {t("uses", { count: h.uses })}
                 </span>
               </button>
             </li>
@@ -126,7 +129,7 @@ export function ArtistSearch({
                 onClick={() => pick(typed)}
                 className="w-full px-3 py-2 text-left text-sm hover:bg-black/[0.04]"
               >
-                <span className="text-[#2D1A12]/50">Legg til ny: </span>
+                <span className="text-[#2D1A12]/50">{t("addNew")} </span>
                 <span className="font-medium text-[#2D1A12]">{typed}</span>
               </button>
             </li>

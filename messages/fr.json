@@ -44,7 +44,8 @@
     "metaTitleNoEdition": "{name} | Tunetrail",
     "metaWhen": " ({range})",
     "metaWhere": " à {place}",
-    "metaDescription": "{name}{when}{where}. Programme, line-up et infos billetterie à jour, au même endroit."
+    "metaDescription": "{name}{when}{where}. Programme, line-up et infos billetterie à jour, au même endroit.",
+    "proposeEdit": "Une erreur ici ? Proposer une modification"
   },
   "Map": {
     "clusterMore": "+{count} de plus"
@@ -308,5 +309,89 @@
     "Tyskland": "Allemagne",
     "Ungarn": "Hongrie",
     "Østerrike": "Autriche"
+  },
+  "Propose": {
+    "metaTitle": "Proposer une modification · Tunetrail",
+    "backTo": "← {name}",
+    "heading": "Proposer une modification",
+    "intro": "Corrigez ce qui est faux, et laissez le reste. Votre proposition est relue avant de passer en ligne.",
+    "tabGeneral": "Général",
+    "tabProgram": "Programmation",
+    "noEditions": "Ce festival n'a encore aucune édition enregistrée, il n'y a donc pas de programmation à modifier.",
+    "fields": {
+      "venue_name": {
+        "label": "Lieu",
+        "help": "L'endroit où se déroule le festival. Affiché sur la carte et la page du festival."
+      },
+      "website_url": {
+        "label": "Site web",
+        "help": "Le site officiel du festival. De préférence la page d'accueil, pas une sous-page."
+      },
+      "image_url": {
+        "label": "Lien de l'image",
+        "help": "Un lien direct vers une image. De préférence du site ou du public, pas d'un seul artiste."
+      },
+      "description": {
+        "label": "Description",
+        "help": "Quelques phrases sur le genre de festival dont il s'agit."
+      },
+      "tags": {
+        "label": "Genres",
+        "help": "Choisissez ceux qui marquent vraiment la programmation, pas tout ce qui apparaît."
+      }
+    },
+    "summaryHeading": "Voici ce que vous envoyez",
+    "summaryDetails": "Détails : {fields}",
+    "summaryAdded": "+{count} ajouté(s) : {names}",
+    "summaryRemoved": "−{count} supprimé(s) : {names}",
+    "summaryMoved": "{count} déplacé(s) : {names}",
+    "commentLabel": "Commentaire",
+    "commentOptional": "(facultatif)",
+    "commentHelp": "Un lien ou une explication aide à approuver plus vite.",
+    "submitNone": "Aucune modification pour l'instant",
+    "submitSending": "Envoi …",
+    "submitCount": "{count, plural, one{Envoyer # modification} other{Envoyer # modifications}}",
+    "sentHeading": "Merci — la proposition est envoyée",
+    "sentBodyFields": "Vous avez proposé des modifications aux détails. Elles seront relues avant de passer en ligne, donc les changements ne s'affichent pas immédiatement.",
+    "sentBodyProgram": "Vous avez proposé des modifications à la programmation {year}. Elles seront relues avant de passer en ligne, donc les changements ne s'affichent pas immédiatement.",
+    "sentBodyBoth": "Vous avez proposé des modifications aux détails et à la programmation {year}. Elles seront relues avant de passer en ligne, donc les changements ne s'affichent pas immédiatement.",
+    "backToFestival": "Retour à {name}",
+    "artistName": {
+      "empty": "Nom vide.",
+      "hasTime": "Retirez l'heure — elle rend l'artiste introuvable dans la recherche.",
+      "tooLong": "Trop long pour être un nom d'artiste."
+    },
+    "errors": {
+      "notAuthenticated": "Vous devez être connecté.",
+      "festivalNotFound": "Festival introuvable.",
+      "editionNotFound": "Édition introuvable.",
+      "nothingChanged": "Rien n'a changé.",
+      "dateOutOfRange": "{date} est hors des dates du festival.",
+      "nameError": "{name} : {reason}"
+    },
+    "lineup": {
+      "noDates": "Cette édition n'a encore aucune date enregistrée, il n'y a donc rien à quoi assigner des artistes.",
+      "artistsCount": "{count, plural, one{# artiste} other{# artistes}}",
+      "moveTo": "Déplacer {name} vers un autre jour",
+      "movePlaceholder": "déplacer…",
+      "remove": "Retirer {name}"
+    },
+    "artistSearch": {
+      "placeholder": "Cherchez un artiste, ou tapez un nouveau nom",
+      "addNew": "Ajouter :",
+      "uses": "{count, plural, one{# fois} other{# fois}}",
+      "alreadyOnDay": "Déjà présent ce jour-là."
+    }
+  },
+  "Login": {
+    "metaTitle": "Connexion · Tunetrail",
+    "heading": "Connexion",
+    "intro": "Indiquez votre adresse e-mail, nous vous envoyons un lien. Aucun mot de passe.",
+    "emailPlaceholder": "vous@exemple.fr",
+    "submit": "M'envoyer un lien",
+    "submitSending": "Envoi en cours …",
+    "sentHeading": "Vérifiez vos e-mails",
+    "sentBody": "Nous avons envoyé un lien à <b>{email}</b>. Cliquez-y pour vous connecter.",
+    "sentHint": "Vous ne le trouvez pas ? Vérifiez vos spams. Le lien est valable une heure."
   }
 }

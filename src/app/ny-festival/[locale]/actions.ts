@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { isSizeBand } from "@/lib/festivals";
 import { checkArtistName, isValidTag, type ProgramDay } from "@/lib/submissions";
 import { findDuplicates, type Candidate, type Match } from "@/lib/duplicates";
 
@@ -14,6 +15,7 @@ export type NewFestival = {
   description: string;
   image_url: string;
   tags: string[];
+  size_band: string;
   latitude: number | null;
   longitude: number | null;
   date_from: string;
@@ -79,6 +81,13 @@ export async function submitNewFestival(f: NewFestival): Promise<NewResult> {
   }
   const tags = f.tags.filter(isValidTag);
   if (tags.length === 0) return { ok: false, error: { code: "missing", field: "tags" } };
+
+  // Required on creation, and checked against the list rather than passed
+  // through: the column has a check constraint, so an invented value would
+  // fail at approval time instead of here, where it can still be explained.
+  if (!isSizeBand(f.size_band)) {
+    return { ok: false, error: { code: "missing", field: "size_band" } };
+  }
   if (f.date_to < f.date_from) return { ok: false, error: { code: "badDates" } };
 
   // The lineup is optional, but whatever arrives is cleaned here rather than
@@ -123,6 +132,7 @@ export async function submitNewFestival(f: NewFestival): Promise<NewResult> {
       description: f.description.trim() || null,
       image_url: f.image_url.trim() || null,
       tags,
+      size_band: f.size_band,
       latitude: f.latitude,
       longitude: f.longitude,
       date_from: f.date_from,

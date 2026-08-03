@@ -8,6 +8,7 @@ import {
   TicketIcon,
   MapPinIcon,
   CalendarDateRangeIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/solid";
 import { createClient } from "@/lib/supabase/static";
 import { FestivalProgramTabs } from "@/components/FestivalProgramTabs";
@@ -162,6 +163,7 @@ export default async function FestivalPage({
   const t = await getTranslations({ locale, namespace: "FestivalPage" });
   const tTags = await getTranslations({ locale, namespace: "Tags" });
   const tCountries = await getTranslations({ locale, namespace: "Countries" });
+  const tSizes = await getTranslations({ locale, namespace: "Sizes" });
   const tg = await getTranslations({ locale, namespace: "Guides" });
   const year = new Date().getFullYear();
   const relatedGuides = await Promise.all(
@@ -242,6 +244,15 @@ export default async function FestivalPage({
           <CalendarDateRangeIcon className="h-4 w-4 text-[#FF2D78]" />
           {dateRangeLabel(festival, locale) ?? t("noDateSet")}
         </p>
+
+        {/* Only when known. 693 festivals predate the field, and an empty line
+            reading "size: unknown" tells a visitor nothing they wanted. */}
+        {festival.size_band && (
+          <p className="mt-1.5 flex items-center gap-1.5 text-sm text-stone-500">
+            <UserGroupIcon className="h-4 w-4 text-[#FF2D78]" />
+            {tSizes(festival.size_band)}
+          </p>
+        )}
 
         <div className="mt-5 flex flex-wrap gap-2">
           {festival.website_url && (

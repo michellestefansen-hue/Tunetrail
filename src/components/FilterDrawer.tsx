@@ -4,9 +4,11 @@ import { useEffect, useMemo, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { ChipField } from "@/components/ChipField";
+import { SizeRange } from "@/components/SizeRange";
 import {
   FESTIVAL_TAGS,
   BCP47_LOCALE,
+  SIZE_BANDS,
   scopeRange,
   scopeOfRange,
   type FestivalTag,
@@ -21,7 +23,12 @@ export type FilterState = {
   dateFrom: string | null;
   dateTo: string | null;
   tags: FestivalTag[];
+  /** Inclusive positions into SIZE_BANDS; the full span means "any size". */
+  sizeMin: number;
+  sizeMax: number;
 };
+
+export const SIZE_MAX_INDEX = SIZE_BANDS.length - 1;
 
 /** Hiding what has already finished is the useful default: today, 314 of the
  *  508 dated 2026 editions are in the past. */
@@ -33,6 +40,8 @@ export const EMPTY_FILTERS: FilterState = {
   artists: [],
   ...scopeRange(DEFAULT_TIME_SCOPE),
   tags: [],
+  sizeMin: 0,
+  sizeMax: SIZE_MAX_INDEX,
 };
 
 /**
@@ -42,8 +51,12 @@ export const EMPTY_FILTERS: FilterState = {
  */
 export function activeFilterCount(f: FilterState): number {
   const isDefaultRange = scopeOfRange(f.dateFrom, f.dateTo) === DEFAULT_TIME_SCOPE;
+  // The size range counts as one filter only once it has been narrowed, on the
+  // same principle as the date range: an untouched control is not a choice.
+  const isFullSizeRange = f.sizeMin === 0 && f.sizeMax === SIZE_MAX_INDEX;
   return (
     (isDefaultRange ? 0 : 1) +
+    (isFullSizeRange ? 0 : 1) +
     f.festivalNames.length +
     f.countries.length +
     f.artists.length +
@@ -98,12 +111,15 @@ export function FilterDrawer({
   filters,
   onChange,
   suggestions,
+  hiddenBySize,
 }: {
   open: boolean;
   onClose: () => void;
   filters: FilterState;
   onChange: (next: FilterState) => void;
   suggestions: Suggestions;
+  /** Counted by the map, which is the only place that holds the festivals. */
+  hiddenBySize: number;
 }) {
   const t = useTranslations("Filters");
   const tTags = useTranslations("Tags");
@@ -276,6 +292,13 @@ export function FilterDrawer({
             selected={filters.tags}
             onToggle={toggleTag}
             render={(v) => tTags(v)}
+          />
+
+          <SizeRange
+            min={filters.sizeMin}
+            max={filters.sizeMax}
+            hiddenUnknown={hiddenBySize}
+            onChange={(sizeMin, sizeMax) => onChange({ ...filters, sizeMin, sizeMax })}
           />
         </div>
 

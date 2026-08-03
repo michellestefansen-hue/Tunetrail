@@ -102,6 +102,45 @@ export function fallbackGradient(festival: {
   return UNTAGGED_GRADIENTS[sum % UNTAGGED_GRADIENTS.length];
 }
 
+/**
+ * Audience size, in bands rather than a number.
+ *
+ * A festival's attendance is never one figure anyway -- organisers quote
+ * capacity, tickets sold, or total admissions across a week, and the three
+ * differ wildly. A band is the honest precision, and it is also what a
+ * contributor can answer without looking anything up.
+ *
+ * Ordered smallest to largest. This array is the single definition of that
+ * order: the database stores these keys, the filter treats their positions as
+ * a scale, and the display labels live in messages/*.json under "Sizes".
+ */
+export const SIZE_BANDS = [
+  "under_200",
+  "200_2000",
+  "2000_10000",
+  "10000_50000",
+  "50000_100000",
+  "over_100000",
+] as const;
+
+export type SizeBand = (typeof SIZE_BANDS)[number];
+
+/**
+ * The attendance figures the bands divide on, including both open ends. Used to
+ * phrase a selected range as "2 000 – 50 000" rather than stringing two band
+ * labels together, which reads badly in every language.
+ */
+export const SIZE_EDGES = [0, 200, 2000, 10000, 50000, 100000, Infinity];
+
+export function isSizeBand(value: unknown): value is SizeBand {
+  return typeof value === "string" && (SIZE_BANDS as readonly string[]).includes(value);
+}
+
+/** Position on the scale, or -1 when the festival's size is unknown. */
+export function sizeBandIndex(band: string | null | undefined): number {
+  return band ? (SIZE_BANDS as readonly string[]).indexOf(band) : -1;
+}
+
 export type Festival = {
   id: string;
   name: string;
@@ -116,11 +155,12 @@ export type Festival = {
   description: string | null;
   image_url: string | null;
   tags: FestivalTag[] | null;
+  size_band: SizeBand | null;
   festival_editions: FestivalEdition[];
 };
 
 export const FESTIVAL_SELECT =
-  "id, name, slug, website_url, city, region, venue_name, country, latitude, longitude, description, image_url, tags, festival_editions(id, year, date_from, date_to, ticket_url, program)";
+  "id, name, slug, website_url, city, region, venue_name, country, latitude, longitude, description, image_url, tags, size_band, festival_editions(id, year, date_from, date_to, ticket_url, program)";
 
 export async function fetchFestivals(): Promise<Festival[]> {
   const supabase = createClient();
@@ -231,6 +271,13 @@ export type FestivalFilters = {
   dateTo?: string | null;
   /** Matches if the festival carries ANY of these tags — an OR, not an AND. */
   tags?: FestivalTag[] | null;
+  /**
+   * Inclusive positions into SIZE_BANDS. A range rather than a set of ticked
+   * boxes, because size is a scale: "only small", "only large", "everything but
+   * the giants" are all one drag from each end.
+   */
+  sizeMin?: number | null;
+  sizeMax?: number | null;
 };
 
 /** Names billed in one edition. */
@@ -290,6 +337,22 @@ export function filterFestivals(festivals: Festival[], filters: FestivalFilters)
 
     if (filters.tags && filters.tags.length > 0) {
       if (!festival.tags || !filters.tags.some((t) => festival.tags!.includes(t))) return false;
+    }
+
+    // Size is only consulted once the range has actually been narrowed, so the
+    // untouched filter shows everything -- including the festivals whose size
+    // nobody has filled in yet.
+    //
+    // Once narrowed, though, an unknown size is excluded rather than kept. The
+    // date filter makes the opposite call, and deliberately: nearly every
+    // festival has dates, so keeping the undated few costs nothing. Size starts
+    // out unknown on all of them, and letting those ride along would make "only
+    // the big ones" return the whole database -- an answer to no question.
+    const min = filters.sizeMin ?? 0;
+    const max = filters.sizeMax ?? SIZE_BANDS.length - 1;
+    if (min > 0 || max < SIZE_BANDS.length - 1) {
+      const size = sizeBandIndex(festival.size_band);
+      if (size < min || size > max) return false;
     }
 
     // Dates and line-up both belong to an edition, so they have to be judged on

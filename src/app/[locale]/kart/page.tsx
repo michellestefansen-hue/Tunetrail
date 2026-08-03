@@ -10,6 +10,7 @@ import {
   FilterDrawer,
   EMPTY_FILTERS,
   activeFilterCount,
+  SIZE_MAX_INDEX,
   type FilterState,
 } from "@/components/FilterDrawer";
 import { FestivalSheet } from "@/components/FestivalSheet";
@@ -109,6 +110,20 @@ function MapView() {
   const visibleFestivals = filterFestivals(festivals, filters);
   const isFiltered = activeFilterCount(filters) > 0;
 
+  // What the size range costs: festivals every other filter would have kept,
+  // dropped only because nobody has recorded how big they are. Counted by
+  // re-running the filter with the range opened up, so it stays true no matter
+  // which other filters are set.
+  const hiddenBySize = useMemo(() => {
+    if (filters.sizeMin === 0 && filters.sizeMax === SIZE_MAX_INDEX) return 0;
+    const ignoringSize = filterFestivals(festivals, {
+      ...filters,
+      sizeMin: 0,
+      sizeMax: SIZE_MAX_INDEX,
+    });
+    return ignoringSize.filter((f) => !f.size_band).length;
+  }, [festivals, filters]);
+
   const festivalsInView = useMemo(() => {
     if (!mapBounds || isFiltered) return visibleFestivals;
     return visibleFestivals.filter(
@@ -151,6 +166,7 @@ function MapView() {
         filters={filters}
         onChange={setFilters}
         suggestions={suggestions}
+        hiddenBySize={hiddenBySize}
       />
 
       <FestivalSheet festivals={festivalsInView} />

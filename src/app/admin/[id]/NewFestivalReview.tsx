@@ -15,11 +15,21 @@ export type NewFestivalPayload = {
   description: string | null;
   image_url: string | null;
   tags: string[] | null;
+  size_band: string | null;
   latitude: number | null;
   longitude: number | null;
   date_from: string;
   date_to: string;
   program?: { date: string; artists: { name: string }[] }[];
+};
+
+const SIZE_LABEL: Record<string, string> = {
+  under_200: "under 200 deltagere",
+  "200_2000": "200 – 2 000 deltagere",
+  "2000_10000": "2 000 – 10 000 deltagere",
+  "10000_50000": "10 000 – 50 000 deltagere",
+  "50000_100000": "50 000 – 100 000 deltagere",
+  over_100000: "over 100 000 deltagere",
 };
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -131,6 +141,7 @@ export function NewFestivalReview({
           )}
         </Row>
         <Row label="Sjangre">{p.tags?.join(", ") || "–"}</Row>
+        <Row label="Størrelse">{p.size_band ? SIZE_LABEL[p.size_band] ?? p.size_band : "–"}</Row>
         <Row label="Koordinater">
           {p.latitude != null ? (
             <a

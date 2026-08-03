@@ -16,8 +16,8 @@ import { FESTIVAL_TAGS, type FestivalTag } from "@/lib/festivals";
  * strings would have had to serve both audiences at once.
  */
 export type EditableField = {
-  name: "venue_name" | "website_url" | "image_url" | "description" | "tags";
-  input: "text" | "url" | "textarea" | "tags";
+  name: "venue_name" | "website_url" | "image_url" | "description" | "tags" | "size_band";
+  input: "text" | "url" | "textarea" | "tags" | "size";
 };
 
 export const EDITABLE_FIELDS: EditableField[] = [
@@ -26,6 +26,9 @@ export const EDITABLE_FIELDS: EditableField[] = [
   { name: "image_url", input: "url" },
   { name: "description", input: "textarea" },
   { name: "tags", input: "tags" },
+  // Optional here, unlike on the creation form: 693 festivals predate the
+  // field, and filling them in is exactly what this form is for.
+  { name: "size_band", input: "size" },
 ];
 
 export type FieldName = EditableField["name"];

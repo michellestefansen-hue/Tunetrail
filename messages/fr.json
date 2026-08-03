@@ -21,7 +21,16 @@
     "whenLabel": "Quand",
     "scopeUpcoming": "À partir d'aujourd'hui",
     "scopeYear": "Toute l'année {year}",
-    "tagsLabel": "Tags"
+    "tagsLabel": "Tags",
+    "size": "Taille",
+    "sizeAll": "Toutes les tailles",
+    "sizeUnder": "Moins de {n} festivaliers",
+    "sizeOver": "Plus de {n} festivaliers",
+    "sizeBetween": "{from} – {to} festivaliers",
+    "sizeFrom": "Taille minimale",
+    "sizeTo": "Taille maximale",
+    "sizeMaxEdge": "{n}+",
+    "sizeHiddenUnknown": "{count, plural, =1 {# festival est masqué car sa taille n'est pas renseignée.} other {# festivals sont masqués car leur taille n'est pas renseignée.}}"
   },
   "FestivalSheet": {
     "heading": "Explorer les festivals",
@@ -275,7 +284,8 @@
           "a": "Les prix des billets se situent à peu près au niveau européen, mais nourriture, boissons et transport coûtent plus qu'en Europe du Sud. Plusieurs festivals autorisent d'apporter sa nourriture au camping."
         }
       ]
-    }
+    },
+    "tableSize": "Taille"
   },
   "Countries": {
     "Albania": "Albanie",
@@ -339,6 +349,11 @@
       "tags": {
         "label": "Genres",
         "help": "Choisissez ceux qui marquent vraiment la programmation, pas tout ce qui apparaît."
+      },
+      "size_band": {
+        "label": "Taille",
+        "help": "Environ combien de personnes le festival rassemble. Une estimation suffit.",
+        "unset": "Non renseigné"
       }
     },
     "summaryHeading": "Voici ce que vous envoyez",
@@ -458,6 +473,17 @@
     "programCount": "{count, plural, =0{Aucun artiste ajouté} one{# artiste} other{# artistes}}",
     "errBadArtist": "« {name} » ne ressemble pas à un nom d'artiste. Retirez l'heure et le nom de scène.",
     "ticket": "Lien billetterie",
-    "ticketHelp": "Facultatif. Lien direct pour acheter des billets."
+    "ticketHelp": "Facultatif. Lien direct pour acheter des billets.",
+    "size": "Taille",
+    "sizeHelp": "Environ combien de personnes le festival rassemble. Une estimation suffit.",
+    "sizePick": "Choisir une taille"
+  },
+  "Sizes": {
+    "under_200": "Moins de 200 festivaliers",
+    "200_2000": "200 – 2 000 festivaliers",
+    "2000_10000": "2 000 – 10 000 festivaliers",
+    "10000_50000": "10 000 – 50 000 festivaliers",
+    "50000_100000": "50 000 – 100 000 festivaliers",
+    "over_100000": "Plus de 100 000 festivaliers"
   }
 }

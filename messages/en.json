@@ -21,7 +21,16 @@
     "whenLabel": "When",
     "scopeUpcoming": "From today",
     "scopeYear": "All of {year}",
-    "tagsLabel": "Tags"
+    "tagsLabel": "Tags",
+    "size": "Size",
+    "sizeAll": "Any size",
+    "sizeUnder": "Under {n} attendees",
+    "sizeOver": "Over {n} attendees",
+    "sizeBetween": "{from} – {to} attendees",
+    "sizeFrom": "Smallest size",
+    "sizeTo": "Largest size",
+    "sizeMaxEdge": "{n}+",
+    "sizeHiddenUnknown": "{count, plural, =1 {# festival is hidden because its size hasn't been recorded.} other {# festivals are hidden because their size hasn't been recorded.}}"
   },
   "FestivalSheet": {
     "heading": "Explore festivals",
@@ -275,7 +284,8 @@
           "a": "Ticket prices sit roughly at European levels, but food, drink and travel cost more than in southern Europe. Several festivals let you bring your own food into the campsite."
         }
       ]
-    }
+    },
+    "tableSize": "Size"
   },
   "Countries": {
     "Albania": "Albania",
@@ -339,6 +349,11 @@
       "tags": {
         "label": "Genres",
         "help": "Pick the ones that actually shape the lineup, not everything that turns up."
+      },
+      "size_band": {
+        "label": "Size",
+        "help": "Roughly how many people the festival draws. An estimate is fine.",
+        "unset": "Not given"
       }
     },
     "summaryHeading": "This is what you're submitting",
@@ -458,6 +473,17 @@
     "programCount": "{count, plural, =0{No artists added} one{# artist} other{# artists}}",
     "errBadArtist": "\"{name}\" doesn't look like an artist name. Remove any time or stage name.",
     "ticket": "Ticket link",
-    "ticketHelp": "Optional. A direct link to buy tickets."
+    "ticketHelp": "Optional. A direct link to buy tickets.",
+    "size": "Size",
+    "sizeHelp": "Roughly how many people the festival draws. An estimate is fine.",
+    "sizePick": "Choose a size"
+  },
+  "Sizes": {
+    "under_200": "Under 200 attendees",
+    "200_2000": "200 – 2,000 attendees",
+    "2000_10000": "2,000 – 10,000 attendees",
+    "10000_50000": "10,000 – 50,000 attendees",
+    "50000_100000": "50,000 – 100,000 attendees",
+    "over_100000": "Over 100,000 attendees"
   }
 }

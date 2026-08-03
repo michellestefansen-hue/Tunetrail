@@ -18,6 +18,7 @@ const LABEL: Record<string, string> = {
   image_url: "Bildelenke",
   description: "Beskrivelse",
   tags: "Sjangre",
+  size_band: "Størrelse",
 };
 
 function sameJson(a: unknown, b: unknown): boolean {

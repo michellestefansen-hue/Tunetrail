@@ -14,10 +14,22 @@ export type FieldDiff = {
   conflict: boolean;
 };
 
+// Størrelsen lagres som nøkkel, og «50000_100000» er ikke noe man godkjenner
+// på tillit. Køen er norsk uansett, så oversettelsene hentes ikke inn her.
+const SIZE_LABEL: Record<string, string> = {
+  under_200: "under 200 deltagere",
+  "200_2000": "200 – 2 000 deltagere",
+  "2000_10000": "2 000 – 10 000 deltagere",
+  "10000_50000": "10 000 – 50 000 deltagere",
+  "50000_100000": "50 000 – 100 000 deltagere",
+  over_100000: "over 100 000 deltagere",
+};
+
 function show(v: unknown): string {
   if (v === null || v === undefined || v === "") return "— tomt —";
   if (Array.isArray(v)) return v.join(", ");
-  return String(v);
+  const s = String(v);
+  return SIZE_LABEL[s] ?? s;
 }
 
 export function ReviewForm({ id, diffs }: { id: string; diffs: FieldDiff[] }) {

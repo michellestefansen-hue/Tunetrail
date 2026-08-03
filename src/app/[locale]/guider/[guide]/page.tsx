@@ -86,6 +86,7 @@ export default async function GuidePage({
   const t = await getTranslations({ locale, namespace: `Guides.${key}` });
   const tg = await getTranslations({ locale, namespace: "Guides" });
   const tc = await getTranslations({ locale, namespace: "Tags" });
+  const ts = await getTranslations({ locale, namespace: "Sizes" });
   const tCountries = await getTranslations({ locale, namespace: "Countries" });
   const bcp = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
   const countryName = (country: string | null) => (country ? tCountries(country) : null);
@@ -202,6 +203,7 @@ export default async function GuidePage({
                 <th className="px-4 py-3 font-semibold">{tg("tableCountry")}</th>
                 <th className="px-4 py-3 font-semibold">{tg("tableDates")}</th>
                 <th className="px-4 py-3 font-semibold">{tg("tableGenre")}</th>
+                <th className="px-4 py-3 font-semibold">{tg("tableSize")}</th>
                 <th className="px-4 py-3 font-semibold">{tg("tableTickets")}</th>
               </tr>
             </thead>
@@ -222,6 +224,9 @@ export default async function GuidePage({
                     <td className="px-4 py-3 text-stone-600">{dateLabel(f)}</td>
                     <td className="px-4 py-3 text-stone-600">
                       {f.tags && f.tags.length > 0 ? f.tags.map((tag) => tc(tag)).join(", ") : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-stone-600">
+                      {f.size_band ? ts(f.size_band) : "—"}
                     </td>
                     <td className="px-4 py-3">
                       {edition?.ticket_url ? (

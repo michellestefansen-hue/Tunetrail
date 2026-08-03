@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LineupFields } from "@/components/LineupFields";
 import { LocationPicker } from "@/components/LocationPicker";
-import { FESTIVAL_TAGS } from "@/lib/festivals";
+import { FESTIVAL_TAGS, SIZE_BANDS } from "@/lib/festivals";
 import type { ProgramDay } from "@/lib/submissions";
 import type { Match } from "@/lib/duplicates";
 import { checkDuplicates, submitNewFestival, type NewError } from "./actions";
@@ -19,6 +19,7 @@ const EMPTY = {
   description: "",
   image_url: "",
   tags: [] as string[],
+  size_band: "",
   latitude: null as number | null,
   longitude: null as number | null,
   date_from: "",
@@ -77,6 +78,7 @@ export function NewFestivalForm({
   const t = useTranslations("NewFestival");
   const tTags = useTranslations("Tags");
   const tCountries = useTranslations("Countries");
+  const tSizes = useTranslations("Sizes");
 
   const [step, setStep] = useState<1 | 2>(1);
   const [f, setF] = useState(EMPTY);
@@ -344,6 +346,21 @@ export function NewFestivalForm({
             );
           })}
         </div>
+      </Field>
+
+      <Field label={t("size")} help={t("sizeHelp")} required>
+        <select
+          className={input}
+          value={f.size_band}
+          onChange={(e) => set("size_band", e.target.value)}
+        >
+          <option value="">{t("sizePick")}</option>
+          {SIZE_BANDS.map((band) => (
+            <option key={band} value={band}>
+              {tSizes(band)}
+            </option>
+          ))}
+        </select>
       </Field>
 
       <Field label={t("description")} help={t("descriptionHelp")}>

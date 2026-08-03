@@ -21,7 +21,16 @@
     "whenLabel": "Når",
     "scopeUpcoming": "Fra i dag",
     "scopeYear": "Hele {year}",
-    "tagsLabel": "Tagger"
+    "tagsLabel": "Tagger",
+    "size": "Størrelse",
+    "sizeAll": "Alle størrelser",
+    "sizeUnder": "Under {n} deltagere",
+    "sizeOver": "Over {n} deltagere",
+    "sizeBetween": "{from} – {to} deltagere",
+    "sizeFrom": "Minste størrelse",
+    "sizeTo": "Største størrelse",
+    "sizeMaxEdge": "{n}+",
+    "sizeHiddenUnknown": "{count, plural, =1 {# festival er skjult fordi størrelsen ikke er registrert.} other {# festivaler er skjult fordi størrelsen ikke er registrert.}}"
   },
   "FestivalSheet": {
     "heading": "Utforsk festivaler",
@@ -275,7 +284,8 @@
           "a": "Billettprisene ligger omtrent på europeisk nivå, men mat, drikke og reise koster mer enn i Sør-Europa. Flere festivaler tillater at du tar med egen mat til campingområdet."
         }
       ]
-    }
+    },
+    "tableSize": "Størrelse"
   },
   "Countries": {
     "Albania": "Albania",
@@ -339,6 +349,11 @@
       "tags": {
         "label": "Sjangre",
         "help": "Velg dem som faktisk preger programmet, ikke alt som forekommer."
+      },
+      "size_band": {
+        "label": "Størrelse",
+        "help": "Omtrent hvor mange publikummere festivalen samler. Et anslag er nok.",
+        "unset": "Ikke oppgitt"
       }
     },
     "summaryHeading": "Dette sender du inn",
@@ -458,6 +473,17 @@
     "programCount": "{count, plural, =0{Ingen artister lagt til} one{# artist} other{# artister}}",
     "errBadArtist": "«{name}» ser ikke ut som et artistnavn. Ta bort klokkeslett og scenenavn.",
     "ticket": "Billettlenke",
-    "ticketHelp": "Valgfritt. Direkte lenke til billettkjøp."
+    "ticketHelp": "Valgfritt. Direkte lenke til billettkjøp.",
+    "size": "Størrelse",
+    "sizeHelp": "Omtrent hvor mange publikummere festivalen samler. Et anslag er nok.",
+    "sizePick": "Velg størrelse"
+  },
+  "Sizes": {
+    "under_200": "Under 200 deltagere",
+    "200_2000": "200 – 2 000 deltagere",
+    "2000_10000": "2 000 – 10 000 deltagere",
+    "10000_50000": "10 000 – 50 000 deltagere",
+    "50000_100000": "50 000 – 100 000 deltagere",
+    "over_100000": "Over 100 000 deltagere"
   }
 }

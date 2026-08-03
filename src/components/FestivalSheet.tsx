@@ -92,7 +92,7 @@ function FestivalList({ festivals }: { festivals: Festival[] }) {
     <div className="flex h-full flex-col overflow-y-auto px-5 pb-6 pt-1">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="text-2xl">{t("heading")}</h2>
+          <h2 className="text-lg">{t("heading")}</h2>
           <p className="mt-1 text-sm text-stone-500">{t("subheading")}</p>
         </div>
 

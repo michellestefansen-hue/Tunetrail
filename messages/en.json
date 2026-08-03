@@ -33,7 +33,7 @@
     "sizeHiddenUnknown": "{count, plural, =1 {# festival is hidden because its size hasn't been recorded.} other {# festivals are hidden because their size hasn't been recorded.}}"
   },
   "FestivalSheet": {
-    "heading": "Explore festivals",
+    "heading": "Explore or add festivals",
     "subheading": "Plan your next adventure and help the community keep the map up to date.",
     "hide": "Hide festivals",
     "show": "Show festivals",

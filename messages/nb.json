@@ -33,7 +33,7 @@
     "sizeHiddenUnknown": "{count, plural, =1 {# festival er skjult fordi størrelsen ikke er registrert.} other {# festivaler er skjult fordi størrelsen ikke er registrert.}}"
   },
   "FestivalSheet": {
-    "heading": "Utforsk festivaler",
+    "heading": "Utforsk eller legg til festivaler",
     "subheading": "Planlegg ditt neste eventyr og hjelp fellesskapet med å holde kartet oppdatert.",
     "hide": "Skjul festivaler",
     "show": "Vis festivaler",

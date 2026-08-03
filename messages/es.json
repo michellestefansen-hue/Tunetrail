@@ -393,11 +393,13 @@
     "heading": "Iniciar sesión",
     "intro": "Escribe tu correo y te enviaremos un enlace. Sin contraseña.",
     "emailPlaceholder": "tu@ejemplo.es",
+    "workHint": "Usa una dirección de correo personal si puedes. Las direcciones de trabajo suelen quedar bloqueadas por los filtros de spam de la empresa, y entonces el enlace nunca llega.",
     "submit": "Enviarme un enlace",
     "submitSending": "Enviando …",
     "sentHeading": "Revisa tu correo",
     "sentBody": "Hemos enviado un enlace a <b>{email}</b>. Haz clic en él para iniciar sesión.",
     "sentHint": "¿No lo encuentras? Revisa la carpeta de spam. El enlace es válido durante una hora.",
+    "sentHintWork": "Parece una dirección de trabajo. Si el enlace no llega en unos minutos, es probable que lo haya bloqueado un filtro corporativo. Prueba con una dirección personal.",
     "linkFailedHeading": "El inicio de sesión no se completó",
     "errMissingCode": "Al enlace le faltaba el código de acceso. Pide uno nuevo abajo.",
     "errInvalidLink": "El enlace no era válido, caducó o ya se usó. Pide uno nuevo — y ábrelo en el mismo navegador desde el que lo pediste."

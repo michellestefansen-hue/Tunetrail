@@ -393,11 +393,13 @@
     "heading": "Sign in",
     "intro": "Enter your email and we'll send you a link. No password.",
     "emailPlaceholder": "you@example.com",
+    "workHint": "Use a personal email address if you can. Work addresses are often stopped by company spam filters, and then the link never arrives.",
     "submit": "Send me a link",
     "submitSending": "Sending …",
     "sentHeading": "Check your email",
     "sentBody": "We've sent a link to <b>{email}</b>. Click it to sign in.",
     "sentHint": "Can't find it? Check your spam folder. The link is valid for one hour.",
+    "sentHintWork": "That looks like a work address. If the link hasn't arrived within a couple of minutes, a company filter has most likely stopped it. Try a personal address instead.",
     "linkFailedHeading": "Sign-in didn't go through",
     "errMissingCode": "The link was missing its sign-in code. Request a new one below.",
     "errInvalidLink": "The link was invalid, expired or already used. Request a new one — and open it in the same browser you requested it from."

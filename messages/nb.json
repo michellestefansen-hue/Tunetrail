@@ -393,11 +393,13 @@
     "heading": "Logg inn",
     "intro": "Skriv e-postadressen din, så sender vi deg en lenke. Ingen passord.",
     "emailPlaceholder": "din@epost.no",
+    "workHint": "Bruk helst en privat e-postadresse. Jobbadresser blir ofte stoppet av bedriftens spamfilter, og da kommer lenken aldri fram.",
     "submit": "Send meg en lenke",
     "submitSending": "Sender …",
     "sentHeading": "Sjekk e-posten din",
     "sentBody": "Vi har sendt en lenke til <b>{email}</b>. Klikk på den, så er du logget inn.",
     "sentHint": "Finner du den ikke, se i søppelposten. Lenken varer i én time.",
+    "sentHintWork": "Dette ser ut som en jobbadresse. Kommer lenken ikke fram i løpet av et par minutter, er den mest sannsynlig stoppet av bedriftens filter. Prøv en privat adresse i stedet.",
     "linkFailedHeading": "Innloggingen gikk ikke gjennom",
     "errMissingCode": "Lenken manglet innloggingskoden. Be om en ny nedenfor.",
     "errInvalidLink": "Lenken var ugyldig, utløpt eller allerede brukt. Be om en ny — og åpne den i samme nettleser som du ba om den fra."

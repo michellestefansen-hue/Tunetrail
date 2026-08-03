@@ -393,11 +393,13 @@
     "heading": "Connexion",
     "intro": "Indiquez votre adresse e-mail, nous vous envoyons un lien. Aucun mot de passe.",
     "emailPlaceholder": "vous@exemple.fr",
+    "workHint": "Utilisez de préférence une adresse e-mail personnelle. Les adresses professionnelles sont souvent bloquées par les filtres anti-spam des entreprises, et le lien n'arrive alors jamais.",
     "submit": "M'envoyer un lien",
     "submitSending": "Envoi en cours …",
     "sentHeading": "Vérifiez vos e-mails",
     "sentBody": "Nous avons envoyé un lien à <b>{email}</b>. Cliquez-y pour vous connecter.",
     "sentHint": "Vous ne le trouvez pas ? Vérifiez vos spams. Le lien est valable une heure.",
+    "sentHintWork": "Cette adresse semble professionnelle. Si le lien n'arrive pas d'ici quelques minutes, un filtre d'entreprise l'a probablement bloqué. Essayez plutôt une adresse personnelle.",
     "linkFailedHeading": "La connexion n'a pas abouti",
     "errMissingCode": "Le lien ne contenait pas le code de connexion. Demandez-en un nouveau ci-dessous.",
     "errInvalidLink": "Le lien était invalide, expiré ou déjà utilisé. Demandez-en un nouveau — et ouvrez-le dans le même navigateur que celui d'où vous l'avez demandé."

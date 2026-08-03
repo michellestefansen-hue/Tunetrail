@@ -393,11 +393,13 @@
     "heading": "Anmelden",
     "intro": "Gib deine E-Mail-Adresse ein, dann schicken wir dir einen Link. Kein Passwort nötig.",
     "emailPlaceholder": "du@beispiel.de",
+    "workHint": "Verwende möglichst eine private E-Mail-Adresse. Dienstliche Adressen werden oft von Firmen-Spamfiltern blockiert, dann kommt der Link nie an.",
     "submit": "Link zusenden",
     "submitSending": "Wird gesendet …",
     "sentHeading": "Prüfe deine E-Mails",
     "sentBody": "Wir haben einen Link an <b>{email}</b> gesendet. Klicke darauf, um dich anzumelden.",
     "sentHint": "Findest du ihn nicht? Schau im Spam-Ordner nach. Der Link gilt eine Stunde.",
+    "sentHintWork": "Das sieht nach einer dienstlichen Adresse aus. Kommt der Link nicht innerhalb von ein paar Minuten an, hat ihn wahrscheinlich ein Firmenfilter blockiert. Versuche es mit einer privaten Adresse.",
     "linkFailedHeading": "Anmeldung hat nicht geklappt",
     "errMissingCode": "Dem Link fehlte der Anmeldecode. Fordere unten einen neuen an.",
     "errInvalidLink": "Der Link war ungültig, abgelaufen oder schon benutzt. Fordere einen neuen an — und öffne ihn im selben Browser, aus dem du ihn angefordert hast."

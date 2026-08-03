@@ -4,6 +4,60 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+/**
+ * Domains where the address belongs to the person, not to their employer.
+ *
+ * Corporate Microsoft 365 tenants quarantine sign-in links from a young sending
+ * domain outright -- Resend reports them delivered and the recipient never sees
+ * them, not even in the junk folder. Gmail takes the same message fine. There is
+ * nothing to fix on our side, so the honest move is to warn people up front.
+ *
+ * A list of consumer providers rather than a list of corporate ones: the latter
+ * is unbounded, and a company address is precisely the one that isn't on this
+ * list. Plenty of small custom domains deliver perfectly well, so the wording it
+ * drives is a heads-up, never a refusal.
+ */
+const PERSONAL_MAIL_DOMAINS = [
+  "gmail.com",
+  "googlemail.com",
+  "outlook.com",
+  "msn.com",
+  "icloud.com",
+  "me.com",
+  "mac.com",
+  "proton.me",
+  "protonmail.com",
+  "pm.me",
+  "mail.com",
+  "aol.com",
+  "web.de",
+  "t-online.de",
+  "online.no",
+  "laposte.net",
+];
+
+// Providers with a country-code domain per market -- hotmail.no, yahoo.fr,
+// gmx.at -- where matching the first label is what makes the list finite.
+const PERSONAL_MAIL_PREFIXES = [
+  "hotmail.",
+  "live.",
+  "yahoo.",
+  "gmx.",
+  "orange.",
+  "free.",
+  "sfr.",
+  "wanadoo.",
+];
+
+function looksLikeWorkAddress(email: string) {
+  const domain = email.trim().toLowerCase().split("@")[1];
+  if (!domain) return false;
+  return (
+    !PERSONAL_MAIL_DOMAINS.includes(domain) &&
+    !PERSONAL_MAIL_PREFIXES.some((prefix) => domain.startsWith(prefix))
+  );
+}
+
 export function LoginForm({ neste, feil }: { neste: string; feil?: string }) {
   const t = useTranslations("Login");
   const [email, setEmail] = useState("");
@@ -46,6 +100,11 @@ export function LoginForm({ neste, feil }: { neste: string; feil?: string }) {
           {t.rich("sentBody", { email, b: (chunks) => <strong>{chunks}</strong> })}
         </p>
         <p className="text-sm text-[#2D1A12]/50">{t("sentHint")}</p>
+        {looksLikeWorkAddress(email) && (
+          <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900/80">
+            {t("sentHintWork")}
+          </p>
+        )}
       </div>
     );
   }
@@ -76,6 +135,8 @@ export function LoginForm({ neste, feil }: { neste: string; feil?: string }) {
         placeholder={t("emailPlaceholder")}
         className="w-full rounded-full border border-black/10 bg-white px-4 py-3 text-[#2D1A12] outline-none focus:border-black/30"
       />
+
+      <p className="px-1 text-sm text-[#2D1A12]/50">{t("workHint")}</p>
 
       <button
         type="submit"

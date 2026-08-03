@@ -233,10 +233,22 @@ export type FestivalFilters = {
   tags?: FestivalTag[] | null;
 };
 
-/** Names billed in the edition that the UI surfaces for this festival. */
-export function festivalArtistNames(festival: Festival): string[] {
-  const edition = currentEdition(festival);
+/** Names billed in one edition. */
+export function editionArtistNames(edition: FestivalEdition | null): string[] {
   return (edition?.program ?? []).flatMap((day) => day.artists.map((a) => a.name));
+}
+
+/**
+ * Every name this festival has ever billed, across all editions on record.
+ *
+ * Searching only the surfaced edition -- as this once did -- made line-ups
+ * vanish the moment an edition ended. Roskilde 2026 billed 186 artists; the day
+ * it finished, the 2027 record took over as "current" with an empty programme,
+ * and every one of those names became unsearchable. The same went for the 41
+ * festivals given 2027 dates ahead of their line-up announcements.
+ */
+export function festivalArtistNames(festival: Festival): string[] {
+  return (festival.festival_editions ?? []).flatMap(editionArtistNames);
 }
 
 export type Suggestions = { festivals: string[]; countries: string[]; artists: string[] };
@@ -276,25 +288,39 @@ export function filterFestivals(festivals: Festival[], filters: FestivalFilters)
       if (!festival.country || !countries.includes(festival.country)) return false;
     }
 
-    if (artists.length > 0) {
-      const billed = festivalArtistNames(festival);
-      if (!artists.some((a) => billed.includes(a))) return false;
-    }
-
     if (filters.tags && filters.tags.length > 0) {
       if (!festival.tags || !filters.tags.some((t) => festival.tags!.includes(t))) return false;
     }
 
-    const range = editionRange(currentEdition(festival));
+    // Dates and line-up both belong to an edition, so they have to be judged on
+    // the same one. Testing them against different editions would let "Zara
+    // Larsson, summer 2027" match on a 2026 line-up and a 2027 date -- a
+    // festival that answers the question in two halves and not at all as asked.
+    //
+    // Which is also why the date range decides where the artist search looks
+    // rather than the other way round: widen the range back to June 2026 and
+    // Roskilde's 186 names come into scope, narrow it to next summer and only
+    // what is actually announced for next summer does.
+    const editions = festival.festival_editions ?? [];
+    if (editions.length === 0) return artists.length === 0;
 
-    // A festival with no date at all stays visible under every date filter:
-    // we don't know when it is, which is not the same as knowing it is over.
-    if (range) {
-      const [start, end] = range;
-      if (filters.dateFrom && end < filters.dateFrom) return false;
-      if (filters.dateTo && start > filters.dateTo) return false;
-    }
+    return editions.some((edition) => {
+      const range = editionRange(edition);
 
-    return true;
+      // An edition with no date at all stays eligible under every date filter:
+      // we don't know when it is, which is not the same as knowing it is over.
+      if (range) {
+        const [start, end] = range;
+        if (filters.dateFrom && end < filters.dateFrom) return false;
+        if (filters.dateTo && start > filters.dateTo) return false;
+      }
+
+      if (artists.length > 0) {
+        const billed = editionArtistNames(edition);
+        if (!artists.some((a) => billed.includes(a))) return false;
+      }
+
+      return true;
+    });
   });
 }

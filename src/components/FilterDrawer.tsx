@@ -278,6 +278,13 @@ export function FilterDrawer({
             onChange={(v) => set("artists", v)}
           />
 
+          <SizeRange
+            min={filters.sizeMin}
+            max={filters.sizeMax}
+            hiddenUnknown={hiddenBySize}
+            onChange={(sizeMin, sizeMax) => onChange({ ...filters, sizeMin, sizeMax })}
+          />
+
           <ChipToggles
             label={t("countryLabel")}
             options={countries}
@@ -292,13 +299,6 @@ export function FilterDrawer({
             selected={filters.tags}
             onToggle={toggleTag}
             render={(v) => tTags(v)}
-          />
-
-          <SizeRange
-            min={filters.sizeMin}
-            max={filters.sizeMax}
-            hiddenUnknown={hiddenBySize}
-            onChange={(sizeMin, sizeMax) => onChange({ ...filters, sizeMin, sizeMax })}
           />
         </div>
 

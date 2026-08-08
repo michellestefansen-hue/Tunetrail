@@ -112,31 +112,55 @@ const artistKey = (n: string) =>
  * Time in Jazz lost 32 artists on 2 August 2026.
  */
 export function diffProgram(before: ProgramDay[], after: ProgramDay[]): ProgramOps {
-  const dayOf = new Map<string, string>(); // artist key -> date, as it was
-  const nameOf = new Map<string, string>();
-  for (const d of before) {
-    for (const a of d.artists) {
-      dayOf.set(artistKey(a), d.date);
-      nameOf.set(artistKey(a), a);
-    }
-  }
+  // An artist maps to the SET of days it is billed on, not to one day.
+  //
+  // Keying by artist alone was wrong, and wrong in a way that invented work
+  // nobody asked for. Playing more than one day is ordinary at a festival --
+  // 122 of 736 editions have at least one such artist, 682 in total -- and with
+  // a single-date map the last day overwrote the earlier ones. The earlier day
+  // then read as a move, so simply opening the form and submitting a
+  // description produced phantom "move Fatboy Slim to 30 July" operations.
+  // Bestival 2026 generated 64 of them from a completely untouched programme.
+  const daysBefore = new Map<string, Set<string>>();
+  const daysAfter = new Map<string, Set<string>>();
 
-  const seen = new Set<string>();
+  // First spelling wins, and `before` is collected first, so an existing artist
+  // keeps the spelling already in the database and a new one arrives as typed.
+  const nameOf = new Map<string, string>();
+
+  const collect = (days: ProgramDay[], into: Map<string, Set<string>>) => {
+    for (const d of days) {
+      for (const a of d.artists) {
+        const k = artistKey(a);
+        if (!k) continue;
+        if (!into.has(k)) into.set(k, new Set());
+        into.get(k)!.add(d.date);
+        if (!nameOf.has(k)) nameOf.set(k, a.trim());
+      }
+    }
+  };
+  collect(before, daysBefore);
+  collect(after, daysAfter);
+
   const ops: ProgramOps = { add: [], remove: [], move: [] };
 
-  for (const d of after) {
-    for (const a of d.artists) {
-      const k = artistKey(a);
-      if (!k) continue;
-      seen.add(k);
-      const was = dayOf.get(k);
-      if (was === undefined) ops.add.push({ date: d.date, name: a.trim() });
-      else if (was !== d.date) ops.move.push({ from: was, to: d.date, name: nameOf.get(k)! });
-    }
-  }
+  for (const k of new Set([...daysBefore.keys(), ...daysAfter.keys()])) {
+    const was = daysBefore.get(k) ?? new Set<string>();
+    const now = daysAfter.get(k) ?? new Set<string>();
+    const lost = [...was].filter((d) => !now.has(d)).sort();
+    const gained = [...now].filter((d) => !was.has(d)).sort();
+    if (lost.length === 0 && gained.length === 0) continue;
 
-  for (const [k, date] of dayOf) {
-    if (!seen.has(k)) ops.remove.push({ date, name: nameOf.get(k)! });
+    const name = nameOf.get(k)!;
+
+    // A day lost paired with a day gained is what a contributor means by
+    // "moved", and saying it that way keeps the queue readable: one line to
+    // approve instead of a remove and an add the reviewer has to connect.
+    // Whatever is left over genuinely is an added or a dropped appearance.
+    const moved = Math.min(lost.length, gained.length);
+    for (let i = 0; i < moved; i++) ops.move.push({ from: lost[i], to: gained[i], name });
+    for (const date of lost.slice(moved)) ops.remove.push({ date, name });
+    for (const date of gained.slice(moved)) ops.add.push({ date, name });
   }
 
   return ops;

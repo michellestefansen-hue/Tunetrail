@@ -64,6 +64,83 @@ export function activeFilterCount(f: FilterState): number {
   );
 }
 
+/**
+ * Where the map remembers its filters between visits.
+ *
+ * The URL is the real storage -- this only exists so the back arrow on a
+ * festival page can return you to the map you left. That arrow is a fresh
+ * navigation, not a browser back, so it has no way of knowing what you had
+ * selected unless the map writes it down somewhere first.
+ */
+export const MAP_FILTER_KEY = "tunetrail:kart-filter";
+
+/**
+ * Filters as URL parameters.
+ *
+ * Two things fall out of putting them here rather than in component state. A
+ * filtered map becomes a link you can send someone, and opening a festival and
+ * coming back no longer throws away what you had chosen -- which it did, every
+ * time, because the page unmounts and remounts.
+ *
+ * `q` and `tags` keep the names the guide pages already link with, so those
+ * CTAs go on working. Only values that differ from the default are written, so
+ * an untouched map keeps a clean URL.
+ */
+export function filtersToParams(f: FilterState): URLSearchParams {
+  const p = new URLSearchParams();
+  if (f.countries.length) p.set("q", f.countries.join(","));
+  if (f.tags.length) p.set("tags", f.tags.join(","));
+  if (f.festivalNames.length) p.set("navn", f.festivalNames.join(","));
+  if (f.artists.length) p.set("artist", f.artists.join(","));
+
+  // The default range is "from today onwards", which has to stay a default
+  // rather than a stored date -- pinned to a date it would silently become
+  // "from last Tuesday" a week later.
+  if (scopeOfRange(f.dateFrom, f.dateTo) !== DEFAULT_TIME_SCOPE) {
+    if (f.dateFrom) p.set("fra", f.dateFrom);
+    if (f.dateTo) p.set("til", f.dateTo);
+  }
+
+  if (f.sizeMin !== 0 || f.sizeMax !== SIZE_MAX_INDEX) {
+    p.set("str", `${f.sizeMin}-${f.sizeMax}`);
+  }
+  return p;
+}
+
+export function paramsToFilters(p: Pick<URLSearchParams, "get">): FilterState {
+  const list = (key: string) =>
+    p
+      .get(key)
+      ?.split(",")
+      .map((v) => v.trim())
+      .filter(Boolean) ?? [];
+
+  const clamp = (n: number) => Math.max(0, Math.min(n, SIZE_MAX_INDEX));
+  const size = p.get("str")?.split("-").map(Number);
+  const [min, max] =
+    size?.length === 2 && size.every((n) => Number.isInteger(n))
+      ? [clamp(Math.min(...size)), clamp(Math.max(...size))]
+      : [0, SIZE_MAX_INDEX];
+
+  const from = p.get("fra");
+  const to = p.get("til");
+
+  return {
+    ...EMPTY_FILTERS,
+    countries: list("q"),
+    // Anything not in the current tag list is dropped rather than kept as a
+    // filter that can never match.
+    tags: list("tags").filter((v): v is FestivalTag =>
+      (FESTIVAL_TAGS as string[]).includes(v),
+    ),
+    festivalNames: list("navn"),
+    artists: list("artist"),
+    ...(from || to ? { dateFrom: from, dateTo: to } : {}),
+    sizeMin: min,
+    sizeMax: max,
+  };
+}
+
 /** A multi-select row of chips, shared by the country and category sections. */
 function ChipToggles<T extends string>({
   label,

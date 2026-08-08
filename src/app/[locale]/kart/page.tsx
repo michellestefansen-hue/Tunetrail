@@ -10,6 +10,9 @@ import {
   FilterDrawer,
   EMPTY_FILTERS,
   activeFilterCount,
+  filtersToParams,
+  paramsToFilters,
+  MAP_FILTER_KEY,
   SIZE_MAX_INDEX,
   type FilterState,
 } from "@/components/FilterDrawer";
@@ -18,9 +21,7 @@ import {
   fetchFestivals,
   filterFestivals,
   buildSuggestions,
-  FESTIVAL_TAGS,
   type Festival,
-  type FestivalTag,
 } from "@/lib/festivals";
 import type { MapBounds } from "@/components/map/TunetrailMap";
 
@@ -39,23 +40,17 @@ export default function Home() {
 
 function MapView() {
   const router = useRouter();
-  // Guides link here with ?q= and ?tags= so their CTA lands on a filtered
-  // map. Read once, as initial state — after that the UI owns the filters.
+  // The URL is where the filters live. Read once as initial state; from then on
+  // the UI owns them and writes back. This is also the entry point the guide
+  // pages link to with ?q= and ?tags=.
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get("q") ?? "";
-  const initialTags = searchParams.get("tags")?.split(",") ?? [];
 
   const [festivals, setFestivals] = useState<Festival[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState<FilterState>(() => ({
-    ...EMPTY_FILTERS,
-    tags: initialTags.filter((v): v is FestivalTag =>
-      (FESTIVAL_TAGS as string[]).includes(v),
-    ),
-  }));
+  const [filters, setFilters] = useState<FilterState>(() => paramsToFilters(searchParams));
   const [searchLocation, setSearchLocation] = useState<[number, number] | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
-  const seededCountries = useRef(false);
+  const prunedCountries = useRef(false);
 
   useEffect(() => {
     fetchFestivals()
@@ -65,18 +60,33 @@ function MapView() {
 
   const suggestions = useMemo(() => buildSuggestions(festivals), [festivals]);
 
-  // A guide's "explore on the map" CTA arrives as ?q=, comma-separated for
-  // regions that span several countries. Seed it once the data is in,
-  // dropping anything the data cannot actually match.
+  // Mirror the filters into the URL, so the map can be linked to and so
+  // returning from a festival restores what you had. `replace`, never `push`:
+  // one history entry per chip toggle would turn the back button into a walk
+  // through your own filtering instead of a way off the map.
+  //
+  // The same values go into sessionStorage for the back arrow on a festival
+  // page, which is a fresh navigation and cannot read this URL.
   useEffect(() => {
-    if (seededCountries.current || festivals.length === 0 || !initialQuery) return;
-    seededCountries.current = true;
-    const valid = initialQuery
-      .split(",")
-      .map((v) => v.trim())
-      .filter((v) => suggestions.countries.includes(v));
-    if (valid.length > 0) setFilters((f) => ({ ...f, countries: valid }));
-  }, [festivals, initialQuery, suggestions]);
+    const params = filtersToParams(filters);
+    const query = Object.fromEntries(params);
+    sessionStorage.setItem(MAP_FILTER_KEY, params.toString());
+    router.replace({ pathname: "/kart", query }, { scroll: false });
+  }, [filters, router]);
+
+  // A guide's CTA arrives as ?q=, comma-separated for regions spanning several
+  // countries, and some of those names are regions rather than countries. Once
+  // the data is in, drop anything it cannot actually match — a chip that can
+  // never match reads as "no results" rather than as a bad filter value.
+  useEffect(() => {
+    if (prunedCountries.current || festivals.length === 0) return;
+    prunedCountries.current = true;
+    setFilters((f) => {
+      if (f.countries.length === 0) return f;
+      const valid = f.countries.filter((v) => suggestions.countries.includes(v));
+      return valid.length === f.countries.length ? f : { ...f, countries: valid };
+    });
+  }, [festivals, suggestions]);
 
   // Fly the map to a single chosen country. With several selected there is no
   // one point to fly to, so the fitted results speak for themselves.

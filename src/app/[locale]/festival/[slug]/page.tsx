@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
-  ArrowLeftIcon,
   GlobeAltIcon,
   TicketIcon,
   MapPinIcon,
@@ -11,6 +10,7 @@ import {
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
 import { createClient } from "@/lib/supabase/static";
+import { BackToMap } from "@/components/BackToMap";
 import { FestivalProgramTabs } from "@/components/FestivalProgramTabs";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Link, getPathname } from "@/i18n/navigation";
@@ -207,13 +207,10 @@ export default async function FestivalPage({
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#FFF9F0] to-transparent" />
 
-        <Link
-          href="/kart"
+        <BackToMap
+          label={t("backToMap")}
           className="absolute left-4 top-[calc(env(safe-area-inset-top)+16px)] flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-2 text-sm font-medium text-white backdrop-blur-md"
-        >
-          <ArrowLeftIcon className="h-4 w-4" />
-          {t("backToMap")}
-        </Link>
+        />
 
         <div className="absolute right-4 top-[calc(env(safe-area-inset-top)+16px)] rounded-full bg-black/40 backdrop-blur-md">
           <LanguageSwitcher className="border-white/20 bg-transparent text-white" />

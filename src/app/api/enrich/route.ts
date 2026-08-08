@@ -44,6 +44,32 @@ async function searchTm(f: FestivalRow, key: string) {
 }
 
 export async function GET(request: Request) {
+  // Avslått 8. august 2026, og ikke lenger planlagt (vercel.json er fjernet).
+  //
+  // Den kjørte hver natt kl. 04:00 og skrev rett til databasen uten
+  // godkjenning. Fasit etter flere uker: 11 av 739 utgaver kom herfra, og bare
+  // tre av dem hadde en brukbar lineup. Seks hadde null artister.
+  //
+  // Til gjengjeld gjorde den skade. Den erstattet researchede datoer med det
+  // ene arrangementet Ticketmaster tilfeldigvis matchet, så flerdagersfestivaler
+  // ble kollapset til én dag: Pori Jazz, Parklife, Canal Street, Ilosaarirock.
+  // Edinburgh Festival ble til «8. august – 7. november» med en lineup som
+  // tilhørte Edinburgh Summer Sessions, en helt annen konsertserie.
+  //
+  // Dekningen var dessuten skjev: 6 av 11 treff i Storbritannia, null i
+  // Frankrike, Spania, Italia, Tyskland og Nederland -- der tyngden av
+  // databasen ligger. Festivalens eget nettsted er både ferskere og riktigere.
+  //
+  // Ruten er beholdt fordi Ticketmaster kan bli nyttig igjen dersom treffene
+  // rutes gjennom innsendingskøen i stedet for å skrive direkte. Til da må den
+  // slås på bevisst.
+  if (process.env.ENRICH_ENABLED !== "true") {
+    return NextResponse.json(
+      { error: "disabled", reason: "skriver direkte til databasen uten godkjenning" },
+      { status: 503 },
+    );
+  }
+
   const secret = process.env.CRON_SECRET;
   if (secret && request.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });

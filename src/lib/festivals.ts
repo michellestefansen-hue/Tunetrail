@@ -182,6 +182,30 @@ export function currentEdition(festival: Festival): FestivalEdition | null {
   return [...editions].sort((a, b) => b.year - a.year)[0];
 }
 
+/**
+ * The edition whose line-up the page should lead with.
+ *
+ * Not the same question as "when is it next", and conflating the two made 44 of
+ * the most searched festivals serve an empty page. Copenhell is the clearest
+ * case: its 2027 dates are known, its 2027 line-up is not, so the page titled
+ * itself "Copenhell 2027", defaulted the programme to 2027, and shipped HTML
+ * containing zero of the 99 artists sitting in the database for 2026.
+ *
+ * So: the upcoming edition when it actually has a line-up, otherwise the most
+ * recent edition that does. Dates, tickets and structured data still come from
+ * `currentEdition` — those should look forward even when the line-up cannot.
+ */
+export function programmeEdition(festival: Festival): FestivalEdition | null {
+  const current = currentEdition(festival);
+  const hasArtists = (e: FestivalEdition) => e.program.some((d) => d.artists.length > 0);
+  if (current && hasArtists(current)) return current;
+
+  const withLineup = (festival.festival_editions ?? [])
+    .filter(hasArtists)
+    .sort((a, b) => b.year - a.year);
+  return withLineup[0] ?? current;
+}
+
 export function editionDates(edition: FestivalEdition | null): string[] {
   if (!edition) return [];
   return edition.program.map((d) => d.date).sort();
@@ -205,15 +229,26 @@ export function dateRangeLabel(festival: Festival, locale: string): string | nul
   const bcp = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
   const first = new Date(from);
   const last = new Date(to ?? from);
-  const opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "long" };
+
+  // The year is spelled out whenever it isn't the current one. "23 – 26 June"
+  // reads as this summer, and for a festival whose next edition is next summer
+  // that is simply wrong -- more so now that the line-up shown below may belong
+  // to a different year than the dates above it.
+  const dayMonth: Intl.DateTimeFormatOptions = { day: "numeric", month: "long" };
+  const withYear: Intl.DateTimeFormatOptions =
+    first.getFullYear() !== new Date().getFullYear()
+      ? { ...dayMonth, year: "numeric" }
+      : dayMonth;
 
   if (!to || from === to) {
-    return first.toLocaleDateString(bcp, opts);
+    return first.toLocaleDateString(bcp, withYear);
   }
   if (first.getMonth() === last.getMonth()) {
-    return `${first.getDate()} – ${last.toLocaleDateString(bcp, opts)}`;
+    return `${first.getDate()} – ${last.toLocaleDateString(bcp, withYear)}`;
   }
-  return `${first.toLocaleDateString(bcp, opts)} – ${last.toLocaleDateString(bcp, opts)}`;
+  // The year belongs on the closing date only. Carrying it on both gave
+  // "26 June 2027 – 3 July 2027", which says it twice and reads worse.
+  return `${first.toLocaleDateString(bcp, dayMonth)} – ${last.toLocaleDateString(bcp, withYear)}`;
 }
 
 export function ticketUrl(festival: Festival): string | null {

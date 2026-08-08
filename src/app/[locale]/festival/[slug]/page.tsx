@@ -19,6 +19,7 @@ import { guidesForFestival, guidePath } from "@/lib/guides";
 import {
   FESTIVAL_SELECT,
   currentEdition,
+  programmeEdition,
   dateRangeLabel,
   fallbackGradient,
   BCP47_LOCALE,
@@ -81,9 +82,16 @@ export async function generateMetadata({
 
   const edition = currentEdition(festival);
   const t = await getTranslations({ locale, namespace: "FestivalPage" });
-  const title = edition
-    ? t("metaTitle", { name: festival.name, year: edition.year })
-    : t("metaTitleNoEdition", { name: festival.name });
+
+  // Årstallet står i tittelen bare når siden faktisk har en lineup for det
+  // året. Ellers rangerer den på et år ingen søker på ennå, og leverer en tom
+  // side når de gjør det -- tittelen faller tilbake til bare navnet, som er
+  // det folk søker på uansett. Datoene ligger fortsatt i beskrivelsen.
+  const leads = programmeEdition(festival);
+  const title =
+    edition && leads?.year === edition.year
+      ? t("metaTitle", { name: festival.name, year: edition.year })
+      : t("metaTitleNoEdition", { name: festival.name });
   const description = await metaDescription(festival, locale, edition);
   const href = { pathname: "/festival/[slug]" as const, params: { slug } };
   const url = `${SITE_URL}${getPathname({ locale, href })}`;
@@ -177,12 +185,15 @@ export default async function FestivalPage({
   const jsonLd = eventJsonLd(festival, edition, locale, countryName);
   const bcp = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
 
-  // One tab per year on record, oldest first; defaults to whichever edition
-  // the rest of the page (dates, ticket link, JSON-LD) is already built
-  // around, so the tab that opens matches what's shown above it.
+  // One tab per year on record, oldest first. It opens on the year that has a
+  // line-up rather than on the upcoming one: only the active tab is rendered,
+  // so defaulting to an unannounced year served a page with no artists in the
+  // HTML at all -- 99 of them in Copenhell's case, none of them reaching a
+  // reader or a crawler.
   const years = [...festival.festival_editions]
     .sort((a, b) => a.year - b.year)
     .map((e) => ({ year: e.year, program: e.program }));
+  const leadEdition = programmeEdition(festival);
 
   return (
     <div className="min-h-dvh bg-[#FFF9F0] pb-16">
@@ -286,7 +297,9 @@ export default async function FestivalPage({
         <div className="mt-4">
           <FestivalProgramTabs
             years={years}
-            defaultYear={edition?.year ?? years[0]?.year ?? new Date().getFullYear()}
+            defaultYear={
+              leadEdition?.year ?? edition?.year ?? years[0]?.year ?? new Date().getFullYear()
+            }
             bcp47={bcp}
           />
         </div>

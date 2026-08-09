@@ -384,7 +384,10 @@
       "nothingChanged": "Nichts wurde geändert.",
       "dateOutOfRange": "{date} liegt außerhalb des Festivals.",
       "nameError": "{name}: {reason}",
-      "badTicketUrl": "Der Ticketlink muss mit http:// oder https:// beginnen oder leer sein."
+      "badTicketUrl": "Der Ticketlink muss mit http:// oder https:// beginnen oder leer sein.",
+      "badDates": "Das Enddatum kann nicht vor dem Startdatum liegen.",
+      "datesWrongYear": "Die Termine müssen in dem Jahr liegen, das du hinzufügst.",
+      "datesTooLong": "Das ist ein zu langer Zeitraum für eine Ausgabe. Prüfe die Termine."
     },
     "lineup": {
       "noDates": "Für diese Ausgabe sind noch keine Termine registriert, es gibt also nichts, dem man Künstler zuordnen könnte.",
@@ -401,7 +404,14 @@
     },
     "ticketLabel": "Ticketlink",
     "ticketHelp": "Optional. Direkter Link zum Ticketkauf für diese Ausgabe. Leer lassen, wenn es noch keinen gibt.",
-    "summaryTicket": "Ticketlink: {url}"
+    "summaryTicket": "Ticketlink: {url}",
+    "addYear": "+ {year} hinzufügen",
+    "datesLabel": "Termine für {year}",
+    "datesHelp": "Korrigiere die Termine, wenn sie falsch sind.",
+    "datesHelpNew": "Wann findet das Festival {year} statt? Gib nur bereits angekündigte Termine ein.",
+    "datesFirst": "Trage zuerst die Termine ein, dann kannst du Acts auf die Tage verteilen.",
+    "dateFrom": "Von",
+    "dateTo": "Bis"
   },
   "Login": {
     "metaTitle": "Anmelden · Tunetrail",

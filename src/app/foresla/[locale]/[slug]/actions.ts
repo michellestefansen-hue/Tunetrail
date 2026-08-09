@@ -23,7 +23,11 @@ export type SubmitError =
   | { code: "dateOutOfRange"; date: string }
   | { code: "nameError"; name: string; reason: ArtistNameErrorCode }
   | { code: "badTicketUrl" }
+  | { code: "badDates" | "datesWrongYear" | "datesTooLong" }
   | { code: "unknown"; message: string };
+
+/** A festival that runs longer than this is a typo, not a festival. */
+const MAX_EDITION_DAYS = 60;
 
 export type SubmitResult =
   | { ok: true; parts: { fields: boolean; program: boolean } }
@@ -70,17 +74,39 @@ export async function submitAll(
   const hasFields = Object.keys(payload).length > 0;
 
   // ---- programme ---------------------------------------------------------
-  const hasProgram = programYear !== null && (opsCount(ops) > 0 || !!ops.ticket_url);
+  const hasProgram =
+    programYear !== null && (opsCount(ops) > 0 || !!ops.ticket_url || !!ops.dates);
   const cleanOps: ProgramOps = { add: [], remove: [], move: [] };
 
   if (hasProgram) {
     const edition = f.festival_editions.find((e) => e.year === programYear);
-    if (!edition) return { ok: false, error: { code: "editionNotFound" } };
+
+    // A missing edition is no longer fatal -- it is how a new year arrives.
+    // But it can only be created with dates to create it from: an edition
+    // without dates never appears anywhere in the app.
+    if (!edition && !ops.dates) return { ok: false, error: { code: "editionNotFound" } };
+
+    if (ops.dates) {
+      const { from, to } = ops.dates;
+      if (!from || !to || to < from) return { ok: false, error: { code: "badDates" } };
+      // The year is what decides which row gets written, so a range that
+      // belongs to a different year would file the dates under the wrong one.
+      if (from.slice(0, 4) !== String(programYear)) {
+        return { ok: false, error: { code: "datesWrongYear" } };
+      }
+      const span = (Date.parse(to) - Date.parse(from)) / 86_400_000 + 1;
+      if (span > MAX_EDITION_DAYS) return { ok: false, error: { code: "datesTooLong" } };
+    }
 
     // Re-checked here even though the editor already enforces it: a date
     // outside the festival's own range simply never renders, and 16 such days
     // were sitting invisible in the database before this existed.
-    const inRange = (d: string) => d >= edition.date_from && d <= edition.date_to;
+    //
+    // The proposed range wins when the contributor is setting the dates --
+    // otherwise adding a line-up to a brand new year would fail every artist
+    // against a range that does not exist yet.
+    const range = ops.dates ?? { from: edition!.date_from, to: edition!.date_to };
+    const inRange = (d: string) => d >= range.from && d <= range.to;
 
     for (const o of ops.add) {
       const { name, errorCode } = checkArtistName(o.name);
@@ -104,6 +130,20 @@ export async function submitAll(
       return { ok: false, error: { code: "badTicketUrl" } };
     }
     cleanOps.ticket_url = { value: v, base: ops.ticket_url.base };
+  }
+
+  if (ops.dates) {
+    cleanOps.dates = {
+      from: ops.dates.from,
+      to: ops.dates.to,
+      // Taken from what the server sees now, not from what the client claims:
+      // the base is the whole point of the conflict check, so the client must
+      // not be the one deciding what it was.
+      base: (() => {
+        const e = f.festival_editions.find((x) => x.year === programYear);
+        return e ? { from: e.date_from, to: e.date_to } : null;
+      })(),
+    };
   }
 
   if (!hasFields && !hasProgram) return { ok: false, error: { code: "nothingChanged" } };

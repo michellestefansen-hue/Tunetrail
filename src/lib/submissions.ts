@@ -94,6 +94,21 @@ export type ProgramOps = {
    * with the programme rather than getting a submission kind of its own.
    */
   ticket_url?: { value: string | null; base: string | null };
+  /**
+   * The edition's own dates, present only when the contributor set or changed
+   * them. Rides along for the same reason `ticket_url` does: these live on
+   * festival_editions, the same row the days belong to.
+   *
+   * `base: null` carries a second meaning that `ticket_url` has no need for --
+   * the edition did not exist at submission time, so approving it creates the
+   * row. If someone else adds that year first, the mismatch shows up as a
+   * conflict in the queue instead of silently overwriting their dates.
+   */
+  dates?: {
+    from: string;
+    to: string;
+    base: { from: string; to: string } | null;
+  };
 };
 
 const artistKey = (n: string) =>

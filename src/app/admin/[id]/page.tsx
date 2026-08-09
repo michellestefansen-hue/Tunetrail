@@ -124,18 +124,25 @@ export default async function ReviewPage({
       !sameJson(s.base_snapshot[field], now[field] ?? null),
   }));
 
-  // The ticket link is the one part of a program_edit that needs "now" for
-  // comparison, same reason ordinary fields do -- it can have changed while
-  // the proposal sat waiting.
+  // The ticket link and the dates are the parts of a program_edit that need
+  // "now" for comparison, same reason ordinary fields do -- they can have
+  // changed while the proposal sat waiting.
+  //
+  // maybeSingle, not single: a proposal that adds a year points at an edition
+  // that does not exist yet, and that is a legitimate state rather than an
+  // error. Whether the row came back is itself the thing the review needs to
+  // know -- it is how "creates the year" is told apart from "changes it".
   let currentTicketUrl: string | null = null;
+  let currentDates: { from: string; to: string } | null = null;
   if (isProgram) {
     const { data: ed } = await supabase
       .from("festival_editions")
-      .select("ticket_url")
+      .select("ticket_url, date_from, date_to")
       .eq("festival_id", s.festival_id)
       .eq("year", s.edition_year)
-      .single();
+      .maybeSingle();
     currentTicketUrl = ed?.ticket_url ?? null;
+    currentDates = ed ? { from: ed.date_from, to: ed.date_to } : null;
   }
 
   return (
@@ -229,6 +236,7 @@ export default async function ReviewPage({
             year={s.edition_year ?? 0}
             ops={s.payload as unknown as ProgramOps}
             currentTicketUrl={currentTicketUrl}
+            currentDates={currentDates}
           />
         ) : (
           <ReviewForm id={s.id} diffs={diffs} />

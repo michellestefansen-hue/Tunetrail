@@ -384,7 +384,10 @@
       "nothingChanged": "Ingenting er endret.",
       "dateOutOfRange": "{date} er utenfor festivalen.",
       "nameError": "{name}: {reason}",
-      "badTicketUrl": "Billettlenken må starte med http:// eller https://, eller stå tom."
+      "badTicketUrl": "Billettlenken må starte med http:// eller https://, eller stå tom.",
+      "badDates": "Sluttdatoen kan ikke være før startdatoen.",
+      "datesWrongYear": "Datoene må ligge i det året du legger til.",
+      "datesTooLong": "Det er for lang periode for én festivalutgave. Sjekk datoene."
     },
     "lineup": {
       "noDates": "Denne utgaven har ingen datoer registrert ennå, så det er ikke noe å fordele artister på.",
@@ -401,7 +404,14 @@
     },
     "ticketLabel": "Billettlenke",
     "ticketHelp": "Valgfritt. Direkte lenke til billettkjøp for denne utgaven. Tom hvis den ikke finnes ennå.",
-    "summaryTicket": "Billettlenke: {url}"
+    "summaryTicket": "Billettlenke: {url}",
+    "addYear": "+ Legg til {year}",
+    "datesLabel": "Datoer for {year}",
+    "datesHelp": "Rett datoene hvis de er feil.",
+    "datesHelpNew": "Når går festivalen i {year}? Bare oppgi datoer som er offentliggjort.",
+    "datesFirst": "Legg inn datoene først, så kan du fordele artister på dagene.",
+    "dateFrom": "Fra",
+    "dateTo": "Til"
   },
   "Login": {
     "metaTitle": "Logg inn · Tunetrail",

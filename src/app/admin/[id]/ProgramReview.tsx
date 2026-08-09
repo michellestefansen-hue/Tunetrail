@@ -13,26 +13,52 @@ function dayLabel(date: string) {
   });
 }
 
+// Med årstall, i motsetning til dayLabel: denne seksjonen handler nettopp om
+// hvilket år det gjelder, og «28. juni» alene svarer ikke på det.
+function dateWithYear(date: string) {
+  return new Date(date + "T12:00:00").toLocaleDateString("nb-NO", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 type Key = string;
 const keyOf = (kind: string, i: number): Key => `${kind}:${i}`;
 
 const TICKET_KEY: Key = "ticket:0";
+const DATES_KEY: Key = "dates:0";
 
 export function ProgramReview({
   id,
   year,
   ops,
   currentTicketUrl,
+  currentDates,
 }: {
   id: string;
   year: number;
   ops: ProgramOps;
   /** Read fresh from festival_editions, for the same conflict check as ordinary fields. */
   currentTicketUrl: string | null;
+  /** Null when the edition does not exist yet -- this proposal would create it. */
+  currentDates: { from: string; to: string } | null;
 }) {
   const router = useRouter();
   const ticketConflict =
     !!ops.ticket_url && ops.ticket_url.base !== currentTicketUrl;
+
+  // The contributor submitted against an edition that did not exist. If it
+  // exists now, someone else added the year first -- their dates stay and this
+  // needs a decision, rather than quietly overwriting work done in between.
+  const createsYear = !!ops.dates && ops.dates.base === null;
+  const datesConflict =
+    !!ops.dates &&
+    (createsYear
+      ? currentDates !== null
+      : currentDates === null ||
+        ops.dates.base!.from !== currentDates.from ||
+        ops.dates.base!.to !== currentDates.to);
 
   // Additions start accepted, removals do not. Adding a name is nearly always
   // right; taking one away is the operation worth a second look, and it is the
@@ -44,6 +70,7 @@ export function ProgramReview({
       ...ops.move.map((_, i) => keyOf("move", i)),
     ]);
     if (ops.ticket_url && !ticketConflict) s.add(TICKET_KEY);
+    if (ops.dates && !datesConflict) s.add(DATES_KEY);
     return s;
   });
   const [note, setNote] = useState("");
@@ -80,6 +107,7 @@ export function ProgramReview({
       remove: ops.remove.filter((_, i) => checked.has(keyOf("remove", i))),
       move: ops.move.filter((_, i) => checked.has(keyOf("move", i))),
       ...(ops.ticket_url && checked.has(TICKET_KEY) ? { ticket_url: ops.ticket_url } : {}),
+      ...(ops.dates && checked.has(DATES_KEY) ? { dates: ops.dates } : {}),
     };
     const res = await approveProgram(id, accepted, note);
     setBusy(false);
@@ -134,6 +162,62 @@ export function ProgramReview({
         Programforslag for {year}. Tilføyelser er huket av på forhånd; fjerninger er det
         ikke, fordi det er de som kan slette andres arbeid.
       </p>
+
+      {ops.dates && (
+        <section
+          className={`rounded-xl border bg-white ${
+            datesConflict ? "border-amber-400" : "border-black/10"
+          }`}
+        >
+          <label className="flex cursor-pointer items-start gap-3 px-4 py-3">
+            <input
+              type="checkbox"
+              checked={checked.has(DATES_KEY)}
+              onChange={() => toggle(DATES_KEY)}
+              className="mt-1 size-4 shrink-0"
+            />
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="font-medium text-[#2D1A12]">
+                {createsYear ? `Oppretter utgaven ${year}` : `Datoer for ${year}`}
+              </div>
+
+              {createsYear && !datesConflict && (
+                <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+                  Året finnes ikke i basen ennå. Godkjenner du dette, opprettes
+                  utgaven med disse datoene.
+                </p>
+              )}
+
+              {datesConflict && (
+                <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  {createsYear
+                    ? "Noen andre har lagt inn dette året etter at forslaget ble sendt. Datoene deres står nå i basen, og godkjenner du dette, byttes de ut."
+                    : "Datoene er endret av noen andre etter at forslaget ble sendt. Bidragsyteren så noe annet som utgangspunkt enn det som står der nå."}
+                </p>
+              )}
+
+              <div className="grid gap-2 text-sm sm:grid-cols-2">
+                <div className="rounded-lg bg-black/[0.03] px-3 py-2">
+                  <div className="text-xs uppercase tracking-wide text-[#2D1A12]/45">Nå</div>
+                  <div className="mt-0.5 text-[#2D1A12]/70">
+                    {currentDates
+                      ? `${dateWithYear(currentDates.from)} – ${dateWithYear(currentDates.to)}`
+                      : "— utgaven finnes ikke —"}
+                  </div>
+                </div>
+                <div className="rounded-lg bg-emerald-50 px-3 py-2">
+                  <div className="text-xs uppercase tracking-wide text-emerald-800/60">
+                    Foreslått
+                  </div>
+                  <div className="mt-0.5 text-emerald-900">
+                    {dateWithYear(ops.dates.from)} – {dateWithYear(ops.dates.to)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </label>
+        </section>
+      )}
 
       {ops.ticket_url && (
         <section

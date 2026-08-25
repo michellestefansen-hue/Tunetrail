@@ -211,28 +211,85 @@ alter table public.festival_watch
 krever JavaScript». Det er den listen som forteller deg hvilke 40 festivaler du
 må ta for hånd uansett — og den skriver seg selv underveis.
 
+Den har en rolle til, som neste punkt bygger på: `ai_note` er stedet roboten
+har lov til å gi opp.
+
 ---
 
-## 8. Køen din skal ikke drukne
+## 8. Tvil er ikke det samme som fjerning
 
-8 forslag i natta er 56 i uka. Det er for mye å lese hver morgen, og en kø du
-ikke rekker er verre enn ingen kø.
+Punkt 2 og 3 ruter på **operasjonstype**: `add` er trygt, `remove` er farlig.
+Det er riktig, men det er ikke nok, for det sier ingenting om hvor sikker
+roboten var. En usikker tilføyelse ser nøyaktig ut som en sikker.
+
+Roboten må derfor kunne si «dette tror jeg, men se på det» — og den må kunne si
+«jeg vet ikke, ikke spør meg». Tre utfall, ikke to:
+
+**1. Sikker → rett inn.** Kun `add`. Navnene matcher `artist_names`. Siden sier
+utvetydig 2027. Antall funnet er i nærheten av det man skulle vente.
+
+**2. Usikker, men verdt et blikk → køen,** med begrunnelsen i `note`. Siden
+sier «fredag» uten å si hvilken. Datoene ser ut som *save the date*. Ett navn
+roboten ikke kjenner igjen og ikke klarer å avgjøre. Her er et menneske raskt
+og roboten treg — det er nettopp det køen er til for.
+
+**3. For usikker til å foreslå → ingen rad i det hele tatt.** Bare `ai_note`.
+
+Punkt 3 er det som gjør ordningen bærekraftig, og det er det som er lettest å
+glemme. Er roboten i tvil om siden overhodet viser 2027-plakaten, er riktig
+handling å *ikke sende noe* — ikke å sende 60 navn med et spørsmålstegn. En kø
+full av «kanskje?» er en kø du slutter å lese etter halvannen uke, og da er
+hele ordningen død uansett hvor godt resten virker.
+
+**Roboten skal altså ha lov til å gi opp**, og det å gi opp skal være synlig et
+sted som ikke er morgenkøen din. Det stedet er `ai_note`, og du leser den når
+du har tid.
+
+### Hvordan sikkerheten avgjør ruten
 
 `trust_level` er beskrevet i `plan-brukerbidrag.md`, men aldri bygget —
 `src/lib/auth.ts` leser feltet, ingen handler på det. **Det er her det først
-lønner seg**, og roboten er den perfekte første brukeren av det, fordi den er
-forutsigbar på en måte mennesker ikke er:
+lønner seg**, og roboten er den perfekte første brukeren, fordi den er
+forutsigbar på en måte mennesker ikke er.
 
-- `trust_level = 1`: **tilføyelser går rett inn.** Fjerninger, flyttinger og
-  datoer til kø.
+Men regelen kan ikke være «tilføyelser går rett inn» alene, slik den er
+formulert for mennesker. For roboten må begge være oppfylt:
 
-En tilføyelse er nesten alltid riktig, og er den feil, er den ett navn du
-sletter på to sekunder. Datoer holdes tilbake fordi en feil dato skjuler
-festivalen helt.
+> Automatisk innlegging krever at forslaget **kun inneholder `add`**, *og* at
+> roboten selv har merket det som sikkert. Alt annet går i køen.
 
-**Prøveperiode først.** De to første ukene ser du alt, også tilføyelsene. Det
-er der du finner ut om roboten leser fjorårets plakat, om den tar med
-sponsornavn, om den gjetter datoer den ikke har. Deretter skrus nivået opp.
+Det andre leddet trenger et sted å bo. `note` duger ikke — den er fritekst og
+kan ikke rutes på. En liten kolonne gjør jobben:
+
+```sql
+alter table public.submissions
+  add column if not exists confidence text
+  check (confidence is null or confidence in ('high','low'));
+```
+
+`null` for mennesker, som før. For roboten er den obligatorisk, og bare `high`
+er kandidat til automatikk. Da er «usikker» en tilstand databasen kjenner, ikke
+en formulering i et notatfelt.
+
+### Notatet må vises i listen
+
+`note` vises på detaljsiden (`src/app/admin/[id]/page.tsx:213`), men **ikke i
+listen** — `/admin` henter ikke feltet i det hele tatt.
+
+For mennesker går det bra. En bidragsyter skriver sjelden noe avgjørende der.
+For roboten er `note` hele grunnen til at raden ligger i køen, og uten den i
+listen må du åpne hver enkelt for å finne ut hvorfor den kom. Ta feltet med i
+selecten og vis det under `describe()`-linja.
+
+Fem minutters jobb, men den avgjør om køen er lesbar når det ligger åtte
+robotrader i den.
+
+### Prøveperiode først
+
+De to første ukene ser du alt, også det roboten kalte sikkert. Det er der du
+finner ut om den leser fjorårets plakat, om den tar med sponsornavn, om den
+gjetter datoer den ikke har — og, viktigst, om `high` og `low` betyr noe i
+praksis eller om den merker alt `high`. Deretter skrus automatikken på.
 
 ---
 
@@ -245,10 +302,14 @@ sponsornavn, om den gjetter datoer den ikke har. Deretter skrus nivået opp.
    på ~40 netter.
 3. **Vakten mot fjerning:** triggeren fra punkt 3, mens `remove` fortsatt er
    avslått. Vegg før dør.
-4. **Fase 1 — datoer.** Skillet, routinen, to ukers prøve. Dette alene gir
+4. **`confidence`-kolonnen og `note` i køvisningen.** Små, men de må stå før
+   den første kjøringen — ellers har du ingen måte å se forskjell på et forslag
+   roboten sto inne for og ett den gjettet på.
+5. **Fase 1 — datoer.** Skillet, routinen, to ukers prøve. Dette alene gir
    appen tilbake flere hundre festivaler.
-5. **Fase 2 — programmer**, samme maskineri, `add` only.
-6. **`trust_level = 1`** når loggen viser at den fortjener det.
-7. **`remove` åpnes**, med begrunnelseskravet, hvis det viser seg å være behov.
+6. **Fase 2 — programmer**, samme maskineri, `add` only.
+7. **`trust_level = 1`** når loggen viser at den fortjener det — og da med
+   begge vilkårene fra punkt 8, ikke bare «add».
+8. **`remove` åpnes**, med begrunnelseskravet, hvis det viser seg å være behov.
 
-Punkt 4 er der verdien ligger. Alt etter det er finpuss.
+Punkt 5 er der verdien ligger. Alt etter det er finpuss.

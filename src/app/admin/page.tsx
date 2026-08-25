@@ -11,8 +11,11 @@ type Row = {
   created_at: string;
   payload: Record<string, unknown>;
   source_url: string | null;
+  note: string | null;
+  /** null for mennesker. «low» er robotens egen tvil -- se plan-2027-oppdatering.md punkt 8. */
+  confidence: string | null;
   festivals: { name: string; slug: string } | null;
-  profiles: { display_name: string | null } | null;
+  profiles: { display_name: string | null; is_robot: boolean } | null;
 };
 
 export default async function AdminQueue() {
@@ -21,7 +24,8 @@ export default async function AdminQueue() {
   const { data } = await supabase
     .from("submissions")
     .select(
-      "id, kind, group_id, edition_year, created_at, payload, source_url, festivals(name, slug), profiles!submissions_submitted_by_fkey(display_name)",
+      "id, kind, group_id, edition_year, created_at, payload, source_url, note, confidence, " +
+        "festivals(name, slug), profiles!submissions_submitted_by_fkey(display_name, is_robot)",
     )
     .eq("status", "pending")
     .order("created_at", { ascending: true });
@@ -52,12 +56,23 @@ export default async function AdminQueue() {
       const f = Object.keys(r.payload ?? {});
       return `${f.length} felt: ${f.join(", ")}`;
     }
-    const p = r.payload as { add?: unknown[]; remove?: unknown[]; move?: unknown[] };
+    const p = r.payload as {
+      add?: unknown[];
+      remove?: unknown[];
+      move?: unknown[];
+      dates?: { from: string; to: string; base: unknown };
+      ticket_url?: unknown;
+    };
+    // Datoene og billettlenken hører til utgaven og ikke til noen av de tre
+    // listene, så uten dem her stod «ingen endringer» på et forslag som endrer
+    // nettopp datoene -- roboten sender ikke annet enn det i fase 1.
     return (
       [
+        p.dates ? (p.dates.base === null ? `nytt år: ${p.dates.from}` : `datoer: ${p.dates.from}`) : null,
         p.add?.length ? `+${p.add.length}` : null,
         p.remove?.length ? `−${p.remove.length}` : null,
         p.move?.length ? `${p.move.length} flyttet` : null,
+        p.ticket_url ? "billettlenke" : null,
       ]
         .filter(Boolean)
         .join(" · ") || "ingen endringer"
@@ -103,27 +118,40 @@ export default async function AdminQueue() {
                   </span>
                 </div>
 
-                <div className="mt-1.5 space-y-1">
+                <div className="mt-1.5 space-y-1.5">
                   {group.map((r) => (
-                    <div
-                      key={r.id}
-                      className="flex flex-wrap items-center gap-x-1.5 text-sm text-[#2D1A12]/60"
-                    >
-                      <span className="rounded bg-black/[0.06] px-1.5 py-0.5 text-xs">
-                        {r.kind === "program_edit"
-                          ? `Program ${r.edition_year ?? ""}`
-                          : r.kind === "festival_new"
-                            ? "Ny festival"
-                            : "Detaljer"}
-                      </span>
-                      <span>{describe(r)}</span>
+                    <div key={r.id} className="space-y-0.5">
+                      <div className="flex flex-wrap items-center gap-x-1.5 text-sm text-[#2D1A12]/60">
+                        <span className="rounded bg-black/[0.06] px-1.5 py-0.5 text-xs">
+                          {r.kind === "program_edit"
+                            ? `Program ${r.edition_year ?? ""}`
+                            : r.kind === "festival_new"
+                              ? "Ny festival"
+                              : "Detaljer"}
+                        </span>
+                        <span>{describe(r)}</span>
+                        {r.confidence === "low" && (
+                          <span className="rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-900">
+                            usikker
+                          </span>
+                        )}
+                      </div>
+
+                      {/* For et menneske er notatet sjelden avgjørende. For roboten er
+                          det hele grunnen til at raden ligger her -- «fant to datoer,
+                          valgte den bekreftede». Uten det her måtte du åpnet hver
+                          enkelt bare for å finne ut hvorfor den kom. */}
+                      {r.note && (
+                        <p className="line-clamp-2 text-xs text-[#2D1A12]/55">{r.note}</p>
+                      )}
                     </div>
                   ))}
                 </div>
 
                 {lead.profiles?.display_name && (
-                  <div className="mt-1 text-xs text-[#2D1A12]/45">
+                  <div className="mt-1.5 text-xs text-[#2D1A12]/45">
                     fra {lead.profiles.display_name}
+                    {lead.profiles.is_robot && " · robot"}
                   </div>
                 )}
               </Link>

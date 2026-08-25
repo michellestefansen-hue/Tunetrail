@@ -36,7 +36,7 @@ export default async function ReviewPage({
   const { data } = await supabase
     .from("submissions")
     .select(
-      "id, kind, group_id, edition_year, status, payload, base_snapshot, source_url, note, created_at, festival_id, festivals(name, slug), profiles!submissions_submitted_by_fkey(display_name)",
+      "id, kind, group_id, edition_year, status, payload, base_snapshot, source_url, note, confidence, created_at, festival_id, festivals(name, slug), profiles!submissions_submitted_by_fkey(display_name, is_robot)",
     )
     .eq("id", id)
     .single();
@@ -53,6 +53,7 @@ export default async function ReviewPage({
     base_snapshot: Record<string, unknown>;
     source_url: string | null;
     note: string | null;
+    confidence: string | null;
     created_at: string;
     festival_id: string;
     festivals: { name: string; slug: string } | null;
@@ -195,8 +196,16 @@ export default async function ReviewPage({
         </div>
       )}
 
-      {(s.source_url || s.note) && (
+      {(s.source_url || s.note || s.confidence === "low") && (
         <div className="space-y-1 rounded-xl border border-black/10 bg-white px-4 py-3 text-sm">
+          {/* Roboten sier fra selv når den ikke sto inne for funnet. Den skal ha
+              lov til å tvile -- alternativet er at den enten gjetter i stillhet
+              eller lar være å sende noe i det hele tatt. */}
+          {s.confidence === "low" && (
+            <p className="text-amber-900">
+              Innsenderen er ikke sikker på dette funnet. Se over kilden før du godkjenner.
+            </p>
+          )}
           {s.source_url && (
             <p>
               <span className="text-[#2D1A12]/50">Kilde: </span>

@@ -187,11 +187,18 @@ export function candidates(text) {
   for (const line of text.split("\n")) {
     if (!line) continue;
     out.push(line);
-    if (/[•|·/]|,|\s[-–—]\s/.test(line)) {
-      for (const part of line.split(/\s*[•|·/,]\s*|\s+[-–—]\s+/)) out.push(part.trim());
-    }
+    const parts = splitOnSeparators(line);
+    if (parts.length > 1) out.push(...parts);
   }
   return out.filter(Boolean);
+}
+
+/** Tegnene som pleier å skille to artistnavn på samme linje. */
+export function splitOnSeparators(line) {
+  return line
+    .split(/\s*[•|·/,]\s*|\s+[-–—]\s+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
 }
 
 /* ------------------------------------------------------------------ pick -- */
@@ -267,6 +274,20 @@ async function read(args) {
     const hit = lookup.get(key);
     if (hit) known.set(hit, (known.get(hit) ?? 0) + 1);
     else if (/[\p{L}]/u.test(name)) unknown.set(name, (unknown.get(name) ?? 0) + 1);
+  }
+
+  // «Aurora, Björk» legges inn både som hel linje og som to biter. Bitene
+  // kjennes igjen; den hele linjen gjør det ikke, og ville havnet i bunken
+  // modellen må lese. Det er den bunken som koster, så den ryddes her.
+  //
+  // Delingen brukes til å avgjøre det, ikke en substrengsjekk: «Airbourne»
+  // inneholder «Air», som er et ekte bandnavn, og en substrengsjekk ville
+  // dermed kastet et ekte funn.
+  for (const candidate of [...unknown.keys()]) {
+    const parts = splitOnSeparators(candidate);
+    if (parts.length > 1 && parts.some((p) => lookup.has(nameKey(cleanName(p).name)))) {
+      unknown.delete(candidate);
+    }
   }
 
   const years = {};
@@ -500,8 +521,12 @@ async function note(args) {
 }
 
 async function stamp(festivalId, text) {
-  await sb(`/rest/v1/festival_watch?festival_id=eq.${festivalId}`, {
+  const rows = await sb(`/rest/v1/festival_watch?festival_id=eq.${festivalId}`, {
     method: "PATCH",
+    // Uten dette svarer PostgREST 204 også når ingen rad ble truffet, og en
+    // festival uten vaktrad ville blitt stående umerket -- og kommet opp igjen
+    // i morgen, og i overmorgen.
+    prefer: "return=representation",
     body: {
       ai_checked_at: new Date().toISOString(),
       ai_note: text,
@@ -509,6 +534,12 @@ async function stamp(festivalId, text) {
       pending: false,
     },
   });
+  if (!rows?.length) {
+    throw new Error(
+      `Fant ingen rad i festival_watch for festivalen. Uten den blir ikke ` +
+        `gjennomgangen registrert, og den kommer opp igjen i morgen.`,
+    );
+  }
 }
 
 let robotIdCache = null;

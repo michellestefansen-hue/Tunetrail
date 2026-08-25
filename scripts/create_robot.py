@@ -64,9 +64,19 @@ def main() -> int:
 
     if created and created.get("__error"):
         # Allerede opprettet er ikke en feil -- det er den vanlige utgangen
-        # andre gang noen kjører dette.
-        users = call("GET", f"/auth/v1/admin/users?filter={EMAIL}", key)
-        match = next((u for u in (users or {}).get("users", []) if u["email"] == EMAIL), None)
+        # andre gang noen kjører dette. Listen bla-s gjennom i stedet for å
+        # stole på et filter: hvilke søkeparametere admin-endepunktet støtter
+        # har endret seg mellom versjoner, og en tom treffliste ville da sett
+        # ut som «finnes ikke» og gitt en villedende feilmelding.
+        match = None
+        for page in range(1, 21):
+            users = call("GET", f"/auth/v1/admin/users?page={page}&per_page=200", key)
+            if not users or users.get("__error"):
+                break
+            batch = users.get("users", [])
+            match = next((u for u in batch if u.get("email") == EMAIL), None)
+            if match or len(batch) < 200:
+                break
         if not match:
             print(f"Klarte ikke å opprette roboten: {created['__error']} {created['__body']}")
             return 1

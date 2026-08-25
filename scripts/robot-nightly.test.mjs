@@ -11,7 +11,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps } from "./robot-nightly.mjs";
+import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps, splitOnSeparators } from "./robot-nightly.mjs";
 
 test("manus og stil forsvinner, teksten blir igjen", () => {
   const html = `
@@ -128,6 +128,22 @@ test("navn med aksenter finner nøkkelen sin gjennom entiteten", () => {
   // Hele kjeden, som den går på en ekte side: HTML inn, oppslagsnøkkel ut.
   const names = candidates(toText("<li>Bj&ouml;rk</li><li>Sigur R&oacute;s</li>"));
   assert.deepEqual(names.map(nameKey), ["bjork", "sigur ros"]);
+});
+
+test("delingen skiller navn, men river ikke i stykker ett navn", () => {
+  assert.deepEqual(splitOnSeparators("Aurora, Björk • CMAT"), ["Aurora", "Björk", "CMAT"]);
+  // Bindestrek uten mellomrom er del av navnet, ikke et skilletegn.
+  assert.deepEqual(splitOnSeparators("blink-182"), ["blink-182"]);
+  assert.deepEqual(splitOnSeparators("Nick Cave and the Bad Seeds"), [
+    "Nick Cave and the Bad Seeds",
+  ]);
+});
+
+test("en kjent kort tittel spiser ikke et lengre navn", () => {
+  // «Airbourne» inneholder «Air». Var oppryddingen i read() en substrengsjekk,
+  // ville et ekte bandnavn blitt kastet ut av bunken modellen får se.
+  assert.deepEqual(splitOnSeparators("Airbourne"), ["Airbourne"]);
+  assert.equal(splitOnSeparators("Airbourne").length, 1, "ingen deling, altså ingen opprydding");
 });
 
 /* --------------------------------------------------- former sider har ---- */

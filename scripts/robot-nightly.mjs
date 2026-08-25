@@ -320,34 +320,31 @@ async function artistLookup() {
  * festivalens periode blitt lagret og deretter vært usynlig i appen for alltid.
  * 16 slike dager lå i basen da dette ble oppdaget sist.
  */
-async function propose(args) {
-  const [file] = positional(args);
-  if (!file) throw new Error("Mangler fil. Bruk: propose <forslag.json>");
-  const input = JSON.parse(readFileSync(file, "utf8"));
+/**
+ * Forslaget som operasjoner, eller en feil som forklarer hvorfor ikke.
+ *
+ * Ren funksjon med vilje: dette er stedet en feil koster mest, og det eneste
+ * stedet her som kan prøves uten en database. En dato utenfor festivalens
+ * periode blir lagret uten innvending og er deretter usynlig i appen for
+ * alltid -- 16 slike dager lå i basen da det ble oppdaget sist, blant dem tre
+ * dager med 42 artister på Zürich Openair.
+ *
+ * `edition` er null når året ikke finnes ennå.
+ */
+export function buildOps(input, edition) {
+  const { year } = input;
+  const ops = { add: [], remove: [], move: [] };
+  const warnings = [];
 
-  const { slug, year, source_url, confidence, note = null } = input;
-  if (!slug) throw new Error("Forslaget mangler slug.");
+  if (!input.slug) throw new Error("Forslaget mangler slug.");
   if (!Number.isInteger(year)) throw new Error("Forslaget mangler year.");
-  if (!source_url) throw new Error("Forslaget mangler source_url -- hvor leste du dette?");
-  if (confidence !== "high" && confidence !== "low") {
+  if (!input.source_url) throw new Error("Forslaget mangler source_url -- hvor leste du dette?");
+  if (input.confidence !== "high" && input.confidence !== "low") {
     throw new Error("Forslaget mangler confidence: «high» eller «low».");
   }
   if (input.remove?.length || input.move?.length) {
     throw new Error("Roboten fjerner og flytter ikke. Se docs/plan-2027-oppdatering.md punkt 2.");
   }
-
-  const [festival] = await sb(
-    `/rest/v1/festivals?slug=eq.${encodeURIComponent(slug)}&select=id,name`,
-  );
-  if (!festival) throw new Error(`Fant ingen festival med slug «${slug}».`);
-
-  const [edition] = await sb(
-    `/rest/v1/festival_editions?festival_id=eq.${festival.id}&year=eq.${year}` +
-      `&select=date_from,date_to,program`,
-  );
-
-  const ops = { add: [], remove: [], move: [] };
-  const warnings = [];
 
   // Datoene først: de avgjør hvilket spenn tilføyelsene måles mot.
   if (input.dates) {
@@ -360,7 +357,7 @@ async function propose(args) {
     const span = (Date.parse(to) - Date.parse(from)) / 86_400_000 + 1;
     if (span > 60) throw new Error(`${span} dager er ikke en festival, det er en skrivefeil.`);
 
-    // Basen leses her og ikke fra forslaget: den er hele poenget med
+    // Basen leses fra utgaven og ikke fra forslaget: den er hele poenget med
     // konfliktsjekken, så modellen skal ikke få bestemme hva den var.
     ops.dates = {
       from,
@@ -369,7 +366,7 @@ async function propose(args) {
     };
   } else if (!edition) {
     throw new Error(
-      `${festival.name} har ingen ${year}-utgave, og forslaget har ingen datoer å opprette den med.`,
+      `Festivalen har ingen ${year}-utgave, og forslaget har ingen datoer å opprette den med.`,
     );
   }
 
@@ -388,7 +385,9 @@ async function propose(args) {
     const { name, hadTime } = cleanName(item.name);
     if (hadTime) warnings.push(`klokkeslett strippet fra «${item.name}»`);
     if (!name) continue;
-    if (name.length > 120) throw new Error(`«${name.slice(0, 40)}…» er for langt til å være et navn.`);
+    if (name.length > 120) {
+      throw new Error(`«${name.slice(0, 40)}…» er for langt til å være et navn.`);
+    }
     if (!isDate(item.date)) throw new Error(`«${item.date}» er ikke en dato.`);
     if (item.date < range.from || item.date > range.to) {
       throw new Error(
@@ -407,8 +406,30 @@ async function propose(args) {
   }
 
   if (!ops.add.length && !ops.dates) {
-    throw new Error("Ingenting å foreslå. Bruk «note» i stedet, så festivalen ikke kommer opp igjen i morgen.");
+    throw new Error(
+      "Ingenting å foreslå. Bruk «note» i stedet, så festivalen ikke kommer opp igjen i morgen.",
+    );
   }
+
+  return { ops, warnings };
+}
+
+async function propose(args) {
+  const [file] = positional(args);
+  if (!file) throw new Error("Mangler fil. Bruk: propose <forslag.json>");
+  const input = JSON.parse(readFileSync(file, "utf8"));
+
+  const [festival] = await sb(
+    `/rest/v1/festivals?slug=eq.${encodeURIComponent(input.slug ?? "")}&select=id,name`,
+  );
+  if (!festival) throw new Error(`Fant ingen festival med slug «${input.slug}».`);
+
+  const [edition] = await sb(
+    `/rest/v1/festival_editions?festival_id=eq.${festival.id}&year=eq.${input.year}` +
+      `&select=date_from,date_to,program`,
+  );
+
+  const { ops, warnings } = buildOps(input, edition ?? null);
 
   const [row] = await sb("/rest/v1/submissions", {
     method: "POST",
@@ -417,14 +438,14 @@ async function propose(args) {
       {
         kind: "program_edit",
         festival_id: festival.id,
-        edition_year: year,
+        edition_year: input.year,
         payload: ops,
         // Operasjoner bærer sin egen førtilstand: å legge til et navn som
         // allerede er der er harmløst, ikke en konflikt.
         base_snapshot: {},
-        source_url,
-        confidence,
-        note,
+        source_url: input.source_url,
+        confidence: input.confidence,
+        note: input.note ?? null,
         submitted_by: await robotId(),
         status: "pending",
       },
@@ -435,7 +456,13 @@ async function propose(args) {
 
   console.log(
     JSON.stringify(
-      { ok: true, submission_id: row.id, festival: festival.name, summary: summarise(ops), warnings },
+      {
+        ok: true,
+        submission_id: row.id,
+        festival: festival.name,
+        summary: summarise(ops),
+        warnings,
+      },
       null,
       2,
     ),

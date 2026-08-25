@@ -11,7 +11,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toText, cleanName, nameKey, candidates, isDate, decodeEntities } from "./robot-nightly.mjs";
+import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps } from "./robot-nightly.mjs";
 
 test("manus og stil forsvinner, teksten blir igjen", () => {
   const html = `
@@ -183,4 +183,153 @@ test("fjorårets plakat røper seg på årstallene", () => {
   const years = {};
   for (const m of text.matchAll(/\b(20[2-3]\d)\b/g)) years[m[1]] = (years[m[1]] ?? 0) + 1;
   assert.deepEqual(years, { 2026: 1, 2027: 1 });
+});
+
+/* ------------------------------------------------ forslaget som bygges ---- */
+
+const BASE = {
+  slug: "testfest",
+  year: 2027,
+  source_url: "https://testfest.example/lineup",
+  confidence: "high",
+};
+
+const EDITION = {
+  date_from: "2027-06-10",
+  date_to: "2027-06-12",
+  program: [
+    { date: "2027-06-10", artists: [{ name: "Aurora" }, { name: "Björk" }] },
+  ],
+};
+
+test("et vanlig forslag blir til operasjoner", () => {
+  const { ops } = buildOps(
+    { ...BASE, add: [{ date: "2027-06-11", name: "CMAT" }] },
+    EDITION,
+  );
+  assert.deepEqual(ops.add, [{ date: "2027-06-11", name: "CMAT" }]);
+  assert.deepEqual(ops.remove, []);
+  assert.deepEqual(ops.move, []);
+  assert.ok(!("dates" in ops), "uten dates i forslaget skal det ikke stå noe der");
+});
+
+test("en dato utenfor festivalens periode avvises", () => {
+  // Dette er den dyreste feilen som finnes her: en slik dag lagres uten
+  // innvending og vises deretter aldri i appen.
+  assert.throws(
+    () => buildOps({ ...BASE, add: [{ date: "2027-07-01", name: "CMAT" }] }, EDITION),
+    /ligger utenfor 2027-06-10–2027-06-12/,
+  );
+});
+
+test("navn som allerede står der blir ikke foreslått på nytt", () => {
+  const { ops, warnings } = buildOps(
+    { ...BASE, add: [{ date: "2027-06-10", name: "aurora" }, { date: "2027-06-10", name: "CMAT" }] },
+    EDITION,
+  );
+  assert.deepEqual(ops.add, [{ date: "2027-06-10", name: "CMAT" }]);
+  assert.ok(warnings.some((w) => w.includes("sto der fra før")));
+});
+
+test("samme navn to ganger samme dag blir ett", () => {
+  const { ops } = buildOps(
+    { ...BASE, add: [{ date: "2027-06-11", name: "CMAT" }, { date: "2027-06-11", name: "cmat" }] },
+    EDITION,
+  );
+  assert.equal(ops.add.length, 1);
+});
+
+test("klokkeslett strippes, og det sies fra om det", () => {
+  const { ops, warnings } = buildOps(
+    { ...BASE, add: [{ date: "2027-06-11", name: "21:00 Fever Ray" }] },
+    EDITION,
+  );
+  assert.deepEqual(ops.add, [{ date: "2027-06-11", name: "Fever Ray" }]);
+  assert.ok(warnings.some((w) => w.includes("klokkeslett strippet")));
+});
+
+test("scene og klokkeslett følger aldri med som egne felt", () => {
+  // Tekst i stage eller time gjør artisten usøkbar i appen.
+  const { ops } = buildOps(
+    { ...BASE, add: [{ date: "2027-06-11", name: "CMAT", stage: "Main", time: "21:00" }] },
+    EDITION,
+  );
+  assert.deepEqual(Object.keys(ops.add[0]).sort(), ["date", "name"]);
+});
+
+test("et nytt år får base null, så godkjenningen oppretter det", () => {
+  const { ops } = buildOps(
+    { ...BASE, dates: { from: "2027-08-01", to: "2027-08-03" }, add: [] },
+    null,
+  );
+  assert.deepEqual(ops.dates, { from: "2027-08-01", to: "2027-08-03", base: null });
+});
+
+test("basen leses fra utgaven, ikke fra forslaget", () => {
+  // Konfliktsjekken er hele poenget: hadde modellen fått oppgi hva basen var,
+  // kunne den skrevet over en rettelse gjort i mellomtiden.
+  const { ops } = buildOps(
+    {
+      ...BASE,
+      dates: { from: "2027-06-11", to: "2027-06-13", base: { from: "1900-01-01", to: "1900-01-02" } },
+      add: [],
+    },
+    EDITION,
+  );
+  assert.deepEqual(ops.dates.base, { from: "2027-06-10", to: "2027-06-12" });
+});
+
+test("datoer i feil år hører til en annen rad", () => {
+  assert.throws(
+    () => buildOps({ ...BASE, dates: { from: "2026-06-10", to: "2026-06-12" } }, EDITION),
+    /hører til 2026/,
+  );
+});
+
+test("en festival på tre måneder er en skrivefeil", () => {
+  assert.throws(
+    () => buildOps({ ...BASE, dates: { from: "2027-01-01", to: "2027-12-31" } }, null),
+    /ikke en festival/,
+  );
+});
+
+test("nye datoer avgjør spennet for tilføyelsene", () => {
+  // Ellers ville en lineup til et helt nytt år blitt målt mot et spenn som
+  // ikke finnes ennå, og hver eneste artist avvist.
+  const { ops } = buildOps(
+    {
+      ...BASE,
+      dates: { from: "2027-08-01", to: "2027-08-03" },
+      add: [{ date: "2027-08-02", name: "CMAT" }],
+    },
+    null,
+  );
+  assert.equal(ops.add.length, 1);
+});
+
+test("roboten kommer ikke rundt fjerning ved å be pent", () => {
+  assert.throws(
+    () => buildOps({ ...BASE, remove: [{ date: "2027-06-10", name: "Aurora" }] }, EDITION),
+    /fjerner og flytter ikke/,
+  );
+  assert.throws(
+    () => buildOps({ ...BASE, move: [{ from: "2027-06-10", to: "2027-06-11", name: "Aurora" }] }, EDITION),
+    /fjerner og flytter ikke/,
+  );
+});
+
+test("et forslag uten kilde eller sikkerhet stoppes før det når basen", () => {
+  assert.throws(() => buildOps({ ...BASE, source_url: undefined, add: [] }, EDITION), /source_url/);
+  assert.throws(() => buildOps({ ...BASE, confidence: "kanskje", add: [] }, EDITION), /confidence/);
+});
+
+test("et tomt forslag skal bli en merknad i stedet", () => {
+  assert.throws(() => buildOps({ ...BASE, add: [] }, EDITION), /Bruk «note» i stedet/);
+});
+
+test("et år som ikke finnes kan ikke få program uten datoer", () => {
+  assert.throws(
+    () => buildOps({ ...BASE, add: [{ date: "2027-06-11", name: "CMAT" }] }, null),
+    /ingen datoer å opprette den med/,
+  );
 });

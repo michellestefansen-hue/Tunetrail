@@ -293,23 +293,83 @@ praksis eller om den merker alt `high`. Deretter skrus automatikken på.
 
 ---
 
-## 9. Rekkefølge å bygge i
+## 9. Hva som står, og hva som gjenstår
 
-1. **Robotprofilen** og `source_url`-kravet. En dag.
-2. **Utvelgelsen:** `ai_checked_at`/`ai_note`, og en `next_for_ai(n)` som
-   rangerer — flagget av vakten først, så manglende 2027-utgave, så tomt
-   program sortert etter nærmeste dato, så eldste `ai_checked_at`. Hele runden
-   på ~40 netter.
-3. **Vakten mot fjerning:** triggeren fra punkt 3, mens `remove` fortsatt er
-   avslått. Vegg før dør.
-4. **`confidence`-kolonnen og `note` i køvisningen.** Små, men de må stå før
-   den første kjøringen — ellers har du ingen måte å se forskjell på et forslag
-   roboten sto inne for og ett den gjettet på.
-5. **Fase 1 — datoer.** Skillet, routinen, to ukers prøve. Dette alene gir
-   appen tilbake flere hundre festivaler.
-6. **Fase 2 — programmer**, samme maskineri, `add` only.
-7. **`trust_level = 1`** når loggen viser at den fortjener det — og da med
-   begge vilkårene fra punkt 8, ikke bare «add».
-8. **`remove` åpnes**, med begrunnelseskravet, hvis det viser seg å være behov.
+**Bygget og prøvd** (`scripts/test_sql.sh` og `node --test scripts/robot-nightly.test.mjs`):
 
-Punkt 5 er der verdien ligger. Alt etter det er finpuss.
+| | hva | hvor |
+|---|---|---|
+| ✓ | Robotidentitet, `confidence`, kravet om `source_url` | `20260825_robot_identity.sql` |
+| ✓ | Vakten mot fjerning, flytting og nye festivaler | `guard_robot_submission` |
+| ✓ | Reglene for den dagen fjerning åpnes | `robot_removal_problem` |
+| ✓ | Nattens utvalg, `ai_checked_at` og `ai_note` | `20260825_ai_queue.sql` |
+| ✓ | `note` og «usikker» i køvisningen | `src/app/admin/page.tsx` |
+| ✓ | Hentingen, tekstbehandlingen og forslagsskrivingen | `scripts/robot-nightly.mjs` |
+| ✓ | Instruksen roboten følger | `.claude/skills/nattlig-oppdatering/SKILL.md` |
+
+**Gjenstår, med vilje:**
+
+- **`trust_level = 1`** — tilføyelser rett inn. Skal ikke bygges før loggen
+  viser at roboten fortjener det. Å bygge en vei utenom godkjenningen før man
+  vet hvordan roboten faktisk oppfører seg, er å bygge nøyaktig den typen
+  regel ingen vet om virker.
+- **`remove` åpnes** — reglene står og er prøvd, sperren i
+  `guard_robot_submission` er lukket. Å åpne er å endre én linje.
+
+## 10. Slik settes det opp
+
+**1. Kjør de to migrasjonene** i Supabase sin SQL-editor, i denne rekkefølgen:
+
+```
+supabase/migrations/20260825_robot_identity.sql
+supabase/migrations/20260825_ai_queue.sql
+```
+
+**2. Opprett roboten.** Én gang, med tjenestenøkkelen i miljøet:
+
+```bash
+export SUPABASE_SERVICE_ROLE_KEY='...'
+python3 scripts/create_robot.py
+```
+
+**3. Prøv den for hånd først**, på én festival, før noe settes på skinner:
+
+```bash
+node --env-file=.env.local scripts/robot-nightly.mjs pick --count 3
+node --env-file=.env.local scripts/robot-nightly.mjs read <slug>
+```
+
+Se på det som kommer ut. Kjenner den igjen artistnavnene? Er `years_mentioned`
+til å stole på? Det er her du finner ut om ordningen kommer til å virke, og det
+koster ingenting å se etter.
+
+**4. Sett opp Routinen** i Claude Code på nett — `claude.ai/code`, cron
+`0 2 * * *`, ny sesjon per kjøring. Prompten skal bare være:
+
+> Kjør den nattlige festivaloppdateringen. Følg
+> `.claude/skills/nattlig-oppdatering/SKILL.md`.
+
+Miljøet trenger `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, og en
+**nettverkspolicy som slipper ut til festivalnettstedene**. Uten det siste får
+roboten 403 på alt, og natta går med til ingenting.
+
+**5. To ukers prøve.** Se på alt, også det roboten kalte sikkert. Det du ser
+etter er ikke først og fremst feil navn — det er om `high` og `low` betyr noe i
+praksis, eller om den merker alt `high`. Det er den mest sannsynlige måten
+dette svikter stille på.
+
+## 11. Det som ikke er prøvd
+
+Testene dekker parsingen, reglene og utvalget. De dekker **ikke** en ekte
+festivalside — miljøet testene ble skrevet i slipper ikke ut på nettet, så
+prøvene er kjørt mot sidestrukturer bygget etter hukommelsen om hvordan slike
+sider ser ut.
+
+Det som gjenstår å finne ut, og som bare første natt kan svare på:
+
+- Hvor mange av de 669 sidene er JavaScript-skall vi ikke kan lese?
+- Ligger lineupen på forsiden, eller på en underside vakten ikke ser på?
+- Hvor ofte står fjorårets plakat fortsatt oppe?
+
+Svarene skriver seg selv inn i `ai_note`. Les den listen etter en uke — den er
+mer verdt enn noen av gjetningene over.

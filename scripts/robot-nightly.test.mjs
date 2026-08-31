@@ -452,3 +452,21 @@ test("nyeste år først, så det viktigste står øverst", () => {
   const treff = matchEditions([], EDITIONS);
   assert.deepEqual(treff.map((t) => t.year), [2027, 2026]);
 });
+
+test("oversikten slår de 200 undersidene av den", () => {
+  // Roskildes programside lenker til én side per artist, alle med «/program/»
+  // i adressen. Uten rangering druknet «/program» i sine egne barn.
+  const html = `
+    <a href="/program/musik/gorillaz">Gorillaz</a>
+    <a href="/program/musik/jennie">Jennie</a>
+    <a href="/program">Program</a>
+    <a href="/program/musik">Musik</a>`;
+  const urls = lineupLinks(html, "https://rf.dk/").map((l) => l.url);
+  assert.equal(urls[0], "https://rf.dk/program", "grunneste adresse først");
+  assert.equal(urls[1], "https://rf.dk/program/musik");
+});
+
+test("listen kappes, så den er til å velge fra", () => {
+  const html = Array.from({ length: 60 }, (_, i) => `<a href="/program/a${i}">Artist ${i}</a>`).join("");
+  assert.equal(lineupLinks(html, "https://rf.dk/").length, 20);
+});

@@ -253,7 +253,19 @@ export function lineupLinks(html, baseUrl) {
     if (!found.has(url.href)) found.set(url.href, label || url.pathname);
   }
 
-  return [...found.entries()].map(([url, label]) => ({ url, label }));
+  // Programsiden lenker til én side per artist -- Roskildes ga 200 stykker,
+  // alle med «/program/» i adressen. De er ikke det vi leter etter: vi vil ha
+  // oversikten, ikke de 200 undersidene av den.
+  //
+  // Grunne adresser først. «/program» og «/en/line-up» slår «/program/musik/
+  // gorillaz» hver gang, og en topp på 20 holder listen lesbar for et hode som
+  // skal velge én av dem.
+  const depth = (u) => new URL(u).pathname.replace(/\/+$/, "").split("/").length;
+
+  return [...found.entries()]
+    .map(([url, label]) => ({ url, label }))
+    .sort((a, b) => depth(a.url) - depth(b.url) || a.url.length - b.url.length)
+    .slice(0, 20);
 }
 
 /**

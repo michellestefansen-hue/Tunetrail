@@ -426,10 +426,14 @@ async function read(args) {
           url: result.url,
           edition_match: result.edition_match,
           years_mentioned: result.years_mentioned,
-          kjente_artister: result.known_artists.length,
-          ukjente_kandidater: result.unknown_candidates.length,
+          tekst_lengde: text.length,
+          kjente_artister: result.known_artists,
+          // Hele bunken, ikke bare antallet. Er den tom for artistnavn og full
+          // av menypunkter, er siden uten lineup -- og det er den vurderingen
+          // et menneske skal kunne gjøre på ett blikk.
+          ukjente_kandidater: result.unknown_candidates.slice(0, 60),
           lineup_links: result.lineup_links.slice(0, 8),
-          første_linjer: text.split("\n").slice(0, 5),
+          første_linjer: text.split("\n").slice(0, 20),
         },
         null,
         2,

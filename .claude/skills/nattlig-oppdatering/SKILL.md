@@ -45,22 +45,48 @@ node --env-file=.env.local scripts/robot-nightly.mjs read <slug>
 Du får tilbake:
 
 - `years_mentioned` — hvilke årstall står på siden, og hvor ofte
+- `lineup_links` — lenker på siden som ser ut som de fører til programmet
 - `known_artists` — navn som allerede finnes i databasen. Disse trenger ingen
   vurdering fra deg; de *er* artistnavn.
 - `unknown_candidates` — alt annet som kan være et navn. Dette er bunken du
   skal lese.
 - `text` — siden som lesbar tekst, til å avgjøre sammenhengen
 
-Ligger lineupen på en underside, kjør `read <slug> --url <adressen>`.
+### Er `known_artists` tom, er du nesten alltid på feil side
+
+Vaktlisten ble fylt med festivalenes forsider, og på en forside står det
+sjelden en lineup. Roskildes forside har datoene øverst og ikke ett eneste
+artistnavn.
+
+Så: er `known_artists` tom, ikke konkluder med at festivalen mangler program.
+Følg en av `lineup_links` i stedet:
+
+```bash
+node --env-file=.env.local scripts/robot-nightly.mjs read <slug> --url <lenken>
+```
+
+Fant du siden der lineupen faktisk bor, **lagre den** — da peker både
+endringsvakten og du selv rett på riktig side neste gang:
+
+```bash
+node --env-file=.env.local scripts/robot-nightly.mjs watch-url <slug> <lenken>
+```
+
+Dette er noe av det mest verdifulle du gjør. Ei riktig lagret adresse sparer
+hver eneste framtidige natt.
 
 ### 3. Vurder
 
 Dette er hele grunnen til at det er du og ikke et skript som gjør dette.
 
 **Det viktigste spørsmålet først: er dette riktig år?** En festival som var i
-august viser fjorårets plakat i månedsvis etterpå. Står `2026` femten ganger
-og `2027` én gang i en bunntekst, ser du på fjorårets side. Da lager du ikke
-et forslag. Se punkt 5.
+august viser fjorårets plakat i månedsvis etterpå.
+
+`years_mentioned` er et hint, ikke et svar. Roskildes forside nevnte `2026`
+seks ganger og `2027` fire — og 2027 var likevel riktig år, fordi alle
+2026-treffene var datoer på gamle nyhetssaker og en bunntekst med opphavsrett.
+**Les sammenhengen, ikke tellingen.** «Tak for i år -- vi ses i 2027» er et
+tydeligere svar enn noe forholdstall.
 
 Deretter:
 
@@ -71,6 +97,11 @@ Deretter:
   scenenavn, «Kjøp billett» og partnerlogoer ligger i samme bunke. Er du i
   tvil om et enkelt navn, la det være — ett navn er ikke verdt et feilaktig
   forslag, og neste runde tar det.
+- **Pass særlig på personnavn i nyhetssaker.** En byline ser nøyaktig ut som
+  et artistnavn: Roskildes forside ga «Peter Troest», «Mick Friis» og «Kim
+  Matthäi Leland», som alle er journalister. Står navnet ved siden av en dato
+  og en overskrift, er det en forfatter. Står det i en liste med andre navn,
+  er det en artist.
 - **Hvilken dag spiller de?** Sier siden bare «fredag», regn deg fram fra
   datoene. Er det ikke mulig å avgjøre, legg dem på første dag og skriv i
   `note` at dagfordelingen er usikker, med `"confidence": "low"`.

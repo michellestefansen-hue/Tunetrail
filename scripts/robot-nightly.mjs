@@ -125,7 +125,10 @@ export function decodeEntities(text) {
  */
 export function toText(html) {
   const stripped = html
-    .replace(/<(script|style|noscript|svg|head)\b[\s\S]*?<\/\1>/gi, " ")
+    // select er aldri en lineup, men landlisten i et nyhetsbrevskjema er 250
+    // navn som ser ut som kandidater. Roskildes forside ga «British Virgin
+    // Islands» og «Federated States of Moldova» i bunken modellen skulle lese.
+    .replace(/<(script|style|noscript|svg|head|select)\b[\s\S]*?<\/\1>/gi, " ")
     .replace(/<!--[\s\S]*?-->/g, " ")
     // Blokkelementer blir linjeskift før taggene fjernes, ellers klistrer
     // «AuroraBjörkCMAT» seg sammen til ett uleselig ord.
@@ -172,6 +175,45 @@ export function cleanName(raw) {
   const hadTime = stripped !== name;
   name = stripped.trim();
   return { name, hadTime };
+}
+
+/**
+ * Lenker på siden som ser ut som de fører til programmet.
+ *
+ * Vaktlisten ble fylt fra festivals.website_url, altså forsiden. På en forside
+ * står sjelden lineupen -- Roskildes forside har datoene øverst og ikke ett
+ * artistnavn. Uten dette leser roboten feil side og finner ingenting, natt
+ * etter natt.
+ *
+ * Bare lenker til samme nettsted: en «line-up»-lenke til Ticketmaster fører
+ * til noen andres data, som er nøyaktig kilden vi gikk bort fra.
+ */
+export function lineupLinks(html, baseUrl) {
+  const looksRight =
+    /(line-?up|programm?|artist|acts|spille|tidsplan|schedule|plakat|kunstner)/i;
+  const found = new Map();
+
+  for (const m of html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+    const [, href, inner] = m;
+    if (/^(mailto:|tel:|javascript:|#)/i.test(href)) continue;
+
+    const label = toText(inner).replace(/\s+/g, " ").trim();
+    if (!looksRight.test(href) && !looksRight.test(label)) continue;
+
+    let url;
+    try {
+      url = new URL(href, baseUrl);
+    } catch {
+      continue;
+    }
+    if (url.protocol !== "https:" && url.protocol !== "http:") continue;
+    if (url.hostname !== new URL(baseUrl).hostname) continue;
+
+    url.hash = "";
+    if (!found.has(url.href)) found.set(url.href, label || url.pathname);
+  }
+
+  return [...found.entries()].map(([url, label]) => ({ url, label }));
 }
 
 /**
@@ -248,7 +290,8 @@ async function read(args) {
   const url = flag(args, "--url") ?? watch?.url ?? festival.website_url;
   if (!url) throw new Error(`«${slug}» har ingen adresse å lese.`);
 
-  const text = toText(await fetchPage(url));
+  const html = await fetchPage(url);
+  const text = toText(html);
 
   // Under dette er siden i praksis tom for oss -- et JavaScript-skall vi ikke
   // kan lese. Samme grense som endringsvakten bruker.
@@ -301,6 +344,9 @@ async function read(args) {
         url,
         fetched_at: new Date().toISOString(),
         years_mentioned: years,
+        // Fant vi ingen kjente navn, er dette nesten alltid feil side og ikke
+        // en festival uten lineup. Da er lenkene under det viktigste i svaret.
+        lineup_links: lineupLinks(html, url),
         known_artists: [...known.keys()].sort(),
         unknown_candidates: [...unknown.entries()]
           .sort((a, b) => b[1] - a[1])
@@ -499,6 +545,40 @@ function summarise(ops) {
 
 export const isDate = (s) => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s));
 
+/**
+ * Lagre adressen der lineupen faktisk bor.
+ *
+ * Kjøres én gang per festival, første gang roboten finner undersiden. Deretter
+ * peker både endringsvakten og roboten rett på riktig side, i stedet for på en
+ * forside som aldri endrer seg på den måten vi bryr oss om.
+ */
+async function watchUrl(args) {
+  const [slug, url] = positional(args);
+  if (!slug || !url) throw new Error("Bruk: watch-url <slug> <adresse>");
+  if (!/^https?:\/\//i.test(url)) throw new Error("Adressen må begynne med http:// eller https://");
+
+  const [festival] = await sb(
+    `/rest/v1/festivals?slug=eq.${encodeURIComponent(slug)}&select=id,name`,
+  );
+  if (!festival) throw new Error(`Fant ingen festival med slug «${slug}».`);
+
+  const rows = await sb(`/rest/v1/festival_watch?festival_id=eq.${festival.id}`, {
+    method: "PATCH",
+    prefer: "return=representation",
+    body: {
+      url,
+      // Avtrykket gjaldt den gamle siden. Beholdt ville den nye siden sett
+      // «endret» ut ved første sjekk, som er en falsk alarm og ikke et funn.
+      fingerprint: null,
+      failures: 0,
+      last_error: null,
+    },
+  });
+  if (!rows?.length) throw new Error("Fant ingen rad i festival_watch for festivalen.");
+
+  console.log(JSON.stringify({ ok: true, festival: festival.name, url }, null, 2));
+}
+
 /* ------------------------------------------------------------------ note -- */
 
 /**
@@ -573,7 +653,7 @@ function positional(args) {
 // tekstbehandlingen, og skal ikke utløse en kjøring av det.
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [command, ...rest] = process.argv.slice(2);
-  const commands = { pick, read, propose, note };
+  const commands = { pick, read, propose, note, "watch-url": watchUrl };
 
   if (!commands[command]) {
     console.error(`Ukjent kommando «${command ?? ""}». Se kommentaren øverst i denne fila.`);

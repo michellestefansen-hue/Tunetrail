@@ -11,7 +11,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps, splitOnSeparators } from "./robot-nightly.mjs";
+import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps, splitOnSeparators, lineupLinks } from "./robot-nightly.mjs";
 
 test("manus og stil forsvinner, teksten blir igjen", () => {
   const html = `
@@ -348,4 +348,54 @@ test("et år som ikke finnes kan ikke få program uten datoer", () => {
     () => buildOps({ ...BASE, add: [{ date: "2027-06-11", name: "CMAT" }] }, null),
     /ingen datoer å opprette den med/,
   );
+});
+
+/* ------------------------------------ det Roskildes forside laerte oss ---- */
+
+// Den foerste ekte sida roboten leste, 31. august 2026. Den fant ingen
+// artister -- ikke fordi parsingen sviktet, men fordi vaktlisten pekte paa
+// forsiden, og der staar det ingen lineup. Testene under er skrevet etter det.
+
+test("en nedtrekksliste er aldri en lineup", () => {
+  // Roskildes nyhetsbrevskjema har en landliste. Uten dette kom «British
+  // Virgin Islands» og «Federated States of Moldova» inn i bunken modellen
+  // skulle lese -- 250 navn som ser ut som kandidater og ikke er det.
+  const html = `
+    <h2>Line-up</h2><li>Aurora</li>
+    <select name="land"><option>Norway</option><option>Virgin Islands, British</option></select>`;
+  const text = toText(html);
+  assert.ok(text.includes("Aurora"));
+  assert.ok(!text.includes("Norway"), "innholdet i <select> skal bort");
+  assert.ok(!text.includes("Virgin Islands"));
+});
+
+test("lenken til programsiden blir funnet", () => {
+  const html = `
+    <nav>
+      <a href="/nyheder">Nyheder</a>
+      <a href="/program">Program</a>
+      <a href="/praktisk">Praktisk info</a>
+      <a href="/en/line-up/">Se hele line-up</a>
+    </nav>`;
+  const links = lineupLinks(html, "https://www.roskilde-festival.dk/");
+  const urls = links.map((l) => l.url);
+  assert.ok(urls.includes("https://www.roskilde-festival.dk/program"));
+  assert.ok(urls.includes("https://www.roskilde-festival.dk/en/line-up/"));
+  assert.ok(!urls.some((u) => u.includes("praktisk")), "praktisk info er ikke en lineup");
+});
+
+test("lenker ut av huset følges ikke", () => {
+  // En «line-up»-lenke til Ticketmaster fører til noen andres data -- nøyaktig
+  // kilden dette prosjektet gikk bort fra i august.
+  const html = `
+    <a href="https://www.ticketmaster.dk/lineup">Line-up</a>
+    <a href="mailto:info@fest.no?subject=program">Program</a>
+    <a href="/lineup">Line-up</a>`;
+  const urls = lineupLinks(html, "https://fest.no/").map((l) => l.url);
+  assert.deepEqual(urls, ["https://fest.no/lineup"]);
+});
+
+test("samme side to ganger blir én lenke", () => {
+  const html = `<a href="/program">Program</a><a href="/program#dag2">Programmet</a>`;
+  assert.equal(lineupLinks(html, "https://fest.no/").length, 1);
 });

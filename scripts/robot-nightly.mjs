@@ -261,29 +261,51 @@ export function matchEditions(pageKeys, editions) {
  * Bare lenker til samme nettsted: en «line-up»-lenke til Ticketmaster fører
  * til noen andres data, som er nøyaktig kilden vi gikk bort fra.
  */
+// Filstier og teknisk hjulpelinjer -- aldri en programside, og fallback-runden
+// under ville ellers fylt lista med RSS-feeder og WordPress-internt jazz.
+const SKIP_ASSET_RE = /\.(jpe?g|png|gif|webp|svg|css|js|json|xml|pdf|ico)(\?|#|$)/i;
+const SKIP_PATH_RE = /(wp-json|wp-content|xmlrpc|\/feed\/?($|\?)|\/comments\/feed)/i;
+
 export function lineupLinks(html, baseUrl) {
   const looksRight =
     /(line-?up|programm?|artist|acts|spille|tidsplan|schedule|plakat|kunstner)/i;
-  const found = new Map();
+  const base = new URL(baseUrl);
 
-  for (const m of html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
-    const [, href, inner] = m;
-    if (/^(mailto:|tel:|javascript:|#)/i.test(href)) continue;
+  const collect = (requireKeyword) => {
+    const found = new Map();
+    for (const m of html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+      const [, href, inner] = m;
+      if (/^(mailto:|tel:|javascript:|#)/i.test(href)) continue;
+      if (SKIP_ASSET_RE.test(href) || SKIP_PATH_RE.test(href)) continue;
 
-    const label = toText(inner).replace(/\s+/g, " ").trim();
-    if (!looksRight.test(href) && !looksRight.test(label)) continue;
+      const label = toText(inner).replace(/\s+/g, " ").trim();
+      if (requireKeyword && !looksRight.test(href) && !looksRight.test(label)) continue;
 
-    let url;
-    try {
-      url = new URL(href, baseUrl);
-    } catch {
-      continue;
+      let url;
+      try {
+        url = new URL(href, baseUrl);
+      } catch {
+        continue;
+      }
+      if (url.protocol !== "https:" && url.protocol !== "http:") continue;
+      if (url.hostname !== base.hostname) continue;
+
+      url.hash = "";
+      if (url.href === base.href) continue; // "Hjem" peker bare tilbake dit vi alt er.
+      if (!found.has(url.href)) found.set(url.href, label || url.pathname);
     }
-    if (url.protocol !== "https:" && url.protocol !== "http:") continue;
-    if (url.hostname !== new URL(baseUrl).hostname) continue;
+    return found;
+  };
 
-    url.hash = "";
-    if (!found.has(url.href)) found.set(url.href, label || url.pathname);
+  let found = collect(true);
+  let usedFallback = false;
+  // Legend Metalfests forside hadde ikke ett eneste ord fra looksRight i noen
+  // lenke -- den ekte lineupen lå bak en kalenderwidget merket bare
+  // «Legend Metalfest 2026». Uten denne reserverunden er svaret tomt, og et
+  // menneske må lese rå-HTML for hånd for å finne den, slik det ble gjort her.
+  if (found.size === 0) {
+    found = collect(false);
+    usedFallback = true;
   }
 
   // Programsiden lenker til én side per artist -- Roskildes ga 200 stykker,
@@ -294,10 +316,26 @@ export function lineupLinks(html, baseUrl) {
   // gorillaz» hver gang, og en topp på 20 holder listen lesbar for et hode som
   // skal velge én av dem.
   const depth = (u) => new URL(u).pathname.replace(/\/+$/, "").split("/").length;
+  const entries = [...found.entries()].map(([url, label]) => ({ url, label }));
 
-  return [...found.entries()]
-    .map(([url, label]) => ({ url, label }))
-    .sort((a, b) => depth(a.url) - depth(b.url) || a.url.length - b.url.length)
+  if (!usedFallback) {
+    return entries
+      .sort((a, b) => depth(a.url) - depth(b.url) || a.url.length - b.url.length)
+      .slice(0, 20);
+  }
+
+  // I reserverunden finnes ingen nøkkelord å style etter, og da er grunnest
+  // ikke lenger riktig mål: Legend Metalfests kalenderliste «/events/» er
+  // grunnere enn selve arrangementsiden «/event/legend-metalfest-2026/», men
+  // bare sistnevnte peker på én bestemt utgave og ikke en generell liste. Et
+  // årstall i adressen eller lenketeksten er det nest beste hintet vi har.
+  const hasYear = (e) => /\b20\d{2}\b/.test(e.url) || /\b20\d{2}\b/.test(e.label);
+  return entries
+    .sort((a, b) => {
+      const byYear = Number(!hasYear(a)) - Number(!hasYear(b));
+      if (byYear !== 0) return byYear;
+      return depth(a.url) - depth(b.url) || a.url.length - b.url.length;
+    })
     .slice(0, 20);
 }
 
@@ -328,6 +366,77 @@ export function splitOnSeparators(line) {
     .filter(Boolean);
 }
 
+// Kirkenes Lives forside ga «SP» som et kjent artistnavn -- ekte, brukt to
+// ganger fra før i basen, men to bokstaver er nok til at et tilfeldig treff
+// ser ut som et ekte funn. Slike havner i uncertain, ikke known: fortsatt et
+// registrert navn, men et som fortjener et ekstra blikk før det sendes.
+const SHORT_NAME_MAX = 3;
+
+/**
+ * Kandidatene på en side, delt i det som er kjent, det som er kjent men kort
+ * nok til å være et falskt treff, og det som er ukjent.
+ *
+ * Egen funksjon og ikke en løkke inne i read(), fordi den samme sorteringen nå
+ * kjøres to ganger -- forsiden og programsiden den lenker til (se read()).
+ */
+export function scanText(text, lookup) {
+  const known = new Map();
+  const uncertain = new Map();
+  const unknown = new Map();
+
+  for (const raw of candidates(text)) {
+    const { name } = cleanName(raw);
+    if (name.length < 2 || name.length > 120) continue;
+    // En hel setning er ikke et artistnavn. Åtte ord er romslig -- «Nick Cave
+    // and the Bad Seeds» er seks.
+    if (name.split(" ").length > 8) continue;
+
+    const key = nameKey(name);
+    const hit = lookup.get(key);
+    if (hit) {
+      const bucket = hit.length <= SHORT_NAME_MAX ? uncertain : known;
+      bucket.set(hit, (bucket.get(hit) ?? 0) + 1);
+    } else if (/[\p{L}]/u.test(name)) {
+      unknown.set(name, (unknown.get(name) ?? 0) + 1);
+    }
+  }
+
+  // «Aurora, Björk» legges inn både som hel linje og som to biter. Bitene
+  // kjennes igjen; den hele linjen gjør det ikke, og ville havnet i bunken
+  // modellen må lese. Det er den bunken som koster, så den ryddes her.
+  //
+  // Delingen brukes til å avgjøre det, ikke en substrengsjekk: «Airbourne»
+  // inneholder «Air», som er et ekte bandnavn, og en substrengsjekk ville
+  // dermed kastet et ekte funn.
+  for (const candidate of [...unknown.keys()]) {
+    const parts = splitOnSeparators(candidate);
+    if (parts.length > 1 && parts.some((p) => lookup.has(nameKey(cleanName(p).name)))) {
+      unknown.delete(candidate);
+    }
+  }
+
+  return { known, uncertain, unknown };
+}
+
+/** Legg tellingene fra `from` oppå `into`, i stedet for å overskrive dem. */
+function mergeCounts(into, from) {
+  for (const [key, count] of from) into.set(key, (into.get(key) ?? 0) + count);
+}
+
+// Legend Metalfests egen arrangementside sa selv «Foreløpig lineup:» og viste
+// 7 av 15 band. En plakat merket foreløpig er en annen sikkerhet enn en
+// ferdig plakat, og bør aldri sendes med "confidence": "high" uten at et
+// menneske har sett akkurat dette ordet.
+const PROVISIONAL_RE = /\b(foreløpig|forelopig|midlertidig|preliminary|coming soon|tba)\b/i;
+
+/**
+ * Peker på at plakaten sier selv at den ikke er ferdig. Avgjør ingenting,
+ * peker -- akkurat som year_lines og edition_match.
+ */
+export function isProvisional(text) {
+  return PROVISIONAL_RE.test(text);
+}
+
 /* ------------------------------------------------------------------ pick -- */
 
 async function pick(args) {
@@ -352,6 +461,22 @@ async function fetchPage(url) {
     return await res.text();
   } finally {
     clearTimeout(timer);
+  }
+}
+
+/**
+ * Som fetchPage, men feiler aldri -- den svarer med en feil i stedet.
+ *
+ * Brukt til programsiden read() henter i tillegg til forsiden: et nettsted
+ * som avviser den siden (som promogogo.com gjorde for Drammen Metalfest, med
+ * HTTP 406) skal ikke velte hele lesingen av forsiden.
+ */
+async function fetchPageSafe(url) {
+  try {
+    const html = await fetchPage(url);
+    return { html, text: toText(html) };
+  } catch (err) {
+    return { error: String(err.message ?? err) };
   }
 }
 
@@ -392,60 +517,73 @@ async function read(args) {
     );
   }
 
-  const known = new Map();
-  const unknown = new Map();
-
   const lookup = await artistLookup();
+  const { known, uncertain, unknown } = scanText(text, lookup);
 
-  for (const raw of candidates(text)) {
-    const { name } = cleanName(raw);
-    if (name.length < 2 || name.length > 120) continue;
-    // En hel setning er ikke et artistnavn. Åtte ord er romslig -- «Nick Cave
-    // and the Bad Seeds» er seks.
-    if (name.split(" ").length > 8) continue;
+  const links = lineupLinks(html, url);
+  const pagesRead = [url];
+  let secondaryPageError = null;
+  let secondaryText = null;
 
-    const key = nameKey(name);
-    const hit = lookup.get(key);
-    if (hit) known.set(hit, (known.get(hit) ?? 0) + 1);
-    else if (/[\p{L}]/u.test(name)) unknown.set(name, (unknown.get(name) ?? 0) + 1);
-  }
-
-  // «Aurora, Björk» legges inn både som hel linje og som to biter. Bitene
-  // kjennes igjen; den hele linjen gjør det ikke, og ville havnet i bunken
-  // modellen må lese. Det er den bunken som koster, så den ryddes her.
-  //
-  // Delingen brukes til å avgjøre det, ikke en substrengsjekk: «Airbourne»
-  // inneholder «Air», som er et ekte bandnavn, og en substrengsjekk ville
-  // dermed kastet et ekte funn.
-  for (const candidate of [...unknown.keys()]) {
-    const parts = splitOnSeparators(candidate);
-    if (parts.length > 1 && parts.some((p) => lookup.has(nameKey(cleanName(p).name)))) {
-      unknown.delete(candidate);
+  // Sande Jazzfestivals forside viste 3 av 9 artister -- resten lå på
+  // /program, en lenke forsiden selv listet. known_artists var ikke tom, så
+  // den gamle regelen («følg lenken bare når den er tom») så aldri undersiden.
+  // Én ekstra henting løser det. Å følge kjeden videre enn dette er fortsatt
+  // et menneskes/agentens jobb, med --url.
+  const top = links[0];
+  if (top && top.url !== url) {
+    const secondary = await fetchPageSafe(top.url);
+    if (secondary.error) {
+      secondaryPageError = secondary.error;
+    } else if (secondary.text.length >= 200) {
+      pagesRead.push(top.url);
+      secondaryText = secondary.text;
+      const scan2 = scanText(secondary.text, lookup);
+      mergeCounts(known, scan2.known);
+      mergeCounts(uncertain, scan2.uncertain);
+      mergeCounts(unknown, scan2.unknown);
     }
   }
 
+  // Datoen kan også bo på undersiden og ikke forsiden -- Legend Metalfests
+  // egen arrangementside hadde datoene, ikke forsiden med 278 tegn tekst.
+  const combinedText = secondaryText ? `${text}\n${secondaryText}` : text;
+
   const years = {};
-  for (const m of text.matchAll(/\b(20[2-3]\d)\b/g)) years[m[1]] = (years[m[1]] ?? 0) + 1;
+  for (const m of combinedText.matchAll(/\b(20[2-3]\d)\b/g)) years[m[1]] = (years[m[1]] ?? 0) + 1;
 
   const result = {
         slug: festival.slug,
         name: festival.name,
         url,
+        // Sidene som faktisk ble lest -- forsiden, og programsiden hvis den
+        // ble funnet og svarte. Ett menneske skal kunne se dette uten å gjette.
+        pages_read: pagesRead,
+        secondary_page_error: secondaryPageError,
         fetched_at: new Date().toISOString(),
         years_mentioned: years,
         // Linjene der året faktisk står. Uten dette må hele siden leses for å
         // finne datoen, og på en lang side rekker den ikke fram.
-        year_lines: yearLines(text, targetYear),
+        year_lines: yearLines(combinedText, targetYear),
+        // Sier siden selv at plakaten ikke er ferdig -- «foreløpig», «TBA» --
+        // er det en annen sikkerhet enn en ferdig plakat, og bør ikke sendes
+        // med "confidence": "high" uten at et menneske har sett akkurat dette.
+        provisional: isProvisional(combinedText),
         // Viktigere enn years_mentioned: sier siden 2027 øverst mens 93 % av
         // fjorårets lagrede program står under, er dette fjorårets side.
         edition_match: matchEditions(
-          [...known.keys(), ...unknown.keys()].map((n) => nameKey(n)),
+          [...known.keys(), ...uncertain.keys(), ...unknown.keys()].map((n) => nameKey(n)),
           editions ?? [],
         ),
         // Fant vi ingen kjente navn, er dette nesten alltid feil side og ikke
         // en festival uten lineup. Da er lenkene under det viktigste i svaret.
-        lineup_links: lineupLinks(html, url),
+        lineup_links: links,
         known_artists: [...known.keys()].sort(),
+        // Kjente navn på tre bokstaver eller færre -- ekte registrerte navn,
+        // men korte nok til at et tilfeldig treff ser ut som et ekte funn
+        // («SP» på Kirkenes Lives forside). Samme vurdering som et ukjent
+        // navn, ikke en automatisk godkjenning.
+        uncertain_matches: [...uncertain.keys()].sort(),
         unknown_candidates: [...unknown.entries()]
           .sort((a, b) => b[1] - a[1])
           .slice(0, 400)
@@ -463,11 +601,17 @@ async function read(args) {
         {
           festival: result.name,
           url: result.url,
+          sider_lest: result.pages_read,
+          feil_paa_underside: result.secondary_page_error,
           edition_match: result.edition_match,
           years_mentioned: result.years_mentioned,
           year_lines: result.year_lines,
+          foreloepig: result.provisional,
           tekst_lengde: text.length,
           kjente_artister: result.known_artists,
+          // Korte, ekte registrerte navn -- samme vurdering som et ukjent
+          // navn, ikke en automatisk godkjenning. Se scanText.
+          usikre_treff: result.uncertain_matches,
           // Hele bunken, ikke bare antallet. Er den tom for artistnavn og full
           // av menypunkter, er siden uten lineup -- og det er den vurderingen
           // et menneske skal kunne gjøre på ett blikk.
@@ -579,13 +723,24 @@ export function buildOps(input, edition) {
     if (name.length > 120) {
       throw new Error(`«${name.slice(0, 40)}…» er for langt til å være et navn.`);
     }
-    if (!isDate(item.date)) throw new Error(`«${item.date}» er ikke en dato.`);
-    if (item.date < range.from || item.date > range.to) {
-      throw new Error(
-        `${item.date} ligger utenfor ${range.from}–${range.to}. En slik dag vises aldri i appen.`,
-      );
+
+    let date;
+    if (item.date == null) {
+      // Bekreftet for festivalen, men dagen er ikke publisert ennå. Egen
+      // "dag" i programmet i stedet for en gjetning på dag 1 -- se
+      // UNSCHEDULED_DATE og punkt 4 i SKILL-fila.
+      date = UNSCHEDULED_DATE;
+    } else {
+      if (!isDate(item.date)) throw new Error(`«${item.date}» er ikke en dato.`);
+      if (item.date < range.from || item.date > range.to) {
+        throw new Error(
+          `${item.date} ligger utenfor ${range.from}–${range.to}. En slik dag vises aldri i appen.`,
+        );
+      }
+      date = item.date;
     }
-    const key = `${item.date}|${nameKey(name)}`;
+
+    const key = `${date}|${nameKey(name)}`;
     if (seen.has(key)) continue;
     seen.add(key);
     if (existing.has(key)) {
@@ -593,7 +748,7 @@ export function buildOps(input, edition) {
       continue;
     }
     // stage og time med vilje utelatt: tekst der gjør artisten usøkbar i appen.
-    ops.add.push({ date: item.date, name });
+    ops.add.push({ date, name });
   }
 
   if (!ops.add.length && !ops.dates) {
@@ -669,6 +824,14 @@ function summarise(ops) {
 
 export const isDate = (s) => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s));
 
+// Bekreftet for festivalen, men dagen er ikke kjent ennå. Før dette fantes
+// ble slike lagt på dag 1 med "confidence": "low" -- en gjetning som så ut
+// som et bekreftet funn i appen. Egen "dag" i stedet, samme sentinel som
+// UNSCHEDULED_DATE i src/lib/festivals.ts (ikke importert dit -- dette
+// skriptet kjører utenfor Next-appen). Syntaktisk gyldig og langt nok fram
+// til at den alltid sorterer sist blant ekte datoer.
+export const UNSCHEDULED_DATE = "9999-12-31";
+
 /**
  * Lagre adressen der lineupen faktisk bor.
  *
@@ -712,16 +875,30 @@ async function watchUrl(args) {
  * sende et forslag. Uten det kommer de vanskeligste sidene opp igjen natt
  * etter natt, og du får aldri vite hvilke festivaler som må tas for hånd.
  */
+// Faste grunner, ikke fri tekst -- samme tanke som confidence sine to verdier.
+// Uten en fast liste er «hvor stor andel av 669 sider er lesbare i det hele
+// tatt» et spørsmål som krever at noen leser alle notatene for hånd. Med den
+// er det et opptak mot ai_note.
+const NOTE_REASONS = ["blokkert", "js-skall", "gammel-plakat", "ingen-data", "usikker"];
+
 async function note(args) {
   const [slug, ...rest] = positional(args);
+  const reason = flag(args, "--reason");
+  if (reason !== undefined && !NOTE_REASONS.includes(reason)) {
+    throw new Error(`Ukjent --reason «${reason}». Bruk en av: ${NOTE_REASONS.join(", ")}.`);
+  }
+
   const text = rest.join(" ").trim();
-  if (!slug || !text) throw new Error('Bruk: note <slug> "hvorfor det ikke ble noe"');
+  if (!slug || !text) {
+    throw new Error('Bruk: note <slug> "hvorfor det ikke ble noe" [--reason <grunn>]');
+  }
 
   const [festival] = await sb(`/rest/v1/festivals?slug=eq.${encodeURIComponent(slug)}&select=id,name`);
   if (!festival) throw new Error(`Fant ingen festival med slug «${slug}».`);
 
-  await stamp(festival.id, text);
-  console.log(JSON.stringify({ ok: true, festival: festival.name, ai_note: text }, null, 2));
+  const stamped = reason ? `[${reason}] ${text}` : text;
+  await stamp(festival.id, stamped);
+  console.log(JSON.stringify({ ok: true, festival: festival.name, ai_note: stamped }, null, 2));
 }
 
 async function stamp(festivalId, text) {

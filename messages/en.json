@@ -47,6 +47,7 @@
     "tickets": "Tickets",
     "program": "Lineup",
     "day": "Day {number}",
+    "dayUnscheduled": "Day not yet set",
     "programNotAnnouncedYet": "Lineup not announced yet.",
     "programNotAnnounced": "Lineup not announced",
     "noDateSet": "Date not set",

@@ -47,6 +47,7 @@
     "tickets": "Entradas",
     "program": "Programa",
     "day": "Día {number}",
+    "dayUnscheduled": "Día aún no definido",
     "programNotAnnouncedYet": "Programa aún no anunciado.",
     "programNotAnnounced": "Programa no anunciado",
     "noDateSet": "Fecha no establecida",

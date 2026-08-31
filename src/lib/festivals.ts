@@ -7,6 +7,16 @@ export type ProgramDay = {
   artists: ProgramArtist[];
 };
 
+// Artister kan være bekreftet for festivalen uten at dagen er kjent ennå.
+// I stedet for å gjette på dag 1 (som så ut som et bekreftet funn selv om det
+// ikke var det) får de en egen "dag" med denne datoen -- syntaktisk gyldig,
+// men langt nok fram til at den alltid sorterer sist, og til at ingenting
+// krasjer om noe et sted kaller new Date() på den.
+//
+// Samme streng som UNSCHEDULED_DATE i scripts/robot-nightly.mjs. Ikke
+// importert dit: det skriptet kjører utenfor Next-appen, uten TS-stien "@/".
+export const UNSCHEDULED_DATE = "9999-12-31";
+
 export type FestivalEdition = {
   id: string;
   year: number;

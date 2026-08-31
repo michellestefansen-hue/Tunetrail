@@ -47,6 +47,7 @@
     "tickets": "Tickets",
     "program": "Programm",
     "day": "Tag {number}",
+    "dayUnscheduled": "Tag noch nicht festgelegt",
     "programNotAnnouncedYet": "Programm noch nicht angekündigt.",
     "programNotAnnounced": "Programm nicht angekündigt",
     "noDateSet": "Kein Datum festgelegt",

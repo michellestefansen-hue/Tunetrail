@@ -11,7 +11,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps, splitOnSeparators, lineupLinks, matchEditions, yearLines } from "./robot-nightly.mjs";
+import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps, splitOnSeparators, lineupLinks, matchEditions, yearLines, scanText, isProvisional } from "./robot-nightly.mjs";
 
 test("manus og stil forsvinner, teksten blir igjen", () => {
   const html = `
@@ -271,6 +271,51 @@ test("scene og klokkeslett følger aldri med som egne felt", () => {
     EDITION,
   );
   assert.deepEqual(Object.keys(ops.add[0]).sort(), ["date", "name"]);
+});
+
+/* ------------------------------------------- dag ikke kjent ennå -------- */
+
+test("en artist uten kjent dag får en sentinel-dato, ikke dag 1", () => {
+  // Før dette ble slike lagt på festivalens første dag med "confidence": "low"
+  // -- en gjetning som så nøyaktig ut som et bekreftet funn i appen.
+  const { ops } = buildOps(
+    { ...BASE, confidence: "low", add: [{ date: null, name: "Moillrock" }] },
+    EDITION,
+  );
+  assert.deepEqual(ops.add, [{ date: "9999-12-31", name: "Moillrock" }]);
+});
+
+test("dag ikke kjent hopper over datospenn-sjekken", () => {
+  // Sentinelen ligger langt utenfor enhver festivals faktiske periode med
+  // vilje -- den skal aldri kunne forveksles med en ekte dag.
+  assert.doesNotThrow(() =>
+    buildOps({ ...BASE, confidence: "low", add: [{ date: null, name: "Moillrock" }] }, EDITION),
+  );
+});
+
+test("dag ikke kjent to ganger blir én tilføyelse", () => {
+  const { ops } = buildOps(
+    { ...BASE, confidence: "low", add: [{ date: null, name: "Moillrock" }, { name: "moillrock" }] },
+    EDITION,
+  );
+  assert.equal(ops.add.length, 1, "date utelatt helt skal telle som samme sak som date: null");
+});
+
+test("en artist uten kjent dag som allerede står der blir ikke foreslått på nytt", () => {
+  const edition = {
+    ...EDITION,
+    program: [...EDITION.program, { date: "9999-12-31", artists: [{ name: "Moillrock" }] }],
+  };
+  const { ops, warnings } = buildOps(
+    {
+      ...BASE,
+      confidence: "low",
+      add: [{ date: null, name: "Moillrock" }, { date: null, name: "Efterglöd" }],
+    },
+    edition,
+  );
+  assert.deepEqual(ops.add, [{ date: "9999-12-31", name: "Efterglöd" }]);
+  assert.ok(warnings.some((w) => w.includes("sto der fra før")));
 });
 
 test("et nytt år får base null, så godkjenningen oppretter det", () => {
@@ -539,4 +584,81 @@ test("et artistnavn i fet Unicode finner nøkkelen sin", () => {
   const text = toText(`<li>${fet("Da Tweekaz")}</li>`);
   assert.equal(text, "Da Tweekaz");
   assert.equal(nameKey(text), "da tweekaz");
+});
+
+/* -------------------------------------------- korte navn, og foreloepig -- */
+
+test("et kort registrert navn havner i uncertain, ikke i known", () => {
+  // Kirkenes Lives forside ga «SP» som kjent artist -- ekte, brukt to ganger
+  // fra før i basen, men to bokstaver er nok til å treffe ved et uhell.
+  const lookup = new Map([["sp", "SP"], ["donkeyboy", "Donkeyboy"]]);
+  const { known, uncertain } = scanText("SP\nDonkeyboy", lookup);
+  assert.deepEqual([...uncertain.keys()], ["SP"]);
+  assert.deepEqual([...known.keys()], ["Donkeyboy"]);
+});
+
+test("et ukjent navn havner fortsatt i unknown", () => {
+  const lookup = new Map();
+  const { unknown } = scanText("Helt Nytt Band", lookup);
+  assert.ok(unknown.has("Helt Nytt Band"));
+});
+
+test("foreløpig og TBA blir fanget opp, en ferdig plakat ikke", () => {
+  // Legend Metalfests egen arrangementside sa «Foreløpig lineup:» og viste
+  // 7 av 15 band. Det er en annen sikkerhet enn en ferdig plakat.
+  assert.ok(isProvisional("Foreløpig lineup: Kampfar, Witchhammer"));
+  assert.ok(isProvisional("Bandfordeling: TBA"));
+  assert.ok(!isProvisional("Line-up: Kampfar, Witchhammer, Koldbrann"));
+});
+
+/* --------------------------------------- reservelenker naar ingen treffer */
+
+test("ingen treff på nøkkelord gir alle interne lenker som reserve", () => {
+  // Legend Metalfests forside: ingen lenke inneholdt "program"/"lineup"/
+  // "artist" -- den ekte siden lå bak en kalenderwidget merket bare med
+  // arrangementets navn og år.
+  const html = `
+    <nav>
+      <a href="/">Hjem</a>
+      <a href="/kontakt">Kontakt</a>
+      <a href="/event/legend-metalfest-2026/">Legend Metalfest 2026</a>
+    </nav>`;
+  const urls = lineupLinks(html, "https://legendmetalfest.no/").map((l) => l.url);
+  assert.ok(urls.includes("https://legendmetalfest.no/event/legend-metalfest-2026/"));
+  assert.ok(urls.includes("https://legendmetalfest.no/kontakt"));
+  assert.ok(!urls.includes("https://legendmetalfest.no/"), "forsiden peker ikke tilbake på seg selv");
+});
+
+test("reservelenker hopper over feeder og WordPress-internt", () => {
+  const html = `
+    <a href="/">Hjem</a>
+    <a href="/feed/">RSS</a>
+    <a href="/wp-json/">API</a>
+    <a href="/event/x-2026/">X 2026</a>`;
+  const urls = lineupLinks(html, "https://x.no/").map((l) => l.url);
+  assert.deepEqual(urls, ["https://x.no/event/x-2026/"]);
+});
+
+test("i reserverunden slår et årstall en grunnere generell liste", () => {
+  // Legend Metalfests egen forside: /events/ (kalenderliste) er grunnere enn
+  // /event/legend-metalfest-2026/ (selve arrangementet), men bare sistnevnte
+  // har et årstall og peker på én bestemt utgave.
+  const html = `
+    <a href="/">Hjem</a>
+    <a href="/events/">Kommende arrangementer</a>
+    <a href="/event/legend-metalfest-2026/">Legend Metalfest 2026</a>`;
+  const urls = lineupLinks(html, "https://legendmetalfest.no/").map((l) => l.url);
+  assert.equal(urls[0], "https://legendmetalfest.no/event/legend-metalfest-2026/");
+});
+
+test("finnes det et nøkkelordtreff, brukes ikke reservelisten", () => {
+  // Den vanlige testen "lenker ut av huset følges ikke" dekker treff-runden i
+  // seg selv -- denne sjekker at en side med ekte menypunkter ikke også får
+  // med seg "Kontakt" og "Hjem" via reserverunden.
+  const html = `
+    <a href="/">Hjem</a>
+    <a href="/kontakt">Kontakt</a>
+    <a href="/program">Program</a>`;
+  const urls = lineupLinks(html, "https://fest.no/").map((l) => l.url);
+  assert.deepEqual(urls, ["https://fest.no/program"]);
 });

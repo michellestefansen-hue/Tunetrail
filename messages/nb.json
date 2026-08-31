@@ -47,6 +47,7 @@
     "tickets": "Billetter",
     "program": "Program",
     "day": "Dag {number}",
+    "dayUnscheduled": "Dag ikke bestemt",
     "programNotAnnouncedYet": "Program ikke annonsert ennå.",
     "programNotAnnounced": "Program ikke annonsert",
     "noDateSet": "Dato ikke satt",

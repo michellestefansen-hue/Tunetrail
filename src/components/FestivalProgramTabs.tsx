@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import type { ProgramDay } from "@/lib/festivals";
+import { UNSCHEDULED_DATE, type ProgramDay } from "@/lib/festivals";
 
 type YearProgram = { year: number; program: ProgramDay[] };
 
@@ -27,6 +27,11 @@ export function FestivalProgramTabs({
 
   const active = years.find((y) => y.year === year);
   const program = active?.program ?? [];
+  // Bekreftet for festivalen, men dagen er ikke kjent ennå -- roboten legger
+  // disse i en egen "dag" i stedet for å gjette på dag 1. Vises sist, ikke
+  // nummerert som en av festivaldagene.
+  const scheduledDays = program.filter((d) => d.date !== UNSCHEDULED_DATE);
+  const unscheduledDay = program.find((d) => d.date === UNSCHEDULED_DATE);
 
   return (
     <div>
@@ -55,7 +60,7 @@ export function FestivalProgramTabs({
         {program.length === 0 && (
           <p className="text-sm text-stone-400">{t("programNotAnnouncedYet")}</p>
         )}
-        {program.map((day, i) => (
+        {scheduledDays.map((day, i) => (
           <div
             key={day.date}
             className="rounded-2xl bg-white p-4 shadow-[0_8px_30px_rgba(45,26,18,0.08)]"
@@ -88,6 +93,27 @@ export function FestivalProgramTabs({
             </div>
           </div>
         ))}
+        {unscheduledDay && unscheduledDay.artists.length > 0 && (
+          <div
+            key={unscheduledDay.date}
+            className="rounded-2xl bg-white p-4 shadow-[0_8px_30px_rgba(45,26,18,0.08)]"
+          >
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#FF2D78]">
+              {t("dayUnscheduled")}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {unscheduledDay.artists.map((a, idx) => (
+                <span
+                  key={`${a.name}-${idx}`}
+                  className="rounded-full bg-stone-100 px-2.5 py-1 text-xs text-stone-700"
+                  title={[a.stage, a.time].filter(Boolean).join(" · ")}
+                >
+                  {a.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

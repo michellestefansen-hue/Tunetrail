@@ -58,8 +58,24 @@ Du får tilbake:
 - `year_lines` — linjene der året faktisk står. **Datoen bor som regel her.**
 - `years_mentioned` — hvilke årstall står på siden, og hvor ofte
 - `lineup_links` — lenker på siden som ser ut som de fører til programmet
-- `known_artists` — navn som allerede finnes i databasen. Disse trenger ingen
-  vurdering fra deg; de *er* artistnavn.
+- `pages_read` — sidene som faktisk ble hentet. `read` følger nå automatisk
+  den øverste av `lineup_links` i tillegg til forsiden, og slår sammen det den
+  finner der med forsiden. Står det bare én adresse her, fantes ingen
+  lineup-lenke eller undersiden svarte ikke — se `secondary_page_error`.
+- `secondary_page_error` — hvorfor undersiden ikke ble lest, hvis den ikke ble
+  det. Et nettsted kan avvise oss (som promogogo.com gjorde for Drammen
+  Metalfest, med HTTP 406, fordi vi ærlig oppgir at vi er en robot i
+  user-agenten) uten at forsiden av den grunn er ubrukelig.
+- `provisional` — siden bruker selv et ord som «foreløpig», «TBA» eller
+  «coming soon» et sted i teksten. **Den avgjør ingenting, den peker** — se
+  linjene selv før du stoler på det — men står den her, er dette ikke en
+  ferdig plakat, og bør ikke sendes med `"confidence": "high"`.
+- `known_artists` — navn som allerede finnes i databasen. Disse trenger nesten
+  ingen vurdering fra deg; de *er* artistnavn.
+- `uncertain_matches` — også registrerte navn, men tre bokstaver eller færre
+  («SP» på Kirkenes Lives forside var et ekte navn i basen, brukt to ganger
+  fra før — og fortsatt et tilfeldig treff verdt et ekstra blikk). Behandle
+  disse som `unknown_candidates`, ikke som `known_artists`.
 - `unknown_candidates` — alt annet som kan være et navn. Dette er bunken du
   skal lese.
 - `text` — siden som lesbar tekst, til å avgjøre sammenhengen
@@ -70,8 +86,15 @@ Vaktlisten ble fylt med festivalenes forsider, og på en forside står det
 sjelden en lineup. Roskildes forside har datoene øverst og ikke ett eneste
 artistnavn.
 
-Så: er `known_artists` tom, ikke konkluder med at festivalen mangler program.
-Følg en av `lineup_links` i stedet:
+`read` følger nå selv den øverste `lineup_links`-adressen og slår sammen det
+den finner der med forsiden — se `pages_read`. Det løser Sande Jazzfestival-
+tilfellet, der forsiden viste 3 av 9 artister og resten lå på `/program`: nok
+treff til at `known_artists` ikke var tom, men langt fra hele bildet.
+
+Det den **ikke** gjør, er å lete videre enn ett hopp. Er `known_artists` og
+`uncertain_matches` fortsatt tomme etter det, eller ser `lineup_links` feil ut
+(Legend Metalfests forside ga ingen treff i det hele tatt — den ekte siden lå
+bak en kalenderwidget), les videre for hånd:
 
 ```bash
 node --env-file=.env.local scripts/robot-nightly.mjs read <slug> --url <lenken>
@@ -142,8 +165,11 @@ Deretter:
   og en overskrift, er det en forfatter. Står det i en liste med andre navn,
   er det en artist.
 - **Hvilken dag spiller de?** Sier siden bare «fredag», regn deg fram fra
-  datoene. Er det ikke mulig å avgjøre, legg dem på første dag og skriv i
-  `note` at dagfordelingen er usikker, med `"confidence": "low"`.
+  datoene. Er det ikke mulig å avgjøre — festivalen har bekreftet artisten,
+  men ikke publisert dagfordelingen — sett `"date": null` i stedet for å
+  gjette på første dag. En gjetning ser nøyaktig ut som et bekreftet funn i
+  appen; `date: null` havner i en egen «dag ikke bestemt»-seksjon i stedet, og
+  er ærlig om at det ikke er kjent. Bruk uansett `"confidence": "low"`.
 
 ### 4. Send forslaget
 
@@ -159,7 +185,8 @@ Skriv en JSON-fil og send den:
   "dates": { "from": "2027-06-26", "to": "2027-07-03" },
   "add": [
     { "date": "2027-06-26", "name": "Fever Ray" },
-    { "date": "2027-06-27", "name": "CMAT" }
+    { "date": "2027-06-27", "name": "CMAT" },
+    { "date": null, "name": "Moillrock" }
   ]
 }
 ```
@@ -169,7 +196,8 @@ node --env-file=.env.local scripts/robot-nightly.mjs propose forslag.json
 ```
 
 `dates` utelates hvis året allerede finnes med riktige datoer. `add` utelates
-hvis du bare fant datoene. Minst én av dem må være der.
+hvis du bare fant datoene. Minst én av dem må være der. `"date": null` betyr
+«bekreftet, men dagen er ikke publisert» — se punktet om dagfordeling over.
 
 **`note` er ikke pynt.** Den vises i køen, og den er det eneste et menneske
 har å gå på når det skal avgjøre om det skal stole på deg. Skriv hvor på siden
@@ -178,19 +206,25 @@ du fant det, og hva du var usikker på.
 ### 5. Eller si at det ikke ble noe
 
 ```bash
-node --env-file=.env.local scripts/robot-nightly.mjs note <slug> "fant bare 2026-plakaten, ingen 2027-datoer publisert"
+node --env-file=.env.local scripts/robot-nightly.mjs note <slug> "fant bare 2026-plakaten, ingen 2027-datoer publisert" --reason gammel-plakat
 ```
 
 **Dette er en like god utgang som et forslag.** Du har lov til å gi opp, og du
 skal gi opp når du er i tvil om selve grunnlaget. En kø full av «kanskje?» er
 en kø som slutter å bli lest, og da er hele ordningen død.
 
-Bruk denne når:
+Legg alltid på `--reason`, én av disse fire:
 
-- siden viser fjorårets plakat (høy `share` på et tidligere år)
-- lineupen ligger i et bilde, en PDF eller et Instagram-innlegg
-- siden krever JavaScript og ga for lite tekst
-- datoene er «kommer snart»
+- `blokkert` — nettstedet avviste henvendelsen (Drammen Metalfests
+  promogogo-side ga HTTP 406 fordi vi ærlig identifiserer oss som robot)
+- `js-skall` — siden krevde JavaScript og ga for lite lesbar tekst
+- `gammel-plakat` — siden viser fjorårets plakat (høy `share` på et tidligere
+  år i `edition_match`), eller `provisional` sier plakaten ikke er ferdig
+- `ingen-data` — ingenting er publisert ennå, datoene er «kommer snart»
+
+Uten en fast liste er spørsmålet i `docs/nattjobb-status.md` — hvor stor andel
+av 669 sider er lesbare i det hele tatt — noe et menneske må lese alle
+notatene for å svare på. Med `--reason` er det et opptak mot `ai_note`.
 
 Gjør dette for hver festival du ikke sender forslag for. Uten det kommer den
 samme siden opp igjen i morgen, og du bruker natta på nytt på det samme.

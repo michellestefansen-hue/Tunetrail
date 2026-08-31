@@ -379,9 +379,7 @@ async function read(args) {
   const years = {};
   for (const m of text.matchAll(/\b(20[2-3]\d)\b/g)) years[m[1]] = (years[m[1]] ?? 0) + 1;
 
-  console.log(
-    JSON.stringify(
-      {
+  const result = {
         slug: festival.slug,
         name: festival.name,
         url,
@@ -403,11 +401,32 @@ async function read(args) {
           .map(([n]) => n),
         text: text.slice(0, 20000),
         text_truncated: text.length > 20000,
-      },
-      null,
-      2,
-    ),
-  );
+  };
+
+  // Full utskrift er det modellen trenger, men den er uleselig for et menneske
+  // i en terminal -- og en lang linje mister tegn ved kopiering. --kort gir
+  // det som avgjør, og ingenting annet.
+  if (args.includes("--kort")) {
+    console.log(
+      JSON.stringify(
+        {
+          festival: result.name,
+          url: result.url,
+          edition_match: result.edition_match,
+          years_mentioned: result.years_mentioned,
+          kjente_artister: result.known_artists.length,
+          ukjente_kandidater: result.unknown_candidates.length,
+          lineup_links: result.lineup_links.slice(0, 8),
+          første_linjer: text.split("\n").slice(0, 5),
+        },
+        null,
+        2,
+      ),
+    );
+    return;
+  }
+
+  console.log(JSON.stringify(result, null, 2));
 }
 
 /** Hele artistregisteret som en oppslagstabell. ~12 000 rader, hentes i bolker. */

@@ -42,6 +42,9 @@ rekkefølgen er der for at hele listen skal bli gått gjennom over tid.
 node --env-file=.env.local scripts/robot-nightly.mjs read <slug>
 ```
 
+Legg på `--kort` når et menneske skal lese svaret: da vises bare
+`edition_match`, tellingene og lenkene, uten sideteksten.
+
 Du får tilbake:
 
 - `edition_match` — **les denne først.** Hvor mye av programmet du allerede har

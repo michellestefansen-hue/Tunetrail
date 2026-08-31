@@ -55,6 +55,7 @@ Du får tilbake:
 
 - `edition_match` — **les denne først.** Hvor mye av programmet du allerede har
   lagret som står på siden, år for år
+- `year_lines` — linjene der året faktisk står. **Datoen bor som regel her.**
 - `years_mentioned` — hvilke årstall står på siden, og hvor ofte
 - `lineup_links` — lenker på siden som ser ut som de fører til programmet
 - `known_artists` — navn som allerede finnes i databasen. Disse trenger ingen
@@ -120,9 +121,17 @@ sammenhengen, ikke tellingen.
 
 Deretter:
 
-- **Er datoene bekreftet?** «Save the date», et hotelltilbud eller en
-  nedtelling er ikke en kunngjøring. Er du i tvil, send datoene med
-  `"confidence": "low"` og skriv hvorfor i `note`.
+- **Er datoene bekreftet?** Se i `year_lines` først — der står linjene med
+  årstallet i, og datoen er nesten alltid en av dem. Men listen peker, den
+  avgjør ikke: «© 2027 Festivalen» og «20 maart 2027 – Sportpaleis» står side
+  om side der, og bare den ene er en dato.
+
+  «Save the date», et hotelltilbud eller en nedtelling er ikke en
+  kunngjøring. Er du i tvil, send datoene med `"confidence": "low"` og skriv
+  hvorfor i `note`.
+
+  Mål alltid funnet mot `last_from` fra `pick`: gikk festivalen i mars hvert
+  år, er en dato i desember en feillesning.
 - **Hvilke av `unknown_candidates` er artister?** Sponsorer, menypunkter,
   scenenavn, «Kjøp billett» og partnerlogoer ligger i samme bunke. Er du i
   tvil om et enkelt navn, la det være — ett navn er ikke verdt et feilaktig

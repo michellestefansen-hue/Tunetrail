@@ -11,7 +11,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps, splitOnSeparators, lineupLinks, matchEditions } from "./robot-nightly.mjs";
+import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps, splitOnSeparators, lineupLinks, matchEditions, yearLines } from "./robot-nightly.mjs";
 
 test("manus og stil forsvinner, teksten blir igjen", () => {
   const html = `
@@ -469,4 +469,41 @@ test("oversikten slår de 200 undersidene av den", () => {
 test("listen kappes, så den er til å velge fra", () => {
   const html = Array.from({ length: 60 }, (_, i) => `<a href="/program/a${i}">Artist ${i}</a>`).join("");
   assert.equal(lineupLinks(html, "https://rf.dk/").length, 20);
+});
+
+/* ------------------------------------------------- aa peke paa datoen ---- */
+
+test("linjene med årstallet plukkes ut, med teksten rundt", () => {
+  const text = [
+    "Home",
+    "Info",
+    "20 maart 2027 – Sportpaleis Antwerpen",
+    "Tickets",
+    "© 2026 Reverze",
+  ].join("\n");
+  assert.deepEqual(yearLines(text, 2027), ["20 maart 2027 – Sportpaleis Antwerpen"]);
+});
+
+test("den avgjør ingenting, den peker", () => {
+  // «© 2027» og «20 maart 2027» kommer begge med. Å skille dem er en
+  // vurdering, og den hoerer hjemme hos et hode -- ikke i en regex.
+  const text = "20 maart 2027\n© 2027 Reverze\nBillett til 2027";
+  assert.equal(yearLines(text, 2027).length, 3);
+});
+
+test("et helt avsnitt kappes, så listen er til å lese", () => {
+  const langt = "Vi gleder oss til 2027. " + "Mer tekst. ".repeat(40);
+  const [linje] = yearLines(langt, 2027);
+  assert.ok(linje.length <= 161, `for lang: ${linje.length}`);
+  assert.ok(linje.endsWith("…"));
+});
+
+test("årstall inne i et annet tall teller ikke", () => {
+  // Ordgrense, ellers ville «12027» og «2027-tallet» gitt falske treff.
+  assert.deepEqual(yearLines("Ordrenummer 120275", 2027), []);
+});
+
+test("listen har en topp", () => {
+  const text = Array.from({ length: 80 }, (_, i) => `Linje ${i} om 2027`).join("\n");
+  assert.equal(yearLines(text, 2027).length, 25);
 });

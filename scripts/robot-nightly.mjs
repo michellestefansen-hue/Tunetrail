@@ -178,6 +178,32 @@ export function cleanName(raw) {
 }
 
 /**
+ * Linjene der årstallet står, med teksten rundt.
+ *
+ * Fase 1 handler om datoer, og fram til nå gjorde skriptet ingenting for å
+ * finne dem -- det talte bare hvor ofte «2027» forekom og overlot resten til
+ * modellen. På en side med 40 linjer går det bra. På en side med 3000 er
+ * datoen en nål i en høystakk, og modellen leser bare de første 20 000
+ * tegnene.
+ *
+ * Dette er ikke en datotolker. Den avgjør ingenting -- den peker. Å skille
+ * «20 maart 2027» fra «© 2027» er fortsatt en vurdering, og den hører hjemme
+ * hos et hode.
+ */
+export function yearLines(text, year, limit = 25) {
+  const wanted = new RegExp(`\\b${year}\\b`);
+  const out = [];
+  for (const line of text.split("\n")) {
+    if (!wanted.test(line)) continue;
+    // En hel avsnittstekst som nevner året er sjelden datoen. Den kappes, så
+    // listen er til å lese.
+    out.push(line.length > 160 ? line.slice(0, 160) + "…" : line);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+/**
  * Hvor mye av siden er programmet du allerede har lagret, år for år.
  *
  * Dette er det avgjørende signalet, og det kom fra Roskildes programside
@@ -345,6 +371,9 @@ async function read(args) {
   const url = flag(args, "--url") ?? watch?.url ?? festival.website_url;
   if (!url) throw new Error(`«${slug}» har ingen adresse å lese.`);
 
+  // Året vi fyller ut. Kan overstyres med --aar når du ser på noe annet.
+  const targetYear = Number(flag(args, "--aar") ?? new Date().getFullYear() + 1);
+
   const html = await fetchPage(url);
   const text = toText(html);
 
@@ -397,6 +426,9 @@ async function read(args) {
         url,
         fetched_at: new Date().toISOString(),
         years_mentioned: years,
+        // Linjene der året faktisk står. Uten dette må hele siden leses for å
+        // finne datoen, og på en lang side rekker den ikke fram.
+        year_lines: yearLines(text, targetYear),
         // Viktigere enn years_mentioned: sier siden 2027 øverst mens 93 % av
         // fjorårets lagrede program står under, er dette fjorårets side.
         edition_match: matchEditions(
@@ -426,6 +458,7 @@ async function read(args) {
           url: result.url,
           edition_match: result.edition_match,
           years_mentioned: result.years_mentioned,
+          year_lines: result.year_lines,
           tekst_lengde: text.length,
           kjente_artister: result.known_artists,
           // Hele bunken, ikke bare antallet. Er den tom for artistnavn og full

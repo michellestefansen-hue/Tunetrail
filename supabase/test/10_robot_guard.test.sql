@@ -185,6 +185,58 @@ begin
 end;
 $$;
 
+-- Innen samme bøtte skal året bestemme, ikke alfabetet.
+--
+-- Første ekte kjøring ga «24 heures», «7th Sunday», «Å-festival», «Aarhus»,
+-- «Aberdeen» -- rett alfabetisk, fordi ingen av dem hadde en dato å sortere
+-- på. Med 600 slike ville vårfestivalene stått upubliserte til roboten kom
+-- til V.
+insert into public.festivals (id, name, slug, website_url) values
+  ('aaaaaaaa-0000-0000-0000-000000000011', 'Aaugustfest', 'aaugustfest', 'https://aug.example'),
+  ('aaaaaaaa-0000-0000-0000-000000000012', 'Ømarsfest',   'omarsfest',   'https://mar.example');
+
+-- Ingen av dem har 2027. Begge har en 2026-utgave som sier når på året de går.
+insert into public.festival_editions (festival_id, year, date_from, date_to, program, source) values
+  ('aaaaaaaa-0000-0000-0000-000000000011', 2026, '2026-08-20', '2026-08-22', '[]'::jsonb, 'manual'),
+  ('aaaaaaaa-0000-0000-0000-000000000012', 2026, '2026-03-05', '2026-03-07', '[]'::jsonb, 'manual');
+
+insert into public.festival_watch (festival_id, url, checked_at, pending) values
+  ('aaaaaaaa-0000-0000-0000-000000000011', 'https://aug.example', now(), false),
+  ('aaaaaaaa-0000-0000-0000-000000000012', 'https://mar.example', now(), false);
+
+do $$
+declare mars int; august int;
+begin
+  select ord into mars from (
+    select slug, row_number() over () as ord from public.next_for_ai(20, 2027)
+  ) t where slug = 'omarsfest';
+  select ord into august from (
+    select slug, row_number() over () as ord from public.next_for_ai(20, 2027)
+  ) t where slug = 'aaugustfest';
+
+  if mars is null or august is null then
+    raise exception 'Begge skulle vært med i utvalget.';
+  end if;
+  if mars > august then
+    raise exception 'Marsfestivalen skulle kommet før augustfestivalen (mars %, august %).',
+      mars, august;
+  end if;
+end;
+$$;
+
+-- Og forrige utgave følger med, så roboten kan kjenne igjen en dato som ikke
+-- kan stemme: gikk festivalen i mars hvert år, er «desember 2027» en
+-- feillesning og ikke en nyhet.
+do $$
+declare r record;
+begin
+  select * into r from public.next_for_ai(20, 2027) where slug = 'omarsfest';
+  if r.last_year <> 2026 or r.last_from <> '2026-03-05'::date then
+    raise exception 'Forrige utgave mangler eller er feil: % %', r.last_year, r.last_from;
+  end if;
+end;
+$$;
+
 -- Ligger det allerede et ubehandlet forslag for året, skal festivalen ut av
 -- utvalget. Ellers blir det to rader i køen som sier det samme.
 insert into public.submissions (kind, festival_id, edition_year, payload, submitted_by, source_url, confidence)

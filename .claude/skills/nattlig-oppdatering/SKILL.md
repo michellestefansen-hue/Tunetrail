@@ -34,7 +34,13 @@ node --env-file=.env.local scripts/robot-nightly.mjs pick --count 8 --year 2027
 Du får en liste med `reason` på hver: `siden har endret seg`, `ingen
 2027-utgave`, `utgave uten program`, `rundgang`. Ta dem i den rekkefølgen de
 kommer. Ikke plukk selv, og ikke hopp over noen fordi de ser kjedelige ut —
-rekkefølgen er der for at hele listen skal bli gått gjennom over tid.
+rekkefølgen er der for at hele listen skal bli gått gjennom over tid, og innen
+hver gruppe kommer de som faller først på året først.
+
+`last_year`, `last_from` og `last_to` er forrige kjente utgave. Bruk dem som
+målestokk: gikk festivalen i midten av mars hvert år, er «12. desember 2027»
+ikke en nyhet — det er en feillesning, og da skal du ikke sende den. Et avvik
+på noen uker er normalt; et avvik på et halvt år er en feil.
 
 ### 2. Les siden
 

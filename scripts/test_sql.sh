@@ -51,6 +51,7 @@ MIGRATIONS=(
   20260808_festival_watch.sql
   20260825_robot_identity.sql
   20260825_ai_queue.sql
+  20260831_ai_queue_order.sql
 )
 
 echo "→ stillas"

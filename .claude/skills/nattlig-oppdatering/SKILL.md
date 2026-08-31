@@ -44,6 +44,8 @@ node --env-file=.env.local scripts/robot-nightly.mjs read <slug>
 
 Du får tilbake:
 
+- `edition_match` — **les denne først.** Hvor mye av programmet du allerede har
+  lagret som står på siden, år for år
 - `years_mentioned` — hvilke årstall står på siden, og hvor ofte
 - `lineup_links` — lenker på siden som ser ut som de fører til programmet
 - `known_artists` — navn som allerede finnes i databasen. Disse trenger ingen
@@ -80,13 +82,32 @@ hver eneste framtidige natt.
 Dette er hele grunnen til at det er du og ikke et skript som gjør dette.
 
 **Det viktigste spørsmålet først: er dette riktig år?** En festival som var i
-august viser fjorårets plakat i månedsvis etterpå.
+august viser fjorårets plakat i månedsvis etterpå, og det er den feilen som
+koster mest — et helt fjorårsprogram lagt inn på nytt år.
 
-`years_mentioned` er et hint, ikke et svar. Roskildes forside nevnte `2026`
-seks ganger og `2027` fire — og 2027 var likevel riktig år, fordi alle
-2026-treffene var datoer på gamle nyhetssaker og en bunntekst med opphavsrett.
-**Les sammenhengen, ikke tellingen.** «Tak for i år -- vi ses i 2027» er et
-tydeligere svar enn noe forholdstall.
+**`edition_match` svarer på det uten å gjette.** Den teller hvor mye av det du
+allerede har lagret som står på siden:
+
+```json
+"edition_match": [
+  { "year": 2027, "in_edition": 0,   "on_page": 0,   "share": 0    },
+  { "year": 2026, "in_edition": 180, "on_page": 168, "share": 0.93 }
+]
+```
+
+`share` over rundt `0.5` for et tidligere år betyr at du ser på **det årets
+plakat**, uansett hva overskriften sier. Roskildes programside hadde
+«26/6 – 3/7 2027» øverst og fjorårets 174 artister under. Da sender du ikke et
+programforslag. Datoene kan du fortsatt bruke — de sto i overskriften og
+gjelder 2027 — men lineupen lar du være, og du skriver i `note` hvorfor.
+
+Er `share` lav for alle tidligere år, er programmet nytt. Det er da det er noe
+å hente.
+
+`years_mentioned` er bare et hint ved siden av dette. På Roskildes forside sto
+`2026` seks ganger og `2027` fire — og 2027 var likevel riktig år, fordi
+2026-treffene var datoer på gamle nyhetssaker og en bunntekst. Les
+sammenhengen, ikke tellingen.
 
 Deretter:
 
@@ -148,7 +169,7 @@ en kø som slutter å bli lest, og da er hele ordningen død.
 
 Bruk denne når:
 
-- siden viser fjorårets plakat
+- siden viser fjorårets plakat (høy `share` på et tidligere år)
 - lineupen ligger i et bilde, en PDF eller et Instagram-innlegg
 - siden krever JavaScript og ga for lite tekst
 - datoene er «kommer snart»

@@ -178,6 +178,46 @@ export function cleanName(raw) {
 }
 
 /**
+ * Hvor mye av siden er programmet du allerede har lagret, år for år.
+ *
+ * Dette er det avgjørende signalet, og det kom fra Roskildes programside
+ * 31. august 2026: den hadde «26/6 - 3/7 2027» øverst og fjorårets 174
+ * artister under. Å telle årstall svarte feil på den siden. Dette svarer
+ * riktig, og det svarer uten å gjette.
+ *
+ * Er 93 % av det du har lagret for 2026 å finne på siden, ser du på
+ * 2026-plakaten. Det er ikke en tolkning, det er en opptelling.
+ *
+ * Motsatt vei er den stille: en side med et helt nytt program overlapper med
+ * ingenting, og det er nettopp da det er noe å hente.
+ */
+export function matchEditions(pageKeys, editions) {
+  const onPage = new Set(pageKeys);
+
+  return editions
+    .map((e) => {
+      const stored = new Set();
+      for (const day of e.program ?? []) {
+        for (const a of day.artists ?? []) {
+          const key = nameKey(cleanName(a.name ?? "").name);
+          if (key) stored.add(key);
+        }
+      }
+      let hits = 0;
+      for (const key of stored) if (onPage.has(key)) hits++;
+      return {
+        year: e.year,
+        in_edition: stored.size,
+        on_page: hits,
+        // Andel av det lagrede programmet som står på siden. Null lagret gir
+        // null andel, ikke en divisjon på null som ser ut som et svar.
+        share: stored.size ? Math.round((hits / stored.size) * 100) / 100 : 0,
+      };
+    })
+    .sort((a, b) => b.year - a.year);
+}
+
+/**
  * Lenker på siden som ser ut som de fører til programmet.
  *
  * Vaktlisten ble fylt fra festivals.website_url, altså forsiden. På en forside
@@ -287,6 +327,9 @@ async function read(args) {
   if (!festival) throw new Error(`Fant ingen festival med slug «${slug}».`);
 
   const [watch] = await sb(`/rest/v1/festival_watch?festival_id=eq.${festival.id}&select=url`);
+  const editions = await sb(
+    `/rest/v1/festival_editions?festival_id=eq.${festival.id}&select=year,program&order=year.desc`,
+  );
   const url = flag(args, "--url") ?? watch?.url ?? festival.website_url;
   if (!url) throw new Error(`«${slug}» har ingen adresse å lese.`);
 
@@ -344,6 +387,12 @@ async function read(args) {
         url,
         fetched_at: new Date().toISOString(),
         years_mentioned: years,
+        // Viktigere enn years_mentioned: sier siden 2027 øverst mens 93 % av
+        // fjorårets lagrede program står under, er dette fjorårets side.
+        edition_match: matchEditions(
+          [...known.keys(), ...unknown.keys()].map((n) => nameKey(n)),
+          editions ?? [],
+        ),
         // Fant vi ingen kjente navn, er dette nesten alltid feil side og ikke
         // en festival uten lineup. Da er lenkene under det viktigste i svaret.
         lineup_links: lineupLinks(html, url),

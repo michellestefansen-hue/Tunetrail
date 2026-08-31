@@ -11,7 +11,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps, splitOnSeparators, lineupLinks } from "./robot-nightly.mjs";
+import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps, splitOnSeparators, lineupLinks, matchEditions } from "./robot-nightly.mjs";
 
 test("manus og stil forsvinner, teksten blir igjen", () => {
   const html = `
@@ -398,4 +398,57 @@ test("lenker ut av huset følges ikke", () => {
 test("samme side to ganger blir én lenke", () => {
   const html = `<a href="/program">Program</a><a href="/program#dag2">Programmet</a>`;
   assert.equal(lineupLinks(html, "https://fest.no/").length, 1);
+});
+
+/* ------------------------------- fjoraarets plakat, som staar for lenge --- */
+
+// Roskildes programside, 31. august 2026: «26/6 - 3/7 2027» oeverst, og
+// fjoraarets 174 artister under. Aarstallstelling svarte feil paa den siden.
+// Opptelling mot det lagrede programmet svarer riktig.
+
+const EDITIONS = [
+  {
+    year: 2027,
+    program: [],
+  },
+  {
+    year: 2026,
+    program: [
+      { date: "2026-07-01", artists: [{ name: "Gorillaz" }, { name: "The Cure" }] },
+      { date: "2026-07-02", artists: [{ name: "Zara Larsson" }, { name: "Addison Rae" }] },
+    ],
+  },
+];
+
+test("fjorårets program på siden røper seg som overlapp", () => {
+  const påSiden = ["Gorillaz", "The Cure", "Zara Larsson", "Addison Rae", "Ny!"];
+  const treff = matchEditions(påSiden.map(nameKey), EDITIONS);
+
+  const y2026 = treff.find((t) => t.year === 2026);
+  assert.equal(y2026.in_edition, 4);
+  assert.equal(y2026.on_page, 4);
+  assert.equal(y2026.share, 1, "hele fjorårets program står på siden");
+
+  const y2027 = treff.find((t) => t.year === 2027);
+  assert.equal(y2027.share, 0, "2027 har ingenting lagret ennå");
+});
+
+test("et helt nytt program overlapper med ingenting", () => {
+  // Motsatt vei: det er nettopp da det er noe å hente.
+  const treff = matchEditions(["fever ray", "cmat"].map(nameKey), EDITIONS);
+  assert.equal(treff.find((t) => t.year === 2026).on_page, 0);
+});
+
+test("navn med aksenter og klokkeslett teller likevel med", () => {
+  // Overlappet måles på samme nøkkel som resten: uten det ville «Širom» på
+  // siden og «Širom» i basen sett ut som to ulike artister.
+  const editions = [
+    { year: 2026, program: [{ date: "2026-07-01", artists: [{ name: "Širom" }] }] },
+  ];
+  assert.equal(matchEditions([nameKey("Sirom")], editions)[0].on_page, 1);
+});
+
+test("nyeste år først, så det viktigste står øverst", () => {
+  const treff = matchEditions([], EDITIONS);
+  assert.deepEqual(treff.map((t) => t.year), [2027, 2026]);
 });

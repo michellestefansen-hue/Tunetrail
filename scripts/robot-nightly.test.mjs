@@ -507,3 +507,36 @@ test("listen har en topp", () => {
   const text = Array.from({ length: 80 }, (_, i) => `Linje ${i} om 2027`).join("\n");
   assert.equal(yearLines(text, 2027).length, 25);
 });
+
+/* ------------------------------------------ det Reverze laerte oss ------- */
+
+/** Samme «fete» tegn festivalsider bruker i tekst skrevet for sosiale medier. */
+function fet(tekst) {
+  return [...tekst]
+    .map((c) => {
+      if (c >= "0" && c <= "9") return String.fromCodePoint(0x1d7ec + (c.codePointAt(0) - 48));
+      if (c >= "A" && c <= "Z") return String.fromCodePoint(0x1d5d4 + (c.codePointAt(0) - 65));
+      if (c >= "a" && c <= "z") return String.fromCodePoint(0x1d5ee + (c.codePointAt(0) - 97));
+      return c;
+    })
+    .join("");
+}
+
+test("fete Unicode-tegn blir vanlige bokstaver og tall", () => {
+  // Reverze skrev datoen sin slik, 31. august 2026: «returning for two days
+  // in the 𝗔𝗙𝗔𝗦 DOME on 𝟮𝟲 + 𝟮𝟳 FEBRUARY 𝟮𝟬𝟮𝟳». Uten NFKC fant hverken
+  // årstallsøket eller artistmatchingen noe som helst i den setningen.
+  const html = `<p>returning on ${fet("26 + 27 FEBRUARY 2027")}.</p>`;
+  const text = toText(html);
+  assert.ok(text.includes("2027"), `fant ikke årstallet i «${text}»`);
+  assert.deepEqual(yearLines(text, 2027), ["returning on 26 + 27 FEBRUARY 2027."]);
+});
+
+test("et artistnavn i fet Unicode finner nøkkelen sin", () => {
+  // Samme feil, dyrere utslag: navnet ville aldri matchet artist_names, og
+  // en artist som allerede står i basen hadde havnet i bunken modellen må
+  // vurdere.
+  const text = toText(`<li>${fet("Da Tweekaz")}</li>`);
+  assert.equal(text, "Da Tweekaz");
+  assert.equal(nameKey(text), "da tweekaz");
+});

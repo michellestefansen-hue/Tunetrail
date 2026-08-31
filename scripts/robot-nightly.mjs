@@ -137,7 +137,14 @@ export function toText(html) {
 
   // Entitetene dekodes etter at taggene er borte. Motsatt rekkefølge ville
   // gjort «&lt;script&gt;» i en tekst om til en tagg som deretter ble strippet.
+  //
+  // NFKC gjør de «fete» Unicode-tegnene om til vanlige bokstaver og tall.
+  // Reverze skrev datoen sin som «𝟮𝟲 + 𝟮𝟳 FEBRUARY 𝟮𝟬𝟮𝟳» -- matematiske
+  // fete sifre, ikke ASCII. Uten dette fant hverken årstallsøket eller
+  // artistmatchingen noe som helst i en slik setning, og festivalsider bruker
+  // dem stadig i tekst som er skrevet for sosiale medier.
   return decodeEntities(stripped)
+    .normalize("NFKC")
     .replace(/[^\S\n]+/g, " ")
     // Én tom linje er nok. Et listeelement gir linjeskift både på åpne- og
     // lukketaggen, og uten dette står det en blank linje mellom hvert navn.

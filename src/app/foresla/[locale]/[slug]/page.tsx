@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { BareShell } from "@/components/BareShell";
-import { BCP47_LOCALE } from "@/lib/festivals";
+import { BCP47_LOCALE, UNSCHEDULED_DATE } from "@/lib/festivals";
 import { routing, type Locale } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { FIELD_NAMES, type FieldValue, type ProgramDay } from "@/lib/submissions";
@@ -83,10 +83,16 @@ export default async function ProposePage({
       const byDate = new Map<string, string[]>(
         (e.program ?? []).map((d) => [d.date, d.artists.map((a) => a.name)]),
       );
-      const days: ProgramDay[] = daysBetween(e.date_from!, e.date_to!).map((date) => ({
-        date,
-        artists: byDate.get(date) ?? [],
-      }));
+      // Bekreftet for festivalen, dagen bare ikke kjent ennå -- alltid til
+      // stede som en mulighet, ikke bare når den allerede har noen i seg, så
+      // en bidragsyter kan registrere den første også.
+      const days: ProgramDay[] = [
+        ...daysBetween(e.date_from!, e.date_to!).map((date) => ({
+          date,
+          artists: byDate.get(date) ?? [],
+        })),
+        { date: UNSCHEDULED_DATE, artists: byDate.get(UNSCHEDULED_DATE) ?? [] },
+      ];
       return {
         year: e.year,
         date_from: e.date_from!,

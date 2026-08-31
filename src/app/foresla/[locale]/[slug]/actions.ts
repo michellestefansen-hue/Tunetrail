@@ -2,6 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
+import { UNSCHEDULED_DATE } from "@/lib/festivals";
 import {
   buildDiff,
   checkArtistName,
@@ -106,7 +107,10 @@ export async function submitAll(
     // otherwise adding a line-up to a brand new year would fail every artist
     // against a range that does not exist yet.
     const range = ops.dates ?? { from: edition!.date_from, to: edition!.date_to };
-    const inRange = (d: string) => d >= range.from && d <= range.to;
+    // Bekreftet for festivalen, dagen bare ikke kjent ennå -- med vilje langt
+    // utenfor enhver festivals periode, og med vilje unntatt fra sjekken den
+    // ellers finnes for.
+    const inRange = (d: string) => d === UNSCHEDULED_DATE || (d >= range.from && d <= range.to);
 
     for (const o of ops.add) {
       const { name, errorCode } = checkArtistName(o.name);

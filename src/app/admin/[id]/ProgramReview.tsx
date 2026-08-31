@@ -2,10 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { UNSCHEDULED_DATE } from "@/lib/festivals";
 import type { ProgramOps } from "@/lib/submissions";
 import { approveProgram, rejectSubmission } from "./actions";
 
 function dayLabel(date: string) {
+  // Uten dette ville "9999-12-31" blitt vist som en ekte, veldig forvirrende
+  // dato -- ikke en feil, bare et aarstall langt unna alt som gir mening.
+  if (date === UNSCHEDULED_DATE) return "Dag ikke bestemt";
   return new Date(date + "T12:00:00").toLocaleDateString("nb-NO", {
     weekday: "short",
     day: "numeric",

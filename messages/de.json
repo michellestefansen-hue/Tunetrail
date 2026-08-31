@@ -392,6 +392,7 @@
     },
     "lineup": {
       "noDates": "Für diese Ausgabe sind noch keine Termine registriert, es gibt also nichts, dem man Künstler zuordnen könnte.",
+      "dayUnscheduled": "Tag noch nicht festgelegt",
       "artistsCount": "{count, plural, one{# Künstler} other{# Künstler}}",
       "moveTo": "{name} an einen anderen Tag verschieben",
       "movePlaceholder": "verschieben…",

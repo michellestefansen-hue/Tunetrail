@@ -392,6 +392,7 @@
     },
     "lineup": {
       "noDates": "This edition has no dates registered yet, so there's nothing to assign artists to.",
+      "dayUnscheduled": "Day not yet set",
       "artistsCount": "{count, plural, one{# artist} other{# artists}}",
       "moveTo": "Move {name} to another day",
       "movePlaceholder": "move…",

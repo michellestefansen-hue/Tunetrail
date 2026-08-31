@@ -392,6 +392,7 @@
     },
     "lineup": {
       "noDates": "Denne utgaven har ingen datoer registrert ennå, så det er ikke noe å fordele artister på.",
+      "dayUnscheduled": "Dag ikke bestemt",
       "artistsCount": "{count, plural, one{# artist} other{# artister}}",
       "moveTo": "Flytt {name} til en annen dag",
       "movePlaceholder": "flytt…",

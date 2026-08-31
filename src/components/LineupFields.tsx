@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { ArtistSearch } from "@/components/ArtistSearch";
+import { UNSCHEDULED_DATE } from "@/lib/festivals";
 import type { ProgramDay } from "@/lib/submissions";
 
 export type Edition = {
@@ -41,6 +42,8 @@ export function LineupFields({
   bcp47: string;
 }) {
   const t = useTranslations("Propose.lineup");
+
+  const label = (date: string) => (date === UNSCHEDULED_DATE ? t("dayUnscheduled") : dayLabel(date, bcp47));
 
   function addArtist(date: string, name: string) {
     onDays(days.map((d) => (d.date === date ? { ...d, artists: [...d.artists, name] } : d)));
@@ -92,7 +95,7 @@ export function LineupFields({
       ) : (
         days.map((day) => (
           <section key={day.date} className="rounded-xl border border-black/10 bg-white p-4">
-            <h3 className="font-medium text-[#2D1A12]">{dayLabel(day.date, bcp47)}</h3>
+            <h3 className="font-medium text-[#2D1A12]">{label(day.date)}</h3>
             <p className="text-xs text-[#2D1A12]/45">
               {t("artistsCount", { count: day.artists.length })}
             </p>
@@ -117,7 +120,7 @@ export function LineupFields({
                           .filter((d) => d.date !== day.date)
                           .map((d) => (
                             <option key={d.date} value={d.date}>
-                              {dayLabel(d.date, bcp47)}
+                              {label(d.date)}
                             </option>
                           ))}
                       </select>

@@ -314,8 +314,32 @@ const SKIP_ASSET_RE = /\.(jpe?g|png|gif|webp|svg|css|js|json|xml|pdf|ico)(\?|#|$
 const SKIP_PATH_RE = /(wp-json|wp-content|xmlrpc|\/feed\/?($|\?)|\/comments\/feed)/i;
 
 export function lineupLinks(html, baseUrl) {
+  // Ordlisten er målt, ikke gjettet. 12. september 2026 fant den null lenker
+  // på 3 av 14 festivaler: Norwich er et scenested som sier «What's On»,
+  // Embassa't er katalansk og sier «Entrades» og «Arxiu». Ord som bare finnes
+  // på engelsk gjør at hele sjangre av nettsteder faller ut.
+  //
+  // At listen er romslig koster lite nå: read() prøver inntil tre lenker og
+  // gir seg så snart én gir artistnavn, så en ekstra kandidat som ikke fører
+  // fram blir sjelden hentet i det hele tatt.
   const looksRight =
-    /(line-?up|programm?|artist|acts|spille|tidsplan|schedule|plakat|kunstner)/i;
+    new RegExp(
+      [
+        "line-?up",
+        "programm?", // program, programme, programa, Programm
+        "artist", // artists, artistes
+        "artiest", // nederlandsk
+        "k(u|ü)nstler", // tysk
+        "esiintyj|esittaj", // finsk
+        "acts?\\b",
+        "spille|tidsplan|plakat|kunstner", // norsk
+        "schedule|what'?s.?on|whats.?on",
+        "events?\\b|evenement", // scenesteder lister festivalen som et arrangement
+        "agenda|cartel|affiche|cartellera", // fr/es/ca
+        "arxiu|archiv", // fjorårets plakat er bedre enn ingenting
+      ].join("|"),
+      "i",
+    );
   const base = new URL(baseUrl);
 
   const collect = (requireKeyword) => {
@@ -505,7 +529,12 @@ async function fetchPage(url) {
       headers: { "user-agent": USER_AGENT, accept: "text/html,application/xhtml+xml" },
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.text();
+    // res.url er adressen etter omdirigeringer, og den maa foelge med.
+    // Uten den ble lenkene paa siden malt mot adressen vi BA om: ber du om
+    // www.manchesterjazz.com og havner paa manchesterjazz.com, ser alle 17
+    // lenker paa siden ut som et annet nettsted, og lineupLinks kaster dem.
+    // Det slo ut paa hvert eneste nettsted som omdirigerer www <-> apex.
+    return { html: await res.text(), finalUrl: res.url || url };
   } finally {
     clearTimeout(timer);
   }
@@ -520,8 +549,8 @@ async function fetchPage(url) {
  */
 async function fetchPageSafe(url) {
   try {
-    const html = await fetchPage(url);
-    return { html, text: toText(html) };
+    const { html, finalUrl } = await fetchPage(url);
+    return { html, finalUrl, text: toText(html) };
   } catch (err) {
     return { error: String(err.message ?? err) };
   }
@@ -553,7 +582,7 @@ async function read(args) {
   // Året vi fyller ut. Kan overstyres med --aar når du ser på noe annet.
   const targetYear = Number(flag(args, "--aar") ?? new Date().getFullYear() + 1);
 
-  const html = await fetchPage(url);
+  const { html, finalUrl } = await fetchPage(url);
   const text = toText(html);
 
   // Under dette er siden i praksis tom for oss -- et JavaScript-skall vi ikke
@@ -567,29 +596,55 @@ async function read(args) {
   const lookup = await artistLookup();
   const { known, uncertain, unknown } = scanText(text, lookup);
 
-  const links = lineupLinks(html, url);
-  const pagesRead = [url];
+  const links = lineupLinks(html, finalUrl);
+  const pagesRead = [finalUrl];
   let secondaryPageError = null;
   let secondaryText = null;
 
   // Sande Jazzfestivals forside viste 3 av 9 artister -- resten lå på
   // /program, en lenke forsiden selv listet. known_artists var ikke tom, så
   // den gamle regelen («følg lenken bare når den er tom») så aldri undersiden.
-  // Én ekstra henting løser det. Å følge kjeden videre enn dette er fortsatt
-  // et menneskes/agentens jobb, med --url.
-  const top = links[0];
-  if (top && top.url !== url) {
-    const secondary = await fetchPageSafe(top.url);
+  //
+  // Og én lenke var ikke nok. Målt på 14 festivaler 12. september 2026 leste
+  // den bare forsiden på 5 av dem: City of Derry ga HTTP 404 og Kardamili 403
+  // på den øverste lenken, og skriptet ga seg der -- selv om Birmingham og
+  // Horst hadde åtte kandidatlenker hver. Traff den øverste feil, lå den
+  // riktige rett under og ble aldri åpnet.
+  //
+  // Så: prøv inntil tre, og gi deg så snart én faktisk gir artistnavn. Den
+  // stoppregelen er poenget -- uten den hentes tre sider på hver eneste
+  // festival, og vi er gjest hos 715 nettsteder.
+  const MAX_SECONDARY_TRIES = 3;
+  const triedLinks = [];
+  let artistsBefore = known.size + uncertain.size;
+
+  for (const link of links.slice(0, MAX_SECONDARY_TRIES)) {
+    if (link.url === finalUrl || pagesRead.includes(link.url)) continue;
+
+    const secondary = await fetchPageSafe(link.url);
     if (secondary.error) {
-      secondaryPageError = secondary.error;
-    } else if (secondary.text.length >= 200) {
-      pagesRead.push(top.url);
-      secondaryText = secondary.text;
-      const scan2 = scanText(secondary.text, lookup);
-      mergeCounts(known, scan2.known);
-      mergeCounts(uncertain, scan2.uncertain);
-      mergeCounts(unknown, scan2.unknown);
+      triedLinks.push({ url: link.url, result: secondary.error });
+      // Første feil er den som forklarer mest, og den beholdes -- men vi
+      // stopper ikke lenger på den.
+      secondaryPageError ??= secondary.error;
+      continue;
     }
+    if (secondary.text.length < 200) {
+      triedLinks.push({ url: link.url, result: `bare ${secondary.text.length} tegn` });
+      continue;
+    }
+
+    pagesRead.push(link.url);
+    secondaryText = secondaryText ? `${secondaryText}\n${secondary.text}` : secondary.text;
+    const scan2 = scanText(secondary.text, lookup);
+    mergeCounts(known, scan2.known);
+    mergeCounts(uncertain, scan2.uncertain);
+    mergeCounts(unknown, scan2.unknown);
+
+    const gained = known.size + uncertain.size - artistsBefore;
+    triedLinks.push({ url: link.url, result: `${gained} nye navn` });
+    artistsBefore = known.size + uncertain.size;
+    if (gained > 0) break;
   }
 
   // Datoen kan også bo på undersiden og ikke forsiden -- Legend Metalfests
@@ -607,6 +662,9 @@ async function read(args) {
         // ble funnet og svarte. Ett menneske skal kunne se dette uten å gjette.
         pages_read: pagesRead,
         secondary_page_error: secondaryPageError,
+        // Hvilke lenker som faktisk ble prøvd, og hva de ga. Uten dette er
+        // «bare forsiden lest» umulig å skille fra «fant ingen lenker».
+        secondary_tried: triedLinks,
         fetched_at: new Date().toISOString(),
         years_mentioned: years,
         // Linjene der året faktisk står. Uten dette må hele siden leses for å
@@ -653,6 +711,7 @@ async function read(args) {
           url: result.url,
           sider_lest: result.pages_read,
           feil_paa_underside: result.secondary_page_error,
+          undersider_proevd: result.secondary_tried,
           edition_match: result.edition_match,
           years_mentioned: result.years_mentioned,
           year_lines: result.year_lines,

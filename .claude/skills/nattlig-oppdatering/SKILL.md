@@ -62,6 +62,11 @@ Du får tilbake:
   den øverste av `lineup_links` i tillegg til forsiden, og slår sammen det den
   finner der med forsiden. Står det bare én adresse her, fantes ingen
   lineup-lenke eller undersiden svarte ikke — se `secondary_page_error`.
+- `secondary_tried` (`undersider_proevd`) — hvilke lenker som faktisk ble
+  prøvd og hva de ga. `read` følger nå inntil tre av `lineup_links` og gir seg
+  så snart én gir artistnavn, i stedet for å stoppe på den øverste. Står det
+  «0 nye navn» på alle, er lineupen ikke der -- og da er det `--url` som er
+  neste steg, ikke en ny runde.
 - `secondary_page_error` — hvorfor undersiden ikke ble lest, hvis den ikke ble
   det. Et nettsted kan avvise oss (som promogogo.com gjorde for Drammen
   Metalfest, med HTTP 406, fordi vi ærlig oppgir at vi er en robot i

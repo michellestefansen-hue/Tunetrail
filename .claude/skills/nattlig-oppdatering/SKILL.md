@@ -66,6 +66,17 @@ Du får tilbake:
   det. Et nettsted kan avvise oss (som promogogo.com gjorde for Drammen
   Metalfest, med HTTP 406, fordi vi ærlig oppgir at vi er en robot i
   user-agenten) uten at forsiden av den grunn er ubrukelig.
+- `news_headlines` (`nyhetsoverskrifter` i `--kort`) — overskriftene i
+  nyhetsfeltet. **Les denne hver gang.** Det er her neste år kunngjøres, og
+  årstallet står ofte ikke i selve overskriften. Roadburns forside hadde fire:
+  «Emma Ruth Rundle, Sadness and Trhä announced for Roadburn 2027», «Neurosis
+  returns to Roadburn for two shows», og to eldre saker. Neurosis sto ikke i
+  artistregisteret fra før, så navnet dukket ikke opp i `known_artists` — det
+  lå begravd blant femti menypunkter i `unknown_candidates`, og ble oversett
+  12. september 2026. Overskrifter uten årstall må leses i kontekst: står de
+  ved siden av en sak som eksplisitt gjelder neste år, og før en som gjelder
+  fjoråret, er de nesten alltid nye. Send dem med `"confidence": "low"` og
+  skriv i `note` hvor de sto.
 - `provisional` — siden bruker selv et ord som «foreløpig», «TBA» eller
   «coming soon» et sted i teksten. **Den avgjør ingenting, den peker** — se
   linjene selv før du stoler på det — men står den her, er dette ikke en
@@ -159,6 +170,10 @@ Deretter:
   scenenavn, «Kjøp billett» og partnerlogoer ligger i samme bunke. Er du i
   tvil om et enkelt navn, la det være — ett navn er ikke verdt et feilaktig
   forslag, og neste runde tar det.
+- **Pass på cookie-tekst.** `known_artists` matcher mot artistregisteret, og
+  registeret inneholder korte, vanlige ord. Bandet Accept ga treff på «By
+  clicking 'Accept' you give us permission» på Roadburns forside. Står navnet
+  bare i en samtykkeboks eller en meny, er det ikke en artist.
 - **Pass særlig på personnavn i nyhetssaker.** En byline ser nøyaktig ut som
   et artistnavn: Roskildes forside ga «Peter Troest», «Mick Friis» og «Kim
   Matthäi Leland», som alle er journalister. Står navnet ved siden av en dato

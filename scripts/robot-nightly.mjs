@@ -211,6 +211,53 @@ export function yearLines(text, year, limit = 25) {
 }
 
 /**
+ * Overskriftene i nyhetsfeltet på siden.
+ *
+ * Der bor kunngjøringene for neste år. Roadburns forside 12. september 2026
+ * hadde fem av dem, og bare den ene nevnte årstallet:
+ *
+ *   Emma Ruth Rundle, Sadness and Trhä announced for Roadburn 2027
+ *   Neurosis returns to Roadburn for two shows          <- ble oversett
+ *   Relive the exhibition of For The Outcast at Roadburn 2026
+ *
+ * Neurosis sto ikke i artistregisteret fra før, så navnet havnet ikke i
+ * known_artists -- det lå blant femti menypunkter i unknown_candidates, og
+ * gikk tapt. En egen liste over overskrifter er stedet å lete når man spør
+ * «hva er nytt her?».
+ *
+ * To kilder: tekst rett foran en «les mer»-lenke, og linjer med et
+ * kunngjøringsverb i seg. Den andre fanger sider uten «les mer» i det hele
+ * tatt. Listen peker, den avgjør ikke -- årstallet står sjelden i
+ * overskriften, så konteksten må fortsatt leses.
+ */
+export function newsHeadlines(text, limit = 15) {
+  const readMore =
+    /([^\n⋅]{12,140}?)\s*(?:Read more|Les mer|Les meir|Læs mere|Lue lisää|Lire la suite|En savoir plus|Weiterlesen|Mehr erfahren|Leer más|Lees meer|Leggi tutto)/gi;
+  const announces =
+    /\b(announced|announces|announcement|confirmed|joins|joining|added to|returns to|revealed|first names|line-?up announced|kunngjort|bekreftet|annonsert|offentliggjort|slipper|bekendtgjort|angekündigt|bestätigt|annoncé|confirmé|anunciado|confirmado|bekendgemaakt)\b/i;
+
+  // En overskrift begynner med stor bokstav eller et tall. Uten dette fanget
+  // «les mer»-regelen halen av avsnittet foran lenken i stedet -- Eurosonics
+  // forside ga «talent. Every January, Groningen (NL) hosts …», som er en
+  // setning kuttet på midten og ikke en kunngjøring.
+  const looksLikeHeadline = (t) => /^[\p{Lu}\p{N}«"']/u.test(t);
+
+  const out = new Set();
+  for (const m of text.matchAll(readMore)) {
+    const t = m[1].trim().replace(/\s+/g, " ");
+    if (t.length >= 12 && looksLikeHeadline(t)) {
+      out.add(t.length > 140 ? t.slice(0, 140) + "…" : t);
+    }
+  }
+  for (const raw of text.split("\n")) {
+    const t = raw.trim().replace(/\s+/g, " ");
+    if (t.length < 12 || t.length > 160) continue;
+    if (looksLikeHeadline(t) && announces.test(t)) out.add(t);
+  }
+  return [...out].slice(0, limit);
+}
+
+/**
  * Hvor mye av siden er programmet du allerede har lagret, år for år.
  *
  * Dette er det avgjørende signalet, og det kom fra Roskildes programside
@@ -569,6 +616,9 @@ async function read(args) {
         // er det en annen sikkerhet enn en ferdig plakat, og bør ikke sendes
         // med "confidence": "high" uten at et menneske har sett akkurat dette.
         provisional: isProvisional(combinedText),
+        // Nyhetsoverskriftene. Der kunngjøres neste år, ofte uten at årstallet
+        // står i selve overskriften -- se newsHeadlines.
+        news_headlines: newsHeadlines(combinedText),
         // Viktigere enn years_mentioned: sier siden 2027 øverst mens 93 % av
         // fjorårets lagrede program står under, er dette fjorårets side.
         edition_match: matchEditions(
@@ -607,6 +657,7 @@ async function read(args) {
           years_mentioned: result.years_mentioned,
           year_lines: result.year_lines,
           foreloepig: result.provisional,
+          nyhetsoverskrifter: result.news_headlines,
           tekst_lengde: text.length,
           kjente_artister: result.known_artists,
           // Korte, ekte registrerte navn -- samme vurdering som et ukjent

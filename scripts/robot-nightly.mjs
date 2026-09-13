@@ -703,6 +703,18 @@ async function read(args) {
   // Full utskrift er det modellen trenger, men den er uleselig for et menneske
   // i en terminal -- og en lang linje mister tegn ved kopiering. --kort gir
   // det som avgjør, og ingenting annet.
+  // --tekst skriver bare sideteksten, uten JSON rundt.
+  //
+  // Uten dette griper den som leser til `read ... | python3 -c "json.load..."`
+  // for å komme til text-feltet, og den rørledningen er en egen kommando som
+  // stopper på en tillatelsesdialog midt i en nattkjøring. Et flagg er billigere
+  // enn en regel for hvert verktøy noen måtte finne på å pipe gjennom.
+  if (args.includes("--tekst")) {
+    const n = Number(flag(args, "--tekst")) || 6000;
+    console.log(result.text.slice(0, n));
+    return;
+  }
+
   if (args.includes("--kort")) {
     console.log(
       JSON.stringify(

@@ -52,37 +52,52 @@ Grensene er inkluderende nedad: 2 000 hører til 2000_10000, ikke til 200_2000.
 
 ## Når du ikke finner tall
 
-Skriv `ukjent` i nøkkelkolonnen og la tall-, år- og kildekolonnen stå tom.
+Da skal du anslå. Du skal alltid lande på et trinn — `ukjent` er ikke et gyldig
+svar. En festival uten trinn faller ut av sorteringen på nettsiden og blir
+usynlig, og det er verre enn et trinn som bommer med ett hakk.
 
-Dette er viktigere enn å fylle ut tabellen. Et gjettet tall er verre enn et
-tomt felt, fordi ingen kommer til å kontrollere det etterpå. Finner du bare en
-løs omtale som «tusenvis av besøkende», er det ikke nok — skriv `ukjent`.
+Men anslaget skal være begrunnet, ikke gjettet. Bygg det på noe du faktisk fant:
 
-Ikke oppgi kilder du ikke har åpnet. Ingen oppdiktede lenker.
+- kapasiteten til spillestedet, parken eller hallen
+- antall scener og antall dager
+- hvor store navnene på plakaten er
+- en sammenlignbar festival i samme by, sjanger og format som du fant tall for
+- billettpris og hvor fort den ble utsolgt, hvis det står noe om det
+
+Treffer du mellom to trinn, velg det laveste. Festivaler oppgir gjerne
+optimistiske tall, og det er bedre å undervurdere.
+
+Ikke oppgi kilder du ikke har åpnet. Ingen oppdiktede lenker. Et anslag skal
+merkes som anslag — ikke pynt på det med en kilde som ikke sier det.
 
 ## Svarformat
 
 Bare denne tabellen. Ingen innledning, ingen oppsummering etterpå.
 
-| Festival | Land | Tall | År | Kilde | size_band |
-|---|---|---|---|---|---|
+| Festival | Sted | Tall | År | Kilde | size_band | grunnlag |
+|---|---|---|---|---|---|---|
 
 - **Festival**: navnet slik jeg skrev det, uendret. Ikke rett opp stavemåten,
   ikke oversett, ikke legg til årstall. Jeg kobler radene mot databasen på
-  dette navnet.
-- **Land**: slik jeg skrev det.
-- **Tall**: tallet du fant, med tusenskille (130 000). Tom ved `ukjent`.
-- **År**: året tallet gjelder for. Tom ved `ukjent`.
+  dette navnet, så en «rettet» stavemåte gjør at raden faller ut.
+- **Sted**: by og land slik jeg skrev det.
+- **Tall**: tallet du fant eller anslo, med tusenskille (130 000).
+- **År**: året tallet gjelder for. Tom ved anslag uten årstall.
 - **Kilde**: domenet, pluss «kapasitet» eller «flere helger» der det gjelder.
-  Eksempel: `roskilde-festival.dk`, `wikipedia.org (kapasitet)`.
-- **size_band**: én av de seks nøklene, eller `ukjent`.
+  Eksempel: `roskilde-festival.dk`, `wikipedia.org (kapasitet)`. Ved anslag:
+  hva du bygde anslaget på, kort. Eksempel: `anslag – parkkapasitet 8 000`.
+- **size_band**: én av de seks nøklene. Alltid utfylt.
+- **grunnlag**: `tall` når du fant et faktisk besøkstall, `kapasitet` når du
+  bare fant kapasitet, `anslag` når du resonnerte deg fram. Denne kolonnen er
+  den viktigste for meg — den forteller hvilke rader som må sjekkes igjen
+  senere, og jeg trenger å kunne stole på at den er ærlig.
 
 Er du usikker på om to festivaler med liknende navn er den samme, ta med begge
 og skriv det i kildekolonnen. Ikke slå dem sammen på eget initiativ.
 
 ## Festivalene
 
-<lim inn listen her, én per linje som «Navn — Land»>
+<lim inn listen her, én per linje som «Navn — By, Land»>
 ````
 
 ---
@@ -92,6 +107,10 @@ og skriv det i kildekolonnen. Ikke slå dem sammen på eget initiativ.
 Lim tabellen tilbake i chatten med meg. Jeg gjør den om til SQL, sjekker
 tallene mot trinnene før noe skrives, og flagger radene der bandet ikke stemmer
 med tallet — det er den vanligste feilen i slike svar.
+
+Jeg teller også opp hvor mange rader som er `anslag`. Blir det en stor andel i
+en bolk, er det som regel fordi festivalene i den bolken er små og lokale, og
+da er anslagene sannsynligvis for høye heller enn for lave.
 
 Navnene må stå urørt, ellers klarer jeg ikke koble radene mot databasen. Retter
 ChatGPT opp en stavemåte, blir raden liggende.

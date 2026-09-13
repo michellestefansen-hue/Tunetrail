@@ -48,3 +48,6 @@ festival_data_master.xlsx
 # Forslag roboten skriver for haand under proeving. Arbeidsfiler, ikke kode.
 forslag/
 *.forslag.json
+
+# Kontaktliste til arrangoerer. 587 e-postadresser -- repoet er offentlig.
+docs/arrangor-eposter.xlsx

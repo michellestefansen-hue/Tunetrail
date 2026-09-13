@@ -106,6 +106,7 @@
     "tableTickets": "Billetter",
     "ticketsLink": "Billetter",
     "headliners": "Blant artistene",
+    "headlinersFrom": "Spilte i {year}",
     "byMonth": "Måned for måned",
     "faqHeading": "Ofte stilte spørsmål",
     "seeAlsoHeading": "Se også",

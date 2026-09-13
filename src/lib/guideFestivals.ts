@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/static";
 import {
   FESTIVAL_SELECT,
   currentEdition,
+  programmeEdition,
   BCP47_LOCALE,
   type Festival,
 } from "@/lib/festivals";
@@ -37,18 +38,40 @@ export function guideYear(festivals: Festival[]): number {
   return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0][0];
 }
 
-/** A few confirmed names from the line-up, for the "line-up includes" line. */
-export function headliners(festival: Festival, limit = 5): string[] {
-  const edition = currentEdition(festival);
+export type GuideLineup = {
+  /** A few confirmed names, for the "line-up includes" line. */
+  names: string[];
+  /** Distinct artists in that line-up -- an act playing two days counts once. */
+  count: number;
+  /** The year the line-up belongs to, which is not always the year of the dates. */
+  year: number | null;
+  /** True when the line-up and the dates come from the same edition. */
+  isCurrent: boolean;
+};
+
+/**
+ * The line-up a guide row can actually show.
+ *
+ * Deliberately `programmeEdition` and not `currentEdition`: a festival that has
+ * announced next year's dates but not next year's line-up would otherwise go
+ * blank, and in early autumn that is nearly every festival in a guide. Falling
+ * back to the most recent edition that has a line-up keeps the page useful --
+ * but the caller must label it, hence `year` and `isCurrent`. Showing last
+ * year's names as though they were this year's would be worse than showing
+ * nothing.
+ */
+export function guideLineup(festival: Festival, limit = 5): GuideLineup {
+  const edition = programmeEdition(festival);
   const names = (edition?.program ?? []).flatMap((d) =>
     d.artists.map((a) => a.name),
   );
-  return Array.from(new Set(names)).slice(0, limit);
-}
-
-export function artistCount(festival: Festival): number {
-  const edition = currentEdition(festival);
-  return (edition?.program ?? []).reduce((n, d) => n + d.artists.length, 0);
+  const unique = Array.from(new Set(names));
+  return {
+    names: unique.slice(0, limit),
+    count: unique.length,
+    year: edition?.year ?? null,
+    isCurrent: Boolean(edition) && edition?.year === currentEdition(festival)?.year,
+  };
 }
 
 /**
@@ -63,6 +86,7 @@ export function groupByMonth(
 ): { key: string; month: string; festivals: Festival[] }[] {
   const bcp = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
   const buckets = new Map<string, { label: string; festivals: Festival[] }>();
+  const thisMonth = new Date().toISOString().slice(0, 7);
 
   for (const f of festivals) {
     const from = currentEdition(f)?.date_from;
@@ -70,9 +94,11 @@ export function groupByMonth(
     const key = from.slice(0, 7);
     const date = new Date(from);
     // Spell out the year for months outside the guide's own year, so two
-    // buckets don't both read "July".
+    // buckets don't both read "July" -- and for months that have already been
+    // and gone, since a bare "July" in September reads as next summer. The
+    // bucket key is a whole month, so it is past only when the month is.
     const label =
-      date.getFullYear() === guideYear
+      key.slice(0, 4) === String(guideYear) && key >= thisMonth
         ? date.toLocaleDateString(bcp, { month: "long" })
         : date.toLocaleDateString(bcp, { month: "long", year: "numeric" });
     if (!buckets.has(key)) buckets.set(key, { label, festivals: [] });

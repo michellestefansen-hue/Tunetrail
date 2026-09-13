@@ -106,6 +106,7 @@
     "tableTickets": "Entradas",
     "ticketsLink": "Entradas",
     "headliners": "En el cartel",
+    "headlinersFrom": "En el cartel de {year}",
     "byMonth": "Mes a mes",
     "faqHeading": "Preguntas frecuentes",
     "seeAlsoHeading": "Ver también",

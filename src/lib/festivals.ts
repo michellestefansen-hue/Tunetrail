@@ -230,7 +230,11 @@ export const BCP47_LOCALE: Record<string, string> = {
 };
 
 /** Returns null when the festival has no date set — caller renders its own localized fallback. */
-export function dateRangeLabel(festival: Festival, locale: string): string | null {
+export function dateRangeLabel(
+  festival: Festival,
+  locale: string,
+  contextYear: number = new Date().getFullYear(),
+): string | null {
   const edition = currentEdition(festival);
   const from = edition?.date_from;
   const to = edition?.date_to;
@@ -240,15 +244,22 @@ export function dateRangeLabel(festival: Festival, locale: string): string | nul
   const first = new Date(from);
   const last = new Date(to ?? from);
 
-  // The year is spelled out whenever it isn't the current one. "23 – 26 June"
-  // reads as this summer, and for a festival whose next edition is next summer
-  // that is simply wrong -- more so now that the line-up shown below may belong
-  // to a different year than the dates above it.
+  // The year is spelled out unless the dates belong to the year the surrounding
+  // page is about *and* haven't happened yet. Two separate failures made that
+  // the rule: "23 – 26 June" under a 2027 heading read as 2027 when the edition
+  // was in fact 2026, and a finished edition rendered as "29 July – 1 August"
+  // with no year at all -- six weeks in the past, reading as upcoming.
+  //
+  // `contextYear` defaults to the current year, which is what every caller
+  // except the guides wants; a guide passes the year it is titled with.
+  const today = new Date().toISOString().slice(0, 10);
+  const needsYear =
+    from.slice(0, 4) !== String(contextYear) || (to ?? from) < today;
+
   const dayMonth: Intl.DateTimeFormatOptions = { day: "numeric", month: "long" };
-  const withYear: Intl.DateTimeFormatOptions =
-    first.getFullYear() !== new Date().getFullYear()
-      ? { ...dayMonth, year: "numeric" }
-      : dayMonth;
+  const withYear: Intl.DateTimeFormatOptions = needsYear
+    ? { ...dayMonth, year: "numeric" }
+    : dayMonth;
 
   if (!to || from === to) {
     return first.toLocaleDateString(bcp, withYear);

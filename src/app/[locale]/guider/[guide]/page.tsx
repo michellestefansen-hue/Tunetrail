@@ -10,8 +10,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import {
   fetchGuideFestivals,
   guideYear,
-  headliners,
-  artistCount,
+  guideLineup,
   groupByMonth,
 } from "@/lib/guideFestivals";
 import {
@@ -155,16 +154,13 @@ export default async function GuidePage({
   }
 
   /**
-   * Date range, with the year spelled out when this festival's next edition
-   * isn't the guide's year — a few festivals have already announced the
-   * following year, and a bare "9 – 11 June" under a 2026 heading would read
-   * as 2026.
+   * Date range for a guide row. `dateRangeLabel` decides for itself whether the
+   * year needs spelling out, given the year this guide is titled with — it used
+   * to be appended here as well, which is how five rows came to read
+   * "17 – 20. juni 2027 2027".
    */
   function dateLabel(f: Festival): string {
-    const range = dateRangeLabel(f, locale);
-    if (!range) return "—";
-    const edYear = currentEdition(f)?.year;
-    return edYear && edYear !== year ? `${range} ${edYear}` : range;
+    return dateRangeLabel(f, locale, year) ?? "—";
   }
 
   return (
@@ -260,8 +256,7 @@ export default async function GuidePage({
         <ol className="mt-8 flex flex-col gap-4">
           {festivals.map((f, i) => {
             const edition = currentEdition(f);
-            const names = headliners(f);
-            const count = artistCount(f);
+            const lineup = guideLineup(f);
             return (
               <li
                 key={f.id}
@@ -284,13 +279,18 @@ export default async function GuidePage({
                       {" · "}
                       {dateLabel(f)}
                     </p>
-                    {names.length > 0 ? (
+                    {lineup.names.length > 0 ? (
                       <p className="mt-2 text-sm text-[#6B5E59]">
                         <span className="font-medium text-[#2D1A12]">
-                          {tg("headliners")}:
+                          {lineup.isCurrent
+                            ? tg("headliners")
+                            : tg("headlinersFrom", { year: lineup.year ?? year })}
+                          :
                         </span>{" "}
-                        {names.join(", ")}
-                        {count > names.length ? ` +${count - names.length}` : ""}
+                        {lineup.names.join(", ")}
+                        {lineup.count > lineup.names.length
+                          ? ` +${lineup.count - lineup.names.length}`
+                          : ""}
                       </p>
                     ) : (
                       <p className="mt-2 text-sm text-stone-400">{tg("noProgram")}</p>

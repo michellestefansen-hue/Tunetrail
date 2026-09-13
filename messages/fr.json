@@ -106,6 +106,7 @@
     "tableTickets": "Billets",
     "ticketsLink": "Billets",
     "headliners": "À l'affiche",
+    "headlinersFrom": "À l'affiche en {year}",
     "byMonth": "Mois par mois",
     "faqHeading": "Questions fréquentes",
     "seeAlsoHeading": "À voir aussi",

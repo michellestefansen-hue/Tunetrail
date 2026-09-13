@@ -118,7 +118,7 @@
       "metaDescription": "Los mayores festivales de rock y metal de Europa en {year}, con fechas, recintos y carteles actualizados. De Wacken y Hellfest a Download y Copenhell.",
       "answer": "Wacken Open Air, Hellfest, Download y Graspop Metal Meeting son los mayores festivales de rock y metal de Europa. Casi todos se celebran entre junio y agosto, y las entradas de los más populares se agotan mucho antes de que el cartel esté completo.",
       "intro": "Europa es, con diferencia, el mercado más denso del mundo para la música pesada. En unas pocas semanas de verano puedes ver a los mismos cabezas de cartel en escenarios de Alemania, Francia, Inglaterra y Bélgica, pero los festivales que los rodean son muy distintos entre sí. Wacken Open Air convierte una aldea alemana de 1.800 habitantes en una ciudad de 85.000 personas, y lleva años agotándose a través de su lista de espera. Hellfest, en Clisson, es el mayor en escala pura: unos 180.000 visitantes en cuatro días y seis escenarios que cubren prácticamente todos los subgéneros del hard rock y el metal. Download, en Castle Donington, es el pilar británico, mientras que Graspop, en la localidad belga de Dessel, atrae a un público parecido con un perfil algo más metálico.\n\nSi vas a viajar lejos, conviene planificar más allá de los cabezas de cartel. Las entradas suelen salir en varias tandas y las primeras son las más baratas. Varios de estos festivales están lo bastante cerca en el calendario para combinar dos en un mismo viaje, y como muchos comparten cabezas de cartel, la elección suele depender del lugar, el tamaño y el ambiente más que del propio cartel.",
-      "outro": "La lista anterior es una selección editorial de los nombres más consolidados, pero Europa tiene muchos más festivales de rock y metal de los que caben aquí: desde pequeños eventos especializados hasta festivales de rock más amplios que también programan bandas más duras. Las fechas y los carteles proceden directamente de los anuncios de los festivales y se actualizan de forma continua.",
+      "outro": "Esta guía recoge todos los festivales de rock y metal de Europa que conocemos, ordenados por cuánta gente acude: desde los grandes festivales de verano hasta festivales de sala con unos cientos de personas. De los más pequeños es de los que menos información hay, y ahí es donde esta lista se diferencia de las demás.\n\nLas fechas y los carteles se toman directamente de los anuncios de los propios festivales y se actualizan sobre la marcha, así que vale la pena volver cuando los programas se completen durante el invierno y la primavera. Si falta un festival, puedes añadirlo tú mismo.",
       "ctaMap": "Ver todos los festivales de metal en el mapa",
       "faq": [
         {
@@ -287,7 +287,11 @@
         }
       ]
     },
-    "tableSize": "Tamaño"
+    "tableSize": "Tamaño",
+    "jumpTo": "Ir a",
+    "sizeUnknown": "Tamaño aún sin datos",
+    "festivalsInBand": "{count} festivales",
+    "sizeUnknownNote": "Todavía no tenemos cifras de público para estos. Aparecen aquí porque pertenecen al género, y pasarán al tramo correcto cuando lleguen los datos."
   },
   "Countries": {
     "Albania": "Albania",

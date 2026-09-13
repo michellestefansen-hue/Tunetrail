@@ -9,10 +9,13 @@ import { GUIDES, GUIDE_KEYS, guideMapQuery, guidePath, type GuideKey } from "@/l
 import { SiteHeader } from "@/components/SiteHeader";
 import {
   fetchGuideFestivals,
+  fetchFestivalsByTags,
   guideYear,
   guideLineup,
   groupByMonth,
+  groupBySize,
 } from "@/lib/guideFestivals";
+import { GuideBySize } from "@/components/GuideBySize";
 import {
   currentEdition,
   dateRangeLabel,
@@ -78,8 +81,18 @@ export default async function GuidePage({
   const key = guide as GuideKey;
   setRequestLocale(locale);
 
-  const festivals = await fetchGuideFestivals(GUIDES[key].festivalSlugs);
+  const guideDef = GUIDES[key];
+  const festivals = await fetchGuideFestivals(guideDef.festivalSlugs);
   if (festivals.length === 0) notFound();
+
+  // A browse guide covers a whole genre grouped by size. The curated list still
+  // decides the year in the title -- those are the festivals whose dates are
+  // known earliest, so they are the most reliable signal for which season the
+  // page is about.
+  const browse = guideDef.browseTags
+    ? groupBySize(await fetchFestivalsByTags(guideDef.browseTags))
+    : null;
+  const browseCount = browse?.reduce((n, g) => n + g.festivals.length, 0) ?? 0;
 
   const year = guideYear(festivals);
   const t = await getTranslations({ locale, namespace: `Guides.${key}` });
@@ -98,6 +111,7 @@ export default async function GuidePage({
     a: item.a.replaceAll("{year}", String(year)),
   }));
   const months = groupByMonth(festivals, locale, year);
+  const listed = browse ? browse.flatMap((g) => g.festivals) : festivals;
   const guideUrl = `${SITE_URL}${getPathname({ locale, href: guidePath(key) })}`;
   const updated = new Date().toISOString();
 
@@ -107,8 +121,10 @@ export default async function GuidePage({
       "@type": "ItemList",
       name: t("title", { year }),
       url: guideUrl,
-      numberOfItems: festivals.length,
-      itemListElement: festivals.map((f, i) => ({
+      // What the page actually lists, which for a browse guide is the whole
+      // genre and not the curated few.
+      numberOfItems: listed.length,
+      itemListElement: listed.map((f, i) => ({
         "@type": "ListItem",
         position: i + 1,
         name: f.name,
@@ -188,62 +204,64 @@ export default async function GuidePage({
             }),
           })}
           {" · "}
-          {tg("festivalsInGuide", { count: festivals.length })}
+          {tg("festivalsInGuide", { count: browseCount || festivals.length })}
         </p>
 
-        <div className="mt-6 overflow-x-auto rounded-2xl bg-white shadow-[0_8px_30px_rgba(45,26,18,0.08)]">
-          <table className="w-full min-w-[560px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-500">
-                <th className="px-4 py-3 font-semibold">{tg("tableFestival")}</th>
-                <th className="px-4 py-3 font-semibold">{tg("tableCountry")}</th>
-                <th className="px-4 py-3 font-semibold">{tg("tableDates")}</th>
-                <th className="px-4 py-3 font-semibold">{tg("tableGenre")}</th>
-                <th className="px-4 py-3 font-semibold">{tg("tableSize")}</th>
-                <th className="px-4 py-3 font-semibold">{tg("tableTickets")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {festivals.map((f) => {
-                const edition = currentEdition(f);
-                return (
-                  <tr key={f.id} className="border-b border-stone-100 last:border-0">
-                    <td className="px-4 py-3">
-                      <Link
-                        href={festivalHref(f)}
-                        className="font-medium text-[#2D1A12] hover:text-[#FF2D78]"
-                      >
-                        {f.name}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-stone-600">{countryName(f.country)}</td>
-                    <td className="px-4 py-3 text-stone-600">{dateLabel(f)}</td>
-                    <td className="px-4 py-3 text-stone-600">
-                      {f.tags && f.tags.length > 0 ? f.tags.map((tag) => tc(tag)).join(", ") : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-stone-600">
-                      {f.size_band ? ts(f.size_band) : "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      {edition?.ticket_url ? (
-                        <a
-                          href={edition.ticket_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[#FF2D78] hover:underline"
+        {!browse && (
+          <div className="mt-6 overflow-x-auto rounded-2xl bg-white shadow-[0_8px_30px_rgba(45,26,18,0.08)]">
+            <table className="w-full min-w-[560px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-stone-200 text-left text-xs uppercase tracking-wide text-stone-500">
+                  <th className="px-4 py-3 font-semibold">{tg("tableFestival")}</th>
+                  <th className="px-4 py-3 font-semibold">{tg("tableCountry")}</th>
+                  <th className="px-4 py-3 font-semibold">{tg("tableDates")}</th>
+                  <th className="px-4 py-3 font-semibold">{tg("tableGenre")}</th>
+                  <th className="px-4 py-3 font-semibold">{tg("tableSize")}</th>
+                  <th className="px-4 py-3 font-semibold">{tg("tableTickets")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {festivals.map((f) => {
+                  const edition = currentEdition(f);
+                  return (
+                    <tr key={f.id} className="border-b border-stone-100 last:border-0">
+                      <td className="px-4 py-3">
+                        <Link
+                          href={festivalHref(f)}
+                          className="font-medium text-[#2D1A12] hover:text-[#FF2D78]"
                         >
-                          {tg("ticketsLink")}
-                        </a>
-                      ) : (
-                        <span className="text-stone-400">—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                          {f.name}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-stone-600">{countryName(f.country)}</td>
+                      <td className="px-4 py-3 text-stone-600">{dateLabel(f)}</td>
+                      <td className="px-4 py-3 text-stone-600">
+                        {f.tags && f.tags.length > 0 ? f.tags.map((tag) => tc(tag)).join(", ") : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-stone-600">
+                        {f.size_band ? ts(f.size_band) : "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {edition?.ticket_url ? (
+                          <a
+                            href={edition.ticket_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[#FF2D78] hover:underline"
+                          >
+                            {tg("ticketsLink")}
+                          </a>
+                        ) : (
+                          <span className="text-stone-400">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {t("intro", { year })
           .split("\n\n")
@@ -253,99 +271,103 @@ export default async function GuidePage({
             </p>
           ))}
 
-        <ol className="mt-8 flex flex-col gap-4">
-          {festivals.map((f, i) => {
-            const edition = currentEdition(f);
-            const lineup = guideLineup(f);
-            return (
-              <li
-                key={f.id}
-                className="rounded-2xl bg-white p-4 shadow-[0_8px_30px_rgba(45,26,18,0.08)]"
-              >
-                <div className="flex items-start gap-4">
-                  <span className="mt-0.5 shrink-0 font-heading text-2xl text-[#FFB347]">
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-lg">
-                      <Link href={festivalHref(f)} className="hover:text-[#FF2D78]">
-                        {f.name}
-                      </Link>
-                    </h2>
-                    <p className="mt-0.5 text-xs text-stone-500">
-                      {[f.venue_name ?? f.city, countryName(f.country)]
-                        .filter(Boolean)
-                        .join(", ")}
-                      {" · "}
-                      {dateLabel(f)}
-                    </p>
-                    {lineup.names.length > 0 ? (
-                      <p className="mt-2 text-sm text-[#6B5E59]">
-                        <span className="font-medium text-[#2D1A12]">
-                          {lineup.isCurrent
-                            ? tg("headliners")
-                            : tg("headlinersFrom", { year: lineup.year ?? year })}
-                          :
-                        </span>{" "}
-                        {lineup.names.join(", ")}
-                        {lineup.count > lineup.names.length
-                          ? ` +${lineup.count - lineup.names.length}`
-                          : ""}
-                      </p>
-                    ) : (
-                      <p className="mt-2 text-sm text-stone-400">{tg("noProgram")}</p>
-                    )}
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Link
-                        href={festivalHref(f)}
-                        className="rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 hover:border-[#FF2D78] hover:text-[#FF2D78]"
-                      >
-                        {tg("readGuide")}
-                      </Link>
-                      {edition?.ticket_url && (
-                        <a
-                          href={edition.ticket_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-3 py-1.5 text-xs font-semibold text-white"
-                        >
-                          <TicketIcon className="h-3.5 w-3.5" />
-                          {tg("ticketsLink")}
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
 
-        {months.length > 1 && (
-          <section className="mt-10">
-            <h2 className="text-xl">{tg("byMonth")}</h2>
-            <div className="mt-4 flex flex-col gap-4">
-              {months.map((m) => (
-                <div key={m.key}>
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-[#FF2D78]">
-                    {m.month}
-                  </h3>
-                  <ul className="mt-1.5 flex flex-wrap gap-1.5">
-                    {m.festivals.map((f) => (
-                      <li key={f.id}>
-                        <Link
-                          href={festivalHref(f)}
-                          className="inline-block rounded-full bg-white px-3 py-1.5 text-xs text-stone-700 shadow-sm hover:text-[#FF2D78]"
-                        >
+        {browse && <GuideBySize groups={browse} locale={locale} year={year} />}
+        {!browse && (
+          <ol className="mt-8 flex flex-col gap-4">
+            {festivals.map((f, i) => {
+              const edition = currentEdition(f);
+              const lineup = guideLineup(f);
+              return (
+                <li
+                  key={f.id}
+                  className="rounded-2xl bg-white p-4 shadow-[0_8px_30px_rgba(45,26,18,0.08)]"
+                >
+                  <div className="flex items-start gap-4">
+                    <span className="mt-0.5 shrink-0 font-heading text-2xl text-[#FFB347]">
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg">
+                        <Link href={festivalHref(f)} className="hover:text-[#FF2D78]">
                           {f.name}
                         </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
+                      </h2>
+                      <p className="mt-0.5 text-xs text-stone-500">
+                        {[f.venue_name ?? f.city, countryName(f.country)]
+                          .filter(Boolean)
+                          .join(", ")}
+                        {" · "}
+                        {dateLabel(f)}
+                      </p>
+                      {lineup.names.length > 0 ? (
+                        <p className="mt-2 text-sm text-[#6B5E59]">
+                          <span className="font-medium text-[#2D1A12]">
+                            {lineup.isCurrent
+                              ? tg("headliners")
+                              : tg("headlinersFrom", { year: lineup.year ?? year })}
+                            :
+                          </span>{" "}
+                          {lineup.names.join(", ")}
+                          {lineup.count > lineup.names.length
+                            ? ` +${lineup.count - lineup.names.length}`
+                            : ""}
+                        </p>
+                      ) : (
+                        <p className="mt-2 text-sm text-stone-400">{tg("noProgram")}</p>
+                      )}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Link
+                          href={festivalHref(f)}
+                          className="rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 hover:border-[#FF2D78] hover:text-[#FF2D78]"
+                        >
+                          {tg("readGuide")}
+                        </Link>
+                        {edition?.ticket_url && (
+                          <a
+                            href={edition.ticket_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF4E50] px-3 py-1.5 text-xs font-semibold text-white"
+                          >
+                            <TicketIcon className="h-3.5 w-3.5" />
+                            {tg("ticketsLink")}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+
+        {!browse && months.length > 1 && (
+            <section className="mt-10">
+              <h2 className="text-xl">{tg("byMonth")}</h2>
+              <div className="mt-4 flex flex-col gap-4">
+                {months.map((m) => (
+                  <div key={m.key}>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-[#FF2D78]">
+                      {m.month}
+                    </h3>
+                    <ul className="mt-1.5 flex flex-wrap gap-1.5">
+                      {m.festivals.map((f) => (
+                        <li key={f.id}>
+                          <Link
+                            href={festivalHref(f)}
+                            className="inline-block rounded-full bg-white px-3 py-1.5 text-xs text-stone-700 shadow-sm hover:text-[#FF2D78]"
+                          >
+                            {f.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
         )}
 
         <section className="mt-10">
@@ -365,7 +387,13 @@ export default async function GuidePage({
           </div>
         </section>
 
-        <p className="mt-8 text-sm leading-relaxed text-[#6B5E59]">{t("outro")}</p>
+        {t("outro")
+          .split("\n\n")
+          .map((para, i) => (
+            <p key={i} className="mt-8 text-sm leading-relaxed text-[#6B5E59] [&+&]:mt-3">
+              {para}
+            </p>
+          ))}
 
         <div className="mt-8 flex flex-wrap gap-3">
           <Link

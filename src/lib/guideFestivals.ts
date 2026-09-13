@@ -1,10 +1,13 @@
 import { createClient } from "@/lib/supabase/static";
 import {
   FESTIVAL_SELECT,
+  SIZE_BANDS,
   currentEdition,
   programmeEdition,
   BCP47_LOCALE,
   type Festival,
+  type FestivalTag,
+  type SizeBand,
 } from "@/lib/festivals";
 
 /**
@@ -26,13 +29,33 @@ export async function fetchGuideFestivals(slugs: string[]): Promise<Festival[]> 
     .filter((f): f is Festival => Boolean(f));
 }
 
-/** The year the guide is about — derived from the data so titles don't go stale. */
+/**
+ * The year the guide is about — derived from the data so titles don't go stale.
+ *
+ * Only editions that haven't happened yet get a vote. `currentEdition` falls
+ * back to the most recent past edition when a festival has announced nothing
+ * new, and letting those vote titled the page after a season that was already
+ * over: in September the rock guide called itself 2026, because twelve of its
+ * seventeen festivals had no 2027 date and were still pointing at last summer.
+ * A guide is read by someone planning ahead.
+ *
+ * If nothing at all is upcoming, every edition votes — better a stale year than
+ * no page.
+ */
 export function guideYear(festivals: Festival[]): number {
-  const years = festivals
-    .map((f) => currentEdition(f)?.year)
-    .filter((y): y is number => typeof y === "number");
+  const today = new Date().toISOString().slice(0, 10);
+  const upcoming = festivals
+    .flatMap((f) => f.festival_editions ?? [])
+    .filter((e) => (e.date_to ?? e.date_from ?? "") >= today)
+    .map((e) => e.year);
+
+  const years = upcoming.length > 0
+    ? upcoming
+    : festivals
+        .map((f) => currentEdition(f)?.year)
+        .filter((y): y is number => typeof y === "number");
+
   if (years.length === 0) return new Date().getFullYear();
-  // The year most of the curated editions fall in.
   const counts = new Map<number, number>();
   for (const y of years) counts.set(y, (counts.get(y) ?? 0) + 1);
   return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0][0];
@@ -108,4 +131,79 @@ export function groupByMonth(
   return [...buckets.entries()]
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([key, v]) => ({ key, month: v.label, festivals: v.festivals }));
+}
+
+/**
+ * Every festival carrying any of these tags, for a guide that lists a whole
+ * genre rather than a curated few.
+ *
+ * The curated slug list exists because the database had no capacity data, so a
+ * tag query could not produce a defensible order -- it would have been an
+ * arbitrary pile. `size_band` removes that objection: the order is a fact about
+ * the festival, not an opinion we have to defend every year.
+ *
+ * Festivals with no edition at all are dropped. A row with a name and nothing
+ * else tells a reader nothing and pads the page.
+ */
+export async function fetchFestivalsByTags(tags: FestivalTag[]): Promise<Festival[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("festivals")
+    .select(FESTIVAL_SELECT)
+    .overlaps("tags", tags);
+
+  return ((data ?? []) as unknown as Festival[]).filter(
+    (f) => (f.festival_editions ?? []).length > 0,
+  );
+}
+
+export type SizeGroup = {
+  band: SizeBand | "unknown";
+  festivals: Festival[];
+};
+
+/**
+ * Groups festivals by audience size, largest band first, with the ones we have
+ * no figure for in their own group at the end.
+ *
+ * Within a band, festivals with a date still ahead of them come first and in
+ * date order -- someone reading in September wants the next thing they can
+ * actually go to, not an alphabetical roll call. The rest follow by name.
+ *
+ * The unknown group is shown rather than hidden. It shrinks as figures are
+ * sourced, and hiding it would quietly drop more than half the genre off a page
+ * that claims to cover it.
+ */
+export function groupBySize(festivals: Festival[]): SizeGroup[] {
+  const today = new Date().toISOString().slice(0, 10);
+  const buckets = new Map<SizeBand | "unknown", Festival[]>();
+
+  for (const f of festivals) {
+    const key = f.size_band ?? "unknown";
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key)!.push(f);
+  }
+
+  const upcoming = (f: Festival) => {
+    const e = currentEdition(f);
+    const end = e?.date_to ?? e?.date_from ?? "";
+    return end >= today ? end : null;
+  };
+
+  for (const list of buckets.values()) {
+    list.sort((a, b) => {
+      const ua = upcoming(a);
+      const ub = upcoming(b);
+      if (ua && ub) return ua.localeCompare(ub);
+      if (ua) return -1;
+      if (ub) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  const order: (SizeBand | "unknown")[] = [...SIZE_BANDS].reverse();
+  order.push("unknown");
+  return order
+    .filter((band) => buckets.has(band))
+    .map((band) => ({ band, festivals: buckets.get(band)! }));
 }

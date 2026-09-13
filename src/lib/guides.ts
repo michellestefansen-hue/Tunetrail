@@ -1,12 +1,20 @@
 import type { FestivalTag } from "@/lib/festivals";
 
 /**
- * Editorial landing pages ("guider"). The festival order is curated by hand —
- * the database has no popularity/capacity data, so even now that festivals
- * carry real, human-assigned tags, a tag query alone still can't produce a
- * defensible ranking. Everything *inside* each entry (dates, line-up,
- * tickets, images) is read live from the database at build time, so the
- * pages stay current without the ranking drifting.
+ * Editorial landing pages ("guider"), in two shapes.
+ *
+ * Most are a hand-curated, ranked list of slugs. That existed because the
+ * database had no capacity data, so a tag query could only produce an arbitrary
+ * pile -- not an order anyone could defend.
+ *
+ * `browseTags` is the other shape, now that `size_band` exists: the guide lists
+ * every festival carrying those tags, grouped by audience size. A ranking is an
+ * opinion that has to be re-argued every year; a size band is a fact. It also
+ * lets a guide cover a whole genre instead of the dozen names every other list
+ * already covers, which is the only part of this data nobody else has.
+ *
+ * Everything *inside* each entry (dates, line-up, tickets, images) is read live
+ * from the database at build time, so the pages stay current either way.
  */
 export type GuideKey = "rock-metal" | "elektronisk" | "jazz" | "frankrike" | "norden";
 
@@ -14,6 +22,12 @@ export type Guide = {
   key: GuideKey;
   /** Curated, ranked slugs. Verified to exist and to carry a 2026 edition. */
   festivalSlugs: string[];
+  /**
+   * When set, the guide lists every festival carrying any of these tags,
+   * grouped by audience size, instead of the curated list above.
+   * `festivalSlugs` is still kept as the editorial pick shown at the top.
+   */
+  browseTags?: FestivalTag[];
   /**
    * Seeds the map's place filter. Comma-separated for regions spanning
    * several countries. Each value must exist in the festival data, since the
@@ -36,6 +50,7 @@ export const GUIDES: Record<GuideKey, Guide> = {
   "rock-metal": {
     key: "rock-metal",
     mapTags: ["Rock", "Metal"],
+    browseTags: ["Rock", "Metal"],
     festivalSlugs: [
       "wacken-open-air",
       "hellfest",

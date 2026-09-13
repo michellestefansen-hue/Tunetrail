@@ -118,7 +118,7 @@
       "metaDescription": "De største rock- og metalfestivalene i Europa {year}, med datoer, spillested og oppdaterte artistlister. Fra Wacken og Hellfest til Download og Copenhell.",
       "answer": "Wacken Open Air, Hellfest, Download og Graspop Metal Meeting er de største rock- og metalfestivalene i Europa. De aller fleste arrangeres mellom juni og august, og billettene til de mest populære selges ofte ut lenge før programmet er komplett.",
       "intro": "Europa er uten sammenligning verdens tetteste marked for tung musikk. På noen få sommeruker kan du se de samme hovednavnene på scener i Tyskland, Frankrike, England og Belgia – men festivalene rundt dem er svært forskjellige. Wacken Open Air forvandler en tysk landsby på 1 800 innbyggere til en by med 85 000 mennesker, og har vært utsolgt via venteliste i årevis. Hellfest i Clisson er størst i ren skala, med rundt 180 000 besøkende over fire dager og seks scener som dekker praktisk talt hver undersjanger av hard rock og metal. Download på Castle Donington er den britiske bærebjelken, mens Graspop i belgiske Dessel trekker mye av det samme publikummet med en noe mer metallsentrert profil.\n\nSkal du reise langt, er det verdt å planlegge etter mer enn hovednavnene. Billettslipp skjer ofte i flere runder, og de tidligste er billigst. Flere av festivalene ligger tett nok i kalenderen at du kan kombinere to på én reise – og siden mange deler hovednavn, kan valget like gjerne handle om sted, størrelse og stemning som om programmet.",
-      "outro": "Listen over er et redaksjonelt utvalg av de mest etablerte navnene, men Europa har langt flere rock- og metalfestivaler enn det som får plass her – fra små, spesialiserte arrangementer til bredere rockefestivaler som også booker tyngre navn. Datoene og artistlistene over hentes direkte fra festivalenes kunngjøringer og oppdateres fortløpende, så det er verdt å komme tilbake når programmene fylles ut utover vinteren og våren.",
+      "outro": "Guiden dekker alle rock- og metalfestivalene vi kjenner til i Europa, sortert etter hvor mange som kommer – fra de store sommerfestivalene til klubbfestivaler med noen hundre i salen. De minste er som regel de vanskeligste å finne noe om, og det er der denne oversikten skiller seg fra andre lister.\n\nDatoer og artistlister hentes direkte fra festivalenes egne kunngjøringer og oppdateres fortløpende, så det er verdt å komme tilbake når programmene fylles ut utover vinteren og våren. Mangler det en festival, kan du legge den til selv.",
       "ctaMap": "Se alle metalfestivaler i kartet",
       "faq": [
         {
@@ -287,7 +287,11 @@
         }
       ]
     },
-    "tableSize": "Størrelse"
+    "tableSize": "Størrelse",
+    "jumpTo": "Hopp til",
+    "sizeUnknown": "Størrelse ikke kartlagt",
+    "festivalsInBand": "{count} festivaler",
+    "sizeUnknownNote": "Publikumstallet er ikke hentet inn for disse ennå. De står her fordi de hører hjemme i sjangeren, og flyttes opp i riktig bolk etter hvert som tallene kommer på plass."
   },
   "Countries": {
     "Albania": "Albania",

@@ -123,29 +123,45 @@
       "faq": [
         {
           "q": "Hvilken er Europas største metalfestival?",
-          "a": "Hellfest i Frankrike er størst målt i besøkende, med rundt 180 000 over fire dager. Wacken Open Air i Tyskland er mest kjent og har omtrent 85 000 besøkende, men selges alltid ut."
+          "a": "Hellfest i Clisson i Frankrike er størst målt i besøkende, med rundt 180 000 over fire dager. Wacken Open Air i Tyskland er mest kjent, har rundt 85 000 besøkende og selges som regel ut før programmet er offentliggjort."
+        },
+        {
+          "q": "Hvilke rock- og metalfestivaler arrangeres om vinteren?",
+          "a": "De fleste europeiske rock- og metalfestivalene er sommerarrangementer, men det finnes en vintersesong, og den er nesten utelukkende innendørs. Rockaway Beach i England og Orgivm Satanicvm i Oslo i januar, Northern Winter Beat i Aalborg og Grauzone i Den Haag i februar, Inferno Metal Festival i Oslo i påsken og Roadburn i Tilburg i april. Alle er i klubbskala, fra et par hundre til noen tusen publikummere."
+        },
+        {
+          "q": "Hvor finner jeg små rock- og metalfestivaler i Europa?",
+          "a": "De minste festivalene er sjelden med i redaksjonelle topplister, fordi listene stort sett dekker de samme ti–tjue store navnene. Denne guiden er sortert etter publikumstall nettopp derfor: bolken «200 – 2 000 deltagere» samler klubbfestivalene, som ofte er innendørs, går over én eller to dager, og booker smalere enn de store kan tillate seg."
         },
         {
           "q": "Når arrangeres rock- og metalfestivalene i Europa?",
-          "a": "Hovedsesongen er juni til august. Rock am Ring og Download ligger tidlig i juni, Hellfest og Graspop midt i juni, mens Wacken, Bloodstock, Alcatraz og Summer Breeze ligger i slutten av juli og august."
+          "a": "Hovedsesongen er juni til august. Rock am Ring og Download ligger tidlig i juni, Hellfest og Graspop midt i juni, mens Wacken, Bloodstock, Alcatraz, Brutal Assault og Summer Breeze ligger i slutten av juli og gjennom august. Vinterfestivalene går fra januar til april og er stort sett innendørs."
         },
         {
-          "q": "Når slippes billettene?",
-          "a": "De fleste store festivalene starter billettsalget rett etter at forrige utgave er ferdig, altså opptil et år i forveien. Wacken selges typisk ut før programmet er offentliggjort, så der lønner det seg å være tidlig ute."
+          "q": "Når slippes billettene til {year}?",
+          "a": "De fleste store festivalene starter billettsalget rett etter at forrige utgave er ferdig, altså opptil et år i forveien. Wacken selges typisk ut før programmet er offentliggjort, så der lønner det seg å kjøpe blindt. De mindre festivalene legger som regel ut billetter samtidig med de første navnene, gjennom vinteren."
         },
         {
           "q": "Hvilken festival passer best for en førstegangsbesøkende?",
-          "a": "Graspop og Download har god infrastruktur, ligger lett tilgjengelig og har brede programmer som dekker både klassisk rock og tyngre metal. Begge er enkle å komme til med offentlig transport."
+          "a": "Graspop og Download har god infrastruktur, ligger lett tilgjengelig med offentlig transport og har brede programmer som dekker både klassisk rock og tyngre metal. Vil du slippe camping, er en av klubbfestivalene i «200 – 2 000»-bolken et enklere sted å begynne."
+        },
+        {
+          "q": "Er programmene for {year} komplette?",
+          "a": "Sjelden. De største navnene annonseres høsten før, mens resten fylles ut gjennom vinteren og våren. Der {year}-programmet ennå ikke er sluppet, viser denne guiden forrige utgaves artister, tydelig merket med hvilket år de spilte."
         },
         {
           "q": "Kan jeg rekke flere festivaler på samme tur?",
-          "a": "Ja. Hellfest og Graspop ligger ofte i samme uke og bare noen timer fra hverandre med tog eller bil. Rock am Ring og Rock im Park deler program og arrangeres samtidig i Tyskland."
-        },
-        {
-          "q": "Er programmene komplette allerede?",
-          "a": "Sjelden. De største navnene annonseres høsten før, mens resten av programmet fylles ut gjennom vinteren og våren. Listene i denne guiden oppdateres automatisk når nye navn bekreftes."
+          "a": "Ja. Hellfest og Graspop ligger ofte i samme uke og bare noen timer fra hverandre med tog eller bil. Rock am Ring og Rock im Park deler program og arrangeres samtidig i Tyskland. Brutal Assault, Alcatraz og Bloodstock ligger tett i begynnelsen av august."
         }
-      ]
+      ],
+      "sizeIntro": {
+        "over_100000": "De fire–fem dagene som fyller en hel by. Wacken forvandler en landsby på 1 800 innbyggere til Tysklands tredje største tettsted, og Hellfest har bygget en permanent park i Clisson. Billettene går som regel før programmet er klart, camping er en del av opplevelsen, og du planlegger året rundt dem.",
+        "50000_100000": "Fortsatt store nok til seks scener og internasjonale hovednavn, men du rekker som regel å kjøpe billett etter at plakaten er sluppet. Kortere køer, kortere avstander, og som oftest lettere å komme til enn de aller største.",
+        "10000_50000": "Ofte det beste kompromisset: ekte hovednavn uten at du bruker en halvtime på å gå mellom scenene. Mange av de mest sjangerrene metalfestivalene ligger her – store nok til å booke tungt, små nok til å slippe å booke bredt.",
+        "2000_10000": "Kuraterte festivaler med tydelig profil. Publikum kjenner sjangeren, og bookingen tar sjanser de store ikke kan ta. Her finner du festivaler som holder seg til én ting og gjør den godt.",
+        "200_2000": "Klubbfestivaler, ofte innendørs og ofte om vinteren. Ett eller to rom, ingen camping, og du kan ende opp ved siden av bandet i baren etterpå. Det er her de fleste oppdagelsene skjer – og det er disse det er vanskeligst å finne informasjon om andre steder.",
+        "under_200": "Så små at de knapt annonseres utenfor sitt eget miljø. Ett rom, én kveld, og et publikum som stort sett kjenner hverandre."
+      }
     },
     "elektronisk": {
       "title": "De beste techno- og elektronikafestivalene i Europa {year}",

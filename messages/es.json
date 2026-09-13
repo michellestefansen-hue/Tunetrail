@@ -126,6 +126,14 @@
           "a": "Hellfest, en Francia, es el mayor por asistencia, con unos 180.000 visitantes en cuatro días. Wacken Open Air, en Alemania, es el más famoso con cerca de 85.000 visitantes, pero siempre se agota."
         },
         {
+          "q": "¿Qué festivales de rock y metal se celebran en invierno?",
+          "a": "La mayoría de los festivales europeos de rock y metal son eventos de verano, pero existe una temporada invernal, casi siempre en interior. Rockaway Beach en Inglaterra y Orgivm Satanicvm en Oslo en enero, Northern Winter Beat en Aalborg y Grauzone en La Haya en febrero, el Inferno Metal Festival en Oslo en Semana Santa y Roadburn en Tilburg en abril. Todos a escala de sala, de unos cientos a unos pocos miles de personas."
+        },
+        {
+          "q": "¿Dónde encuentro festivales pequeños de rock y metal en Europa?",
+          "a": "Los festivales más pequeños rara vez aparecen en las listas editoriales, porque esas listas cubren casi siempre los mismos diez o veinte nombres grandes. Por eso esta guía está ordenada por número de asistentes: el tramo «200 – 2.000 asistentes» reúne los festivales de sala, a menudo en interior, de uno o dos días, con una programación más específica de lo que los grandes pueden permitirse."
+        },
+        {
           "q": "¿Cuándo se celebran los festivales de rock y metal en Europa?",
           "a": "La temporada principal va de junio a agosto. Rock am Ring y Download son a principios de junio, Hellfest y Graspop a mediados, y Wacken, Bloodstock, Alcatraz y Summer Breeze a finales de julio y en agosto."
         },
@@ -145,7 +153,15 @@
           "q": "¿Están ya completos los carteles?",
           "a": "Rara vez. Los nombres más grandes se anuncian el otoño anterior y el resto se completa durante el invierno y la primavera. Las listas de esta guía se actualizan automáticamente."
         }
-      ]
+      ],
+      "sizeIntro": {
+        "over_100000": "Los cuatro o cinco días que llenan una ciudad entera. Wacken convierte un pueblo de 1.800 habitantes en la tercera localidad más poblada de Alemania durante una semana, y Hellfest ha levantado un parque permanente en Clisson. Las entradas suelen agotarse antes de que se anuncie el cartel, acampar forma parte de la experiencia y organizas el año en torno a ellos.",
+        "50000_100000": "Siguen siendo lo bastante grandes para seis escenarios y cabezas de cartel internacionales, pero normalmente aún puedes comprar entrada cuando ya se ha publicado el cartel. Menos colas, menos distancias y, por lo general, más fáciles de alcanzar que los mayores.",
+        "10000_50000": "A menudo el mejor equilibrio: cabezas de cartel de verdad sin caminar media hora entre escenarios. Muchos de los festivales de metal más fieles al género están aquí: lo bastante grandes para programar duro, lo bastante pequeños para no tener que programar amplio.",
+        "2000_10000": "Festivales seleccionados con una identidad clara. El público conoce el género y la programación asume riesgos que los grandes no pueden permitirse. Aquí están los festivales que hacen una sola cosa y la hacen bien.",
+        "200_2000": "Festivales de sala, casi siempre en interior y a menudo en invierno. Una o dos salas, sin acampada, y puedes acabar junto al grupo en la barra. Aquí es donde se producen la mayoría de los descubrimientos, y son los más difíciles de encontrar documentados en otro sitio.",
+        "under_200": "Tan pequeños que apenas se anuncian fuera de su propia escena. Una sala, una noche y un público que en su mayoría se conoce."
+      }
     },
     "elektronisk": {
       "title": "Los mejores festivales de electrónica y techno de Europa {year}",

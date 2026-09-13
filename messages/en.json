@@ -123,29 +123,45 @@
       "faq": [
         {
           "q": "Which is Europe's biggest metal festival?",
-          "a": "Hellfest in France is the largest by attendance, with around 180,000 visitors over four days. Wacken Open Air in Germany is the most famous, with roughly 85,000 visitors, but it always sells out."
+          "a": "Hellfest in Clisson, France is the largest by attendance, drawing around 180,000 across four days. Wacken Open Air in Germany is the best known, draws about 85,000, and usually sells out before the line-up is announced."
         },
         {
-          "q": "When do Europe's rock and metal festivals take place?",
-          "a": "The main season runs from June to August. Rock am Ring and Download fall in early June, Hellfest and Graspop in mid-June, while Wacken, Bloodstock, Alcatraz and Summer Breeze land in late July and August."
+          "q": "Which rock and metal festivals take place in winter?",
+          "a": "Most European rock and metal festivals are summer events, but a winter season exists and is almost entirely indoors. Rockaway Beach in England and Orgivm Satanicvm in Oslo in January, Northern Winter Beat in Aalborg and Grauzone in The Hague in February, Inferno Metal Festival in Oslo at Easter and Roadburn in Tilburg in April. All are club-scale, from a few hundred to a few thousand people."
         },
         {
-          "q": "When do tickets go on sale?",
-          "a": "Most of the big festivals open sales shortly after the previous edition ends, up to a year in advance. Wacken typically sells out before the line-up is announced, so it pays to be early."
+          "q": "Where do I find small rock and metal festivals in Europe?",
+          "a": "The smallest festivals rarely appear in editorial top lists, because those lists mostly cover the same ten or twenty big names. This guide is sorted by audience size for exactly that reason: the “200 – 2,000 attendees” band collects the club festivals, which are often indoors, run one or two days, and book more narrowly than the big ones can afford to."
         },
         {
-          "q": "Which festival suits a first-time visitor?",
-          "a": "Graspop and Download have solid infrastructure, are easy to reach and offer broad bills spanning classic rock through to heavier metal. Both are straightforward to get to by public transport."
+          "q": "When are rock and metal festivals held in Europe?",
+          "a": "The main season is June to August. Rock am Ring and Download fall in early June, Hellfest and Graspop in mid-June, while Wacken, Bloodstock, Alcatraz, Brutal Assault and Summer Breeze run from late July through August. The winter festivals run from January to April and are mostly indoors."
+        },
+        {
+          "q": "When do tickets for {year} go on sale?",
+          "a": "Most big festivals open ticket sales right after the previous edition ends, up to a year ahead. Wacken typically sells out before the line-up is announced, so buying blind pays off there. Smaller festivals usually release tickets alongside their first names, through the winter."
+        },
+        {
+          "q": "Which festival is best for a first-timer?",
+          "a": "Graspop and Download have good infrastructure, are easy to reach by public transport, and have broad bills covering both classic rock and heavier metal. If you'd rather skip camping, one of the club festivals in the “200 – 2,000” band is an easier place to start."
+        },
+        {
+          "q": "Are the {year} line-ups complete yet?",
+          "a": "Rarely. The biggest names are announced the autumn before, and the rest fills in over winter and spring. Where the {year} line-up hasn't been released, this guide shows the previous edition's artists, clearly marked with the year they played."
         },
         {
           "q": "Can I fit several festivals into one trip?",
-          "a": "Yes. Hellfest and Graspop often fall in the same week and are only a few hours apart by train or car. Rock am Ring and Rock im Park share a line-up and run simultaneously in Germany."
-        },
-        {
-          "q": "Are the line-ups already complete?",
-          "a": "Rarely. The biggest names are announced the autumn before, while the rest of the bill fills out through winter and spring. The lists in this guide update automatically as new names are confirmed."
+          "a": "Yes. Hellfest and Graspop often fall in the same week and are only a few hours apart by train or car. Rock am Ring and Rock im Park share a line-up and run simultaneously in Germany. Brutal Assault, Alcatraz and Bloodstock cluster in early August."
         }
-      ]
+      ],
+      "sizeIntro": {
+        "over_100000": "The four or five days that fill an entire town. Wacken turns a village of 1,800 into Germany's third-largest settlement for a week, and Hellfest has built a permanent park in Clisson. Tickets usually sell out before the line-up is announced, camping is part of the experience, and you plan your year around them.",
+        "50000_100000": "Still big enough for six stages and international headliners, but you can usually still buy a ticket after the poster drops. Shorter queues, shorter walks, and generally easier to reach than the very largest.",
+        "10000_50000": "Often the best compromise: real headliners without spending half an hour walking between stages. Many of the most genre-focused metal festivals sit here — big enough to book heavy, small enough not to have to book broad.",
+        "2000_10000": "Curated festivals with a clear identity. The crowd knows the genre, and the booking takes chances the big ones can't. This is where you find festivals that stick to one thing and do it well.",
+        "200_2000": "Club festivals, usually indoors and often in winter. One or two rooms, no camping, and you may well end up next to the band at the bar afterwards. This is where most of the discoveries happen — and these are the hardest to find anything about elsewhere.",
+        "under_200": "Small enough that they're barely advertised outside their own scene. One room, one night, and a crowd that mostly knows each other."
+      }
     },
     "elektronisk": {
       "title": "The best electronic and techno festivals in Europe {year}",

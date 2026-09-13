@@ -274,7 +274,9 @@ export default async function GuidePage({
           ))}
 
 
-        {browse && <GuideBySize groups={browse} locale={locale} year={year} />}
+        {browse && (
+          <GuideBySize groups={browse} locale={locale} year={year} guideKey={key} />
+        )}
         {!browse && (
           <ol className="mt-8 flex flex-col gap-4">
             {festivals.map((f, i) => {

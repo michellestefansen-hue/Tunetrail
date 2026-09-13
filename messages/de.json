@@ -126,6 +126,14 @@
           "a": "Hellfest in Frankreich ist nach Besucherzahl das größte, mit rund 180.000 Besuchern an vier Tagen. Wacken Open Air in Deutschland ist das bekannteste mit etwa 85.000 Besuchern, ist aber stets ausverkauft."
         },
         {
+          "q": "Welche Rock- und Metalfestivals finden im Winter statt?",
+          "a": "Die meisten europäischen Rock- und Metalfestivals sind Sommerveranstaltungen, aber es gibt eine Wintersaison, und die findet fast ausschließlich drinnen statt. Rockaway Beach in England und Orgivm Satanicvm in Oslo im Januar, Northern Winter Beat in Aalborg und Grauzone in Den Haag im Februar, das Inferno Metal Festival in Oslo zu Ostern und Roadburn in Tilburg im April. Alle im Clubformat, von ein paar hundert bis ein paar tausend Besuchern."
+        },
+        {
+          "q": "Wo finde ich kleine Rock- und Metalfestivals in Europa?",
+          "a": "Die kleinsten Festivals tauchen in redaktionellen Bestenlisten kaum auf, weil diese Listen meist dieselben zehn bis zwanzig großen Namen abdecken. Genau deshalb ist dieser Guide nach Besucherzahl sortiert: Die Gruppe „200 – 2.000 Besucher“ versammelt die Clubfestivals, die oft drinnen stattfinden, ein bis zwei Tage dauern und enger buchen, als die Großen es sich leisten können."
+        },
+        {
           "q": "Wann finden Europas Rock- und Metal-Festivals statt?",
           "a": "Die Hauptsaison reicht von Juni bis August. Rock am Ring und Download liegen Anfang Juni, Hellfest und Graspop Mitte Juni, während Wacken, Bloodstock, Alcatraz und Summer Breeze Ende Juli und im August stattfinden."
         },
@@ -145,7 +153,15 @@
           "q": "Sind die Line-ups schon vollständig?",
           "a": "Selten. Die größten Namen werden im Herbst zuvor angekündigt, der Rest füllt sich über Winter und Frühjahr. Die Listen in diesem Guide aktualisieren sich automatisch, sobald neue Namen bestätigt sind."
         }
-      ]
+      ],
+      "sizeIntro": {
+        "over_100000": "Die vier bis fünf Tage, die eine ganze Stadt füllen. Wacken macht aus einem Dorf mit 1.800 Einwohnern für eine Woche Deutschlands drittgrößte Ortschaft, und Hellfest hat in Clisson einen dauerhaften Park gebaut. Die Tickets sind meist weg, bevor das Line-up steht, Camping gehört dazu, und man plant sein Jahr um sie herum.",
+        "50000_100000": "Immer noch groß genug für sechs Bühnen und internationale Headliner, aber meist bekommt man noch ein Ticket, nachdem das Plakat draußen ist. Kürzere Schlangen, kürzere Wege und in der Regel leichter erreichbar als die ganz großen.",
+        "10000_50000": "Oft der beste Kompromiss: echte Headliner, ohne eine halbe Stunde zwischen den Bühnen zu laufen. Viele der genretreuesten Metalfestivals liegen hier — groß genug, um schwer zu buchen, klein genug, um nicht breit buchen zu müssen.",
+        "2000_10000": "Kuratierte Festivals mit klarem Profil. Das Publikum kennt das Genre, und das Booking geht Risiken ein, die sich die Großen nicht leisten können. Hier finden sich Festivals, die eine Sache machen und die richtig.",
+        "200_2000": "Clubfestivals, meist drinnen und oft im Winter. Ein oder zwei Räume, kein Camping, und hinterher steht man womöglich neben der Band an der Bar. Hier passieren die meisten Entdeckungen — und über diese findet man anderswo am schwersten etwas.",
+        "under_200": "So klein, dass sie außerhalb der eigenen Szene kaum beworben werden. Ein Raum, ein Abend, ein Publikum, das sich größtenteils kennt."
+      }
     },
     "elektronisk": {
       "title": "Die besten Elektro- und Techno-Festivals in Europa {year}",

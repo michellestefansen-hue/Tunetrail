@@ -18,12 +18,18 @@ export async function GuideBySize({
   groups,
   locale,
   year,
+  guideKey,
 }: {
   groups: SizeGroup[];
   locale: Locale;
   year: number;
+  guideKey: string;
 }) {
   const tg = await getTranslations({ locale, namespace: "Guides" });
+  // What each band is actually like to attend. Genre-specific, so it lives
+  // under the guide rather than beside the band labels -- 200 people at a
+  // black-metal night and 200 at a jazz club are not the same evening.
+  const tIntro = await getTranslations({ locale, namespace: `Guides.${guideKey}.sizeIntro` });
   const ts = await getTranslations({ locale, namespace: "Sizes" });
   const tCountries = await getTranslations({ locale, namespace: "Countries" });
 
@@ -34,6 +40,7 @@ export async function GuideBySize({
     const edition = currentEdition(f);
     const lineup = guideLineup(f, 4);
     const dates = dateRangeLabel(f, locale, year);
+    const edFrom = edition?.date_from ?? null;
     const place = [f.city, f.country ? tCountries(f.country) : null]
       .filter(Boolean)
       .join(", ");
@@ -66,7 +73,14 @@ export async function GuideBySize({
 
         <p className="mt-0.5 text-xs text-stone-500">
           {place}
-          {dates ? ` · ${dates}` : ""}
+          {dates ? (
+            <>
+              {" · "}
+              <time dateTime={edFrom ?? undefined}>{dates}</time>
+            </>
+          ) : (
+            ""
+          )}
         </p>
 
         {lineup.names.length > 0 && (
@@ -143,6 +157,9 @@ export async function GuideBySize({
             <h2 className="text-xl">{bandLabel(group.band)}</h2>
             <p className="mt-1 text-xs text-stone-500">
               {tg("festivalsInBand", { count: group.festivals.length })}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-[#6B5E59]">
+              {tIntro(group.band)}
             </p>
             <ul className="mt-4 flex flex-col gap-2.5">{group.festivals.map(row)}</ul>
           </section>

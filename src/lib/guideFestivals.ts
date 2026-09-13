@@ -160,7 +160,10 @@ export async function fetchFestivalsByTags(
   const mainstream = new Set<string>(rule?.mainstream ?? []);
   const anchor = new Set<string>(rule?.anchor ?? []);
 
+  const excluded = new Set(rule?.exclude ?? []);
+
   const belongs = (f: Festival) => {
+    if (excluded.has(f.slug)) return false;
     const t = f.tags ?? [];
     if (t.length === 0) return false;
     if (t.filter((tag) => core.has(tag)).length / t.length <= 0.5) return false;

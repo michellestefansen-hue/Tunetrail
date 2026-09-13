@@ -55,6 +55,20 @@ export type Guide = {
     mainstream?: FestivalTag[];
     /** ...unless one of these anchors it in the genre anyway. */
     anchor?: FestivalTag[];
+    /**
+     * Slugs the rule lets through but that do not belong, judged by reading
+     * the actual line-up rather than the tags.
+     *
+     * The tags describe which genres appear at a festival, not what the
+     * festival is, and for a handful that difference matters: Eksjö Stadsfest
+     * carries a Metal tag because one of its forty-six acts is a metal band,
+     * while the rest of the bill is Swedish dansband and eurodance. The tags
+     * are not wrong; they simply cannot separate "a rock festival with a broad
+     * bill" from "a broad festival that booked some rock".
+     *
+     * Kept deliberately short. Every entry names what the line-up actually is.
+     */
+    exclude?: string[];
   };
   /**
    * Seeds the map's place filter. Comma-separated for regions spanning
@@ -83,6 +97,14 @@ export const GUIDES: Record<GuideKey, Guide> = {
       core: ["Rock", "Metal", "Punk & Hardcore", "Alternativ & Indie"],
       mainstream: ["Pop & Mainstream"],
       anchor: ["Metal", "Punk & Hardcore"],
+      exclude: [
+        "eksjo-stadsfest", // Pernilla Wahlgren, Da Buzz, Dr. Bombay -- dansband og eurodance
+        "syd-for-solen", // Medina, Ravyn Lenae, Dijon, Malk De Koijn -- pop og R&B
+        "new-note-festival", // School of X, Ana Juél -- dansk pop og indie i oppstart
+        "vinjerock", // Stein Torleif Bjella, Valkyrien Allstars -- viser og folkemusikk
+        "orange-blossom-special-festival", // Alela Diane, Israel Nash -- americana
+        "weinturm-open-air", // Freshlyground, Cumbia Tu Mare, Baba Yaga -- verdensmusikk
+      ],
     },
     festivalSlugs: [
       "wacken-open-air",

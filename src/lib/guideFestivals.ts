@@ -1,3 +1,4 @@
+import type { BrowseRule } from "@/lib/guides";
 import { createClient } from "@/lib/supabase/static";
 import {
   FESTIVAL_SELECT,
@@ -145,16 +146,31 @@ export function groupByMonth(
  * Festivals with no edition at all are dropped. A row with a name and nothing
  * else tells a reader nothing and pads the page.
  */
-export async function fetchFestivalsByTags(tags: FestivalTag[]): Promise<Festival[]> {
+export async function fetchFestivalsByTags(
+  tags: FestivalTag[],
+  rule?: BrowseRule,
+): Promise<Festival[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("festivals")
     .select(FESTIVAL_SELECT)
     .overlaps("tags", tags);
 
-  return ((data ?? []) as unknown as Festival[]).filter(
-    (f) => (f.festival_editions ?? []).length > 0,
-  );
+  const core = new Set<string>(rule?.core ?? tags);
+  const mainstream = new Set<string>(rule?.mainstream ?? []);
+  const anchor = new Set<string>(rule?.anchor ?? []);
+
+  const belongs = (f: Festival) => {
+    const t = f.tags ?? [];
+    if (t.length === 0) return false;
+    if (t.filter((tag) => core.has(tag)).length / t.length <= 0.5) return false;
+    const leansMainstream = t.some((tag) => mainstream.has(tag));
+    return !leansMainstream || t.some((tag) => anchor.has(tag));
+  };
+
+  return ((data ?? []) as unknown as Festival[])
+    .filter((f) => (f.festival_editions ?? []).length > 0)
+    .filter(belongs);
 }
 
 export type SizeGroup = {

@@ -90,7 +90,9 @@ export default async function GuidePage({
   // known earliest, so they are the most reliable signal for which season the
   // page is about.
   const browse = guideDef.browseTags
-    ? groupBySize(await fetchFestivalsByTags(guideDef.browseTags))
+    ? groupBySize(
+        await fetchFestivalsByTags(guideDef.browseTags, guideDef.browseRule),
+      )
     : null;
   const browseCount = browse?.reduce((n, g) => n + g.festivals.length, 0) ?? 0;
 

@@ -18,6 +18,8 @@ import type { FestivalTag } from "@/lib/festivals";
  */
 export type GuideKey = "rock-metal" | "elektronisk" | "jazz" | "frankrike" | "norden";
 
+export type BrowseRule = NonNullable<Guide["browseRule"]>;
+
 export type Guide = {
   key: GuideKey;
   /** Curated, ranked slugs. Verified to exist and to carry a 2026 edition. */
@@ -28,6 +30,32 @@ export type Guide = {
    * `festivalSlugs` is still kept as the editorial pick shown at the top.
    */
   browseTags?: FestivalTag[];
+  /**
+   * Which festivals genuinely belong to the genre.
+   *
+   * `browseTags` alone casts far too wide a net: Roskilde, Glastonbury and
+   * Sziget all carry a Metal tag, and none belongs in a metal overview. What
+   * separates them is spread -- Wacken has one tag, Glastonbury has thirteen.
+   * A festival booking hip-hop, techno and jazz alongside rock is a general
+   * festival that happens to book rock.
+   *
+   * Deliberately not filtered on `category` as well. That column holds a single
+   * primary genre and would be the obvious guard, but it is noisier than the
+   * tags: Viña Rock, one of Spain's biggest rock and punk festivals, is filed
+   * under Hip-Hop & R&B, and Sziget under Metal.
+   */
+  browseRule?: {
+    /** More than half of a festival's tags must fall inside this set. */
+    core: FestivalTag[];
+    /**
+     * Carrying one of these leans mainstream, and is not enough on its own --
+     * Pinkpop and Rock am Ring both book pop, but only one of them is a rock
+     * festival. What tells them apart is `anchor`.
+     */
+    mainstream?: FestivalTag[];
+    /** ...unless one of these anchors it in the genre anyway. */
+    anchor?: FestivalTag[];
+  };
   /**
    * Seeds the map's place filter. Comma-separated for regions spanning
    * several countries. Each value must exist in the festival data, since the
@@ -51,6 +79,11 @@ export const GUIDES: Record<GuideKey, Guide> = {
     key: "rock-metal",
     mapTags: ["Rock", "Metal"],
     browseTags: ["Rock", "Metal"],
+    browseRule: {
+      core: ["Rock", "Metal", "Punk & Hardcore", "Alternativ & Indie"],
+      mainstream: ["Pop & Mainstream"],
+      anchor: ["Metal", "Punk & Hardcore"],
+    },
     festivalSlugs: [
       "wacken-open-air",
       "hellfest",

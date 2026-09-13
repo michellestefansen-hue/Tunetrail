@@ -6,7 +6,7 @@ import { getPathname, Link } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import { GUIDES, GUIDE_KEYS, guidePath } from "@/lib/guides";
 import { createClient } from "@/lib/supabase/static";
-import { fetchGuideFestivals, guideYear } from "@/lib/guideFestivals";
+import { fetchGuideFestivals, guideYear, hubYear } from "@/lib/guideFestivals";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 
@@ -28,7 +28,11 @@ export async function generateMetadata({
   const { locale: rawLocale } = await params;
   const locale = hasLocale(routing.locales, rawLocale) ? rawLocale : routing.defaultLocale;
   const t = await getTranslations({ locale, namespace: "Guides" });
-  const year = new Date().getFullYear();
+  // Derived from the data, not the calendar -- see hubYear.
+  const perGuide = await Promise.all(
+    GUIDE_KEYS.map((key) => fetchGuideFestivals(GUIDES[key].festivalSlugs)),
+  );
+  const year = hubYear(perGuide);
 
   const title = t("hubMetaTitle", { year });
   const description = t("hubMetaDescription", { year });
@@ -38,16 +42,23 @@ export async function generateMetadata({
     description,
     alternates: {
       canonical: `${SITE_URL}${getPathname({ locale, href: "/" })}`,
-      languages: Object.fromEntries(
-        routing.locales.map((l) => [l, `${SITE_URL}${getPathname({ locale: l, href: "/" })}`]),
-      ),
+      languages: {
+        ...Object.fromEntries(
+          routing.locales.map((l) => [l, `${SITE_URL}${getPathname({ locale: l, href: "/" })}`]),
+        ),
+        "x-default": `${SITE_URL}${getPathname({ locale: routing.defaultLocale, href: "/" })}`,
+      },
     },
     openGraph: {
       title,
       description,
       url: `${SITE_URL}${getPathname({ locale, href: "/" })}`,
     },
-    twitter: { title, description },
+    // Next replaces the layout's whole `twitter` object rather than merging
+    // field by field, so the card type from layout.tsx has to be repeated here
+    // -- without it the page shared as a small summary card instead of showing
+    // its generated image.
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
@@ -69,9 +80,12 @@ export default async function HomePage({
     .select("id", { count: "exact", head: true });
 
   // One representative year per guide, derived from the curated editions.
+  const perGuide = await Promise.all(
+    GUIDE_KEYS.map((key) => fetchGuideFestivals(GUIDES[key].festivalSlugs)),
+  );
   const entries = await Promise.all(
-    GUIDE_KEYS.map(async (key) => {
-      const festivals = await fetchGuideFestivals(GUIDES[key].festivalSlugs);
+    GUIDE_KEYS.map(async (key, i) => {
+      const festivals = perGuide[i];
       const t = await getTranslations({ locale, namespace: `Guides.${key}` });
       return {
         key,
@@ -82,14 +96,14 @@ export default async function HomePage({
     }),
   );
 
-  const hubYear = new Date().getFullYear();
+  const year = hubYear(perGuide);
   const hubUrl = `${SITE_URL}${getPathname({ locale, href: "/" })}`;
 
   const jsonLd = [
     {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      name: tg("hubTitle", { year: hubYear }),
+      name: tg("hubTitle", { year: year }),
       url: hubUrl,
       dateModified: new Date().toISOString(),
     },
@@ -125,7 +139,7 @@ export default async function HomePage({
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 pb-5 sm:pb-6">
           <h1 className="mx-auto max-w-3xl px-5 text-2xl text-white sm:text-4xl">
-            {tg("hubTitle", { year: hubYear })}
+            {tg("hubTitle", { year: year })}
           </h1>
         </div>
       </div>

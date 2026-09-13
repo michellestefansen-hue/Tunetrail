@@ -226,3 +226,15 @@ export function groupBySize(festivals: Festival[]): SizeGroup[] {
     .filter((band) => buckets.has(band))
     .map((band) => ({ band, festivals: buckets.get(band)! }));
 }
+
+/**
+ * The year the guides hub is about.
+ *
+ * Was `new Date().getFullYear()`, which titled the site's most important page
+ * after the season that was ending rather than the one being planned: in
+ * September the hub read 2026 while every guide card beneath it read 2027.
+ * Same rule as `guideYear`, across all the guides at once.
+ */
+export function hubYear(perGuide: Festival[][]): number {
+  return guideYear(perGuide.flat());
+}

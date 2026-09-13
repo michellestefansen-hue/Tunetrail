@@ -60,12 +60,21 @@ export async function generateMetadata({
     description,
     alternates: {
       canonical: `${SITE_URL}${getPathname({ locale, href })}`,
-      languages: Object.fromEntries(
-        routing.locales.map((l) => [l, `${SITE_URL}${getPathname({ locale: l, href })}`]),
-      ),
+      languages: {
+        ...Object.fromEntries(
+          routing.locales.map((l) => [l, `${SITE_URL}${getPathname({ locale: l, href })}`]),
+        ),
+        // Which page a reader lands on when none of the five languages match
+        // theirs. Without it Google picks for itself.
+        "x-default": `${SITE_URL}${getPathname({ locale: routing.defaultLocale, href })}`,
+      },
     },
     openGraph: { title, description, url: `${SITE_URL}${getPathname({ locale, href })}` },
-    twitter: { title, description },
+    // Next replaces the layout's whole `twitter` object rather than merging
+    // field by field, so the card type from layout.tsx has to be repeated here
+    // -- without it the page shared as a small summary card instead of showing
+    // its generated image.
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 

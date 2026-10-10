@@ -66,6 +66,33 @@ export const FESTIVAL_TAGS: FestivalTag[] = [
 ];
 
 /**
+ * Subgenres -- one level below `tags`.
+ *
+ * `tags` says a festival is electronic. It does not say whether it is techno
+ * or hardstyle, and in dance music that is the distinction that matters most:
+ * Tomorrowland and Dekmantel carry exactly the same two tags and share almost
+ * no audience. Size solved the equivalent problem for metal, where scale
+ * tracks the scene; in electronic it does not, because the mainstream/
+ * underground split runs across size rather than along it.
+ *
+ * Keys rather than display text, for the same reason as SIZE_BANDS: the
+ * labels exist in five languages, and the order is defined here only.
+ */
+export const SUBGENRES = {
+  elektronisk: ["techno", "house", "trance", "hardstyle", "dnb", "psytrance", "edm", "ambient", "disco"],
+  tungt: ["death_metal", "black_metal", "doom_stoner", "thrash", "power_prog", "metalcore", "goth_industrial", "punk", "classic_rock", "indie_alt"],
+} as const;
+
+export type Subgenre =
+  | (typeof SUBGENRES.elektronisk)[number]
+  | (typeof SUBGENRES.tungt)[number];
+
+export const ALL_SUBGENRES: Subgenre[] = [
+  ...SUBGENRES.elektronisk,
+  ...SUBGENRES.tungt,
+];
+
+/**
  * Stand-in artwork for the ~31% of festivals we have no photograph of.
  *
  * Keyed to the genre rather than to the festival, so the card still says
@@ -166,11 +193,12 @@ export type Festival = {
   image_url: string | null;
   tags: FestivalTag[] | null;
   size_band: SizeBand | null;
+  subgenres: Subgenre[] | null;
   festival_editions: FestivalEdition[];
 };
 
 export const FESTIVAL_SELECT =
-  "id, name, slug, website_url, city, region, venue_name, country, latitude, longitude, description, image_url, tags, size_band, festival_editions(id, year, date_from, date_to, ticket_url, program)";
+  "id, name, slug, website_url, city, region, venue_name, country, latitude, longitude, description, image_url, tags, size_band, subgenres, festival_editions(id, year, date_from, date_to, ticket_url, program)";
 
 export async function fetchFestivals(): Promise<Festival[]> {
   const supabase = createClient();

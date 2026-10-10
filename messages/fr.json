@@ -175,8 +175,8 @@
       "title": "Les meilleurs festivals électro et techno en Europe {year}",
       "metaTitle": "Meilleurs festivals électro et techno en Europe {year} | Tunetrail",
       "metaDescription": "Les plus grands festivals européens de techno, house et musique électronique en {year}. Dates, lieux et programmations à jour – de Tomorrowland à Awakenings et Dekmantel.",
-      "answer": "Tomorrowland, en Belgique, est le festival de musique électronique le plus connu au monde, tandis qu'Awakenings et Dekmantel, aux Pays-Bas, sont les plus solides purement axés techno. La saison court de mai à septembre, avec un pic en juillet.",
-      "intro": "La musique électronique entretient en Europe plusieurs traditions festivalières qui coexistent, et les différences vont plus loin que les affiches ne le laissent croire. Tomorrowland, à De Schorre, est la grande production : plus de 500 artistes sur seize scènes, sur deux week-ends de juillet, avec une scénographie qui devient une attraction en soi. Awakenings et Dekmantel, aux Pays-Bas, tirent dans l'autre sens : plus resserrés, plus proches de la culture club dont vient cette musique, avec un public qui vient pour les artistes plutôt que pour le spectacle.\n\nEntre ces pôles s'intercalent de nombreux spécialistes. Defqon.1 cultive le hardstyle et le hardcore avec l'un des plus grands nombres d'artistes de toute l'Europe. Kappa FuturFestival occupe un site industriel en plein Turin, quand Nature One, en Allemagne, investit une ancienne base de missiles. Sónar, à Barcelone, associe concerts et conférence sur la musique et la technologie, et tombe plus tôt dans la saison que la plupart.\n\nLa logistique diffère aussi des festivals rock : beaucoup de ces événements se déroulent sur une seule journée ou en ville, avec moins de camping et des nuits plus courtes que l'affiche ne le suggère.",
+      "answer": "Les plus grands festivals de techno et d'électro d'Europe sont Tomorrowland en Belgique, Defqon.1 aux Pays-Bas, Parookaville en Allemagne et Ultra Europe en Croatie. Mais la taille dit peu de chose du type de festival : ce guide est classé par sous-genre, de la techno et la house au hardstyle, au drum and bass, à la psytrance et à l'ambient.",
+      "intro": "En musique de danse, le chiffre de fréquentation dit peu. Le Kappa FuturFestival à Turin attire 100 000 personnes et partage son public avec les 15 000 de Dekmantel à l'Amsterdamse Bos — pas avec les 400 000 de Tomorrowland. La distinction qui compte passe entre mainstream et underground, et elle traverse les tailles. C'est pourquoi ce guide est classé par sous-genre plutôt que par affluence.\n\nL'Allemagne et les Pays-Bas en comptent le plus, mais les centres de gravité diffèrent : les Pays-Bas tiennent le hardstyle avec Defqon.1, Decibel Outdoor et Dominator, la Croatie a les festivals de plage Hideout, Barrakud et Dimensions, l'Angleterre a Houghton et Gottwood du côté expérimental, et la Tchéquie a Let It Roll — le plus grand festival de drum and bass au monde, avec plus de 250 artistes.\n\nLa saison est plus courte que celle du rock : l'essentiel se joue de juin à août, avec la saison en salle à Amsterdam pendant l'ADE en octobre et Time Warp à Mannheim au printemps. Les billets des plus gros sortent par vagues, et les premiers sont les moins chers.",
       "outro": "Les affiches des festivals électro sortent plus tard et par vagues plus nombreuses que dans d'autres genres, et les horaires de scène n'arrivent souvent que quelques semaines avant. Les listes ici se mettent à jour au fil des confirmations, mais vérifiez toujours le site du festival pour les horaires si vous voyagez pour un artiste précis.",
       "ctaMap": "Voir tous les festivals électro sur la carte",
       "faq": [
@@ -204,7 +204,19 @@
           "q": "Saurai-je à quelle heure jouent les artistes ?",
           "a": "Les horaires de scène ne sont publiés que quelques semaines avant, souvent d'abord dans l'application du festival. Les affiches de ce guide indiquent qui est confirmé, pas quand."
         }
-      ]
+      ],
+      "sizeIntro": {
+        "techno": "La techno est le courant le plus vaste d'Europe et le plus large : Awakenings et Time Warp dans leur forme pure, Dekmantel et les Nuits Sonores avec une arête expérimentale, le Kappa FuturFestival et NEOPOP en plein air, Stone Techno dans un site classé au patrimoine mondial à Essen. Les variantes dures sont ici aussi — Verknipt, Heave et Nibirii.",
+        "house": "House et tech house, souvent à l'affiche aux côtés de la techno. Gottwood et Houghton en Angleterre, Barrakud et Hideout sur les plages croates, Karrusel à Copenhague, DGTL à Amsterdam et le Kappa FuturFestival à Turin. Plus large d'ambiance que la techno, et généralement plus lumineux.",
+        "edm": "Mainstage et grande production : Tomorrowland, Parookaville, Ultra Europe, Untold, Mysteryland, Medusa et Airbeat One. Scénographies, pyrotechnie et têtes d'affiche devant des dizaines de milliers de personnes à la fois. C'est là que les festivals européens sont les plus grands, et là que les billets partent le plus tôt.",
+        "hardstyle": "Hardstyle, hardcore et gabber — l'extrémité la plus dure de la musique de danse, et une culture à part avec sa propre esthétique. Defqon.1 et Decibel Outdoor aux Pays-Bas font référence, Dominator et Sunglow perpétuent la tradition gabber, et Reverze remplit une halle à Anvers chaque hiver.",
+        "ambient": "Ambient et expérimental — des festivals où tout n'est pas fait pour danser. Dekmantel, Sónar et les Nuits Sonores y consacrent des scènes, Draaimolen et Houghton en font toute leur identité, et Meakusma à Eupen est peut-être le plus intransigeant d'Europe.",
+        "dnb": "Drum and bass. Let It Roll en Tchéquie est le plus grand au monde avec plus de 250 artistes, Dimensions et Hideout y consacrent des nuits sur la côte croate, et Parklife à Manchester le programme à côté de la house.",
+        "trance": "La trance n'a plus guère de festivals à elle en Europe, mais survit comme scène dédiée chez les grands : Tomorrowland, Ultra Europe, Untold et Creamfields en ont tous une.",
+        "psytrance": "Psytrance et darkpsy. Mo:Dem en Croatie est le plus connu d'Europe, avec ses propres scènes forest et bass expérimentale, et Nibirii programme de la psytrance à côté du hard dance et du drum and bass.",
+        "goth_industrial": "EBM, industriel, darkwave et synthpop — de la musique électronique issue d'une tout autre tradition que la culture club. E-tropolis en Allemagne et Winterwaves à Göteborg.",
+        "indie_alt": "Des festivals où l'électronique côtoie l'indie et l'alternatif. Pitchfork Music Festival à Londres et Waves Vienna, tous deux répartis sur plusieurs salles de la ville."
+      }
     },
     "jazz": {
       "title": "Les meilleurs festivals de jazz en Europe {year}",
@@ -315,7 +327,9 @@
     "jumpTo": "Aller à",
     "sizeUnknown": "Taille non encore renseignée",
     "festivalsInBand": "{count} festivals",
-    "sizeUnknownNote": "Nous n'avons pas encore trouvé la fréquentation de ces festivals. Ils figurent ici parce qu'ils appartiennent au genre, et rejoindront la bonne tranche dès que les chiffres seront connus."
+    "sizeUnknownNote": "Nous n'avons pas encore trouvé la fréquentation de ces festivals. Ils figurent ici parce qu'ils appartiennent au genre, et rejoindront la bonne tranche dès que les chiffres seront connus.",
+    "subgenreUnknown": "Sous-genre non encore établi",
+    "subgenreUnknownNote": "Nous n'avons pas encore déterminé de sous-genre pour ceux-ci. Ils figurent ici parce qu'ils appartiennent au genre, et rejoindront la bonne section ensuite."
   },
   "Countries": {
     "Albania": "Albanie",
@@ -526,5 +540,26 @@
     "10000_50000": "10 000 – 50 000 festivaliers",
     "50000_100000": "50 000 – 100 000 festivaliers",
     "over_100000": "Plus de 100 000 festivaliers"
+  },
+  "Subgenres": {
+    "techno": "Techno",
+    "house": "House",
+    "trance": "Trance",
+    "hardstyle": "Hardstyle et hardcore",
+    "dnb": "Drum and bass",
+    "psytrance": "Psytrance",
+    "edm": "EDM et mainstage",
+    "ambient": "Ambient et expérimental",
+    "disco": "Disco et nu-disco",
+    "death_metal": "Death metal",
+    "black_metal": "Black metal",
+    "doom_stoner": "Doom et stoner",
+    "thrash": "Thrash",
+    "power_prog": "Power et prog",
+    "metalcore": "Metalcore",
+    "goth_industrial": "Goth et industriel",
+    "punk": "Punk",
+    "classic_rock": "Rock classique",
+    "indie_alt": "Indie et alternatif"
   }
 }

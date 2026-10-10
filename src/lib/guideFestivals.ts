@@ -9,6 +9,7 @@ import {
   type Festival,
   type FestivalTag,
   type SizeBand,
+  type Subgenre,
 } from "@/lib/festivals";
 
 /**
@@ -181,6 +182,11 @@ export type SizeGroup = {
   festivals: Festival[];
 };
 
+export type SubgenreGroup = {
+  subgenre: Subgenre | "unknown";
+  festivals: Festival[];
+};
+
 /**
  * Groups festivals by audience size, largest band first, with the ones we have
  * no figure for in their own group at the end.
@@ -237,4 +243,64 @@ export function groupBySize(festivals: Festival[]): SizeGroup[] {
  */
 export function hubYear(perGuide: Festival[][]): number {
   return guideYear(perGuide.flat());
+}
+
+/**
+ * Groups festivals by subgenre, largest group first.
+ *
+ * Size is the right axis for metal, where scale tracks the scene. For
+ * electronic it is not: the split between mainstream and underground runs
+ * across size rather than along it, so Kappa FuturFestival's 100,000 share an
+ * audience with Dekmantel's 15,000 and not with Tomorrowland's 400,000.
+ *
+ * Unlike `groupBySize` this is deliberately not a partition. `subgenres` is an
+ * array, and a festival appears under every one it carries -- Dekmantel under
+ * techno, house and ambient. That repetition is the point: someone searching
+ * for drum and bass wants a section that answers them, and picking one
+ * "primary" subgenre per festival would leave that section holding a single
+ * entry while four other drum and bass festivals sat elsewhere on the page.
+ *
+ * Within a group, festivals with a date still ahead of them come first and in
+ * date order, exactly as in `groupBySize`.
+ */
+export function groupBySubgenre(festivals: Festival[]): SubgenreGroup[] {
+  const today = new Date().toISOString().slice(0, 10);
+  const buckets = new Map<Subgenre | "unknown", Festival[]>();
+
+  for (const f of festivals) {
+    const keys: (Subgenre | "unknown")[] =
+      f.subgenres && f.subgenres.length > 0 ? f.subgenres : ["unknown"];
+    for (const key of keys) {
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key)!.push(f);
+    }
+  }
+
+  const upcoming = (f: Festival) => {
+    const e = currentEdition(f);
+    const end = e?.date_to ?? e?.date_from ?? "";
+    return end >= today ? end : null;
+  };
+
+  for (const list of buckets.values()) {
+    list.sort((a, b) => {
+      const ua = upcoming(a);
+      const ub = upcoming(b);
+      if (ua && ub) return ua.localeCompare(ub);
+      if (ua) return -1;
+      if (ub) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  // Biggest section first, as on the size pages. "unknown" always last, however
+  // many it holds -- it is the one group that is an admission rather than an
+  // answer.
+  return [...buckets.entries()]
+    .sort((a, b) => {
+      if (a[0] === "unknown") return 1;
+      if (b[0] === "unknown") return -1;
+      return b[1].length - a[1].length || a[0].localeCompare(b[0]);
+    })
+    .map(([subgenre, festivals]) => ({ subgenre, festivals }));
 }

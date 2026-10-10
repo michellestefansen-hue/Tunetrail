@@ -56,6 +56,13 @@ export type Guide = {
     /** ...unless one of these anchors it in the genre anyway. */
     anchor?: FestivalTag[];
     /**
+     * Which axis the page groups by. Size is right for metal, where scale
+     * tracks the scene -- 85 000 on a field and 300 in a club are different
+     * hobbies. For electronic it is not: the mainstream/underground split runs
+     * across size, so subgenre is the axis that matches how people choose.
+     */
+    axis?: "size" | "subgenre";
+    /**
      * Slugs the rule lets through but that do not belong, judged by reading
      * the actual line-up rather than the tags.
      *
@@ -129,6 +136,17 @@ export const GUIDES: Record<GuideKey, Guide> = {
   elektronisk: {
     key: "elektronisk",
     mapTags: ["Elektronisk & Dans", "Techno & House"],
+    browseTags: ["Elektronisk & Dans", "Techno & House"],
+    browseRule: {
+      // Only two tags carry the genre, against four for rock and metal, so the
+      // same majority test is stricter here -- which is right: a festival that
+      // books one techno act among its pop bill is not an electronic festival.
+      core: ["Elektronisk & Dans", "Techno & House"],
+      exclude: [
+        "les-ardentes", // Playboi Carti, Destroy Lonely, Fianso -- rap
+      ],
+      axis: "subgenre",
+    },
     festivalSlugs: [
       "tomorrowland",
       "defqon-1-festival",

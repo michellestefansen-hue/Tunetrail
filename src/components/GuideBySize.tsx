@@ -2,7 +2,7 @@ import { TicketIcon } from "@heroicons/react/24/solid";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { guideLineup, type SizeGroup } from "@/lib/guideFestivals";
+import { guideLineup, type SizeGroup, type SubgenreGroup } from "@/lib/guideFestivals";
 import { currentEdition, dateRangeLabel, type Festival } from "@/lib/festivals";
 
 /**
@@ -20,21 +20,34 @@ export async function GuideBySize({
   year,
   guideKey,
 }: {
-  groups: SizeGroup[];
+  groups: SizeGroup[] | SubgenreGroup[];
   locale: Locale;
   year: number;
   guideKey: string;
 }) {
+  // Size pages group by audience band; the electronic guide groups by
+  // subgenre instead, because in dance music the mainstream/underground split
+  // runs across size rather than along it. Everything below -- the rows, the
+  // jump nav, the collapsed unknown section -- is the same either way.
+  const axis: "size" | "subgenre" =
+    groups.length > 0 && "subgenre" in groups[0] ? "subgenre" : "size";
+  const keyOf = (g: SizeGroup | SubgenreGroup) =>
+    "subgenre" in g ? g.subgenre : g.band;
   const tg = await getTranslations({ locale, namespace: "Guides" });
   // What each band is actually like to attend. Genre-specific, so it lives
   // under the guide rather than beside the band labels -- 200 people at a
   // black-metal night and 200 at a jazz club are not the same evening.
   const tIntro = await getTranslations({ locale, namespace: `Guides.${guideKey}.sizeIntro` });
+  const tsub = await getTranslations({ locale, namespace: "Subgenres" });
   const ts = await getTranslations({ locale, namespace: "Sizes" });
   const tCountries = await getTranslations({ locale, namespace: "Countries" });
 
-  const bandLabel = (band: SizeGroup["band"]) =>
-    band === "unknown" ? tg("sizeUnknown") : ts(band);
+  const bandLabel = (key: string) =>
+    key === "unknown"
+      ? tg(axis === "subgenre" ? "subgenreUnknown" : "sizeUnknown")
+      : axis === "subgenre"
+        ? tsub(key)
+        : ts(key);
 
   function row(f: Festival) {
     const edition = currentEdition(f);
@@ -109,12 +122,12 @@ export async function GuideBySize({
         </p>
         <ul className="mt-2 flex flex-wrap gap-2">
           {groups.map((g) => (
-            <li key={g.band}>
+            <li key={keyOf(g)}>
               <a
-                href={`#storrelse-${g.band}`}
+                href={`#${axis === "subgenre" ? "sjanger" : "storrelse"}-${keyOf(g)}`}
                 className="inline-flex items-baseline gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs text-stone-700 shadow-sm hover:text-[#FF2D78]"
               >
-                {bandLabel(g.band)}
+                {bandLabel(keyOf(g))}
                 <span className="text-stone-400">{g.festivals.length}</span>
               </a>
             </li>
@@ -131,35 +144,35 @@ export async function GuideBySize({
           from the eye, not from the page. It shrinks as figures get sourced,
           and disappears entirely once it is empty.
         */
-        group.band === "unknown" ? (
+        keyOf(group) === "unknown" ? (
           <section
-            key={group.band}
-            id={`storrelse-${group.band}`}
+            key={keyOf(group)}
+            id={`${axis === "subgenre" ? "sjanger" : "storrelse"}-${keyOf(group)}`}
             className="mt-10 scroll-mt-4"
           >
             <details>
               <summary className="cursor-pointer">
-                <span className="font-heading text-xl">{bandLabel(group.band)}</span>
+                <span className="font-heading text-xl">{bandLabel(keyOf(group))}</span>
                 <span className="ml-2 text-xs text-stone-500">
                   {tg("festivalsInBand", { count: group.festivals.length })}
                 </span>
               </summary>
-              <p className="mt-2 text-sm text-[#6B5E59]">{tg("sizeUnknownNote")}</p>
+              <p className="mt-2 text-sm text-[#6B5E59]">{tg(axis === "subgenre" ? "subgenreUnknownNote" : "sizeUnknownNote")}</p>
               <ul className="mt-4 flex flex-col gap-2.5">{group.festivals.map(row)}</ul>
             </details>
           </section>
         ) : (
           <section
-            key={group.band}
-            id={`storrelse-${group.band}`}
+            key={keyOf(group)}
+            id={`${axis === "subgenre" ? "sjanger" : "storrelse"}-${keyOf(group)}`}
             className="mt-10 scroll-mt-4"
           >
-            <h2 className="text-xl">{bandLabel(group.band)}</h2>
+            <h2 className="text-xl">{bandLabel(keyOf(group))}</h2>
             <p className="mt-1 text-xs text-stone-500">
               {tg("festivalsInBand", { count: group.festivals.length })}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-[#6B5E59]">
-              {tIntro(group.band)}
+              {tIntro(keyOf(group))}
             </p>
             <ul className="mt-4 flex flex-col gap-2.5">{group.festivals.map(row)}</ul>
           </section>

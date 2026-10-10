@@ -14,6 +14,7 @@ import {
   guideLineup,
   groupByMonth,
   groupBySize,
+  groupBySubgenre,
 } from "@/lib/guideFestivals";
 import { GuideBySize } from "@/components/GuideBySize";
 import {
@@ -98,10 +99,13 @@ export default async function GuidePage({
   // decides the year in the title -- those are the festivals whose dates are
   // known earliest, so they are the most reliable signal for which season the
   // page is about.
-  const browse = guideDef.browseTags
-    ? groupBySize(
-        await fetchFestivalsByTags(guideDef.browseTags, guideDef.browseRule),
-      )
+  const browsed = guideDef.browseTags
+    ? await fetchFestivalsByTags(guideDef.browseTags, guideDef.browseRule)
+    : null;
+  const browse = browsed
+    ? guideDef.browseRule?.axis === "subgenre"
+      ? groupBySubgenre(browsed)
+      : groupBySize(browsed)
     : null;
   const browseCount = browse?.reduce((n, g) => n + g.festivals.length, 0) ?? 0;
 

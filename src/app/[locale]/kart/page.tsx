@@ -155,6 +155,11 @@ function MapView() {
 
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-[#0b0a1f]">
+      {/* Impact's ownership check. This page is a client component, so it cannot
+          export `metadata`; React 19 moves a <meta> rendered here up into <head>.
+          Impact wants `value` rather than `content`, which React's types don't
+          know, so it goes in through a spread. */}
+      <meta name="impact-site-verification" {...{ value: "b7bec88d-8d1f-476c-bf72-178556b5eef8" }} />
       <TunetrailMap
         festivals={visibleFestivals}
         searchMarker={searchLocation}

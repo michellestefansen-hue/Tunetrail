@@ -68,6 +68,11 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`${fontVariables} h-full antialiased`}>
+      <head>
+        {/* Impact's ownership check. Impact wants `value` rather than `content`,
+            which React's types don't know, so it goes in through a spread. */}
+        <meta name="impact-site-verification" {...{ value: "b7bec88d-8d1f-476c-bf72-178556b5eef8" }} />
+      </head>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
         <Analytics />

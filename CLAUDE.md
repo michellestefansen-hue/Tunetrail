@@ -21,6 +21,34 @@ godt, men skriver ikke kode og er ikke hjemme i terminalen.
   ferdige kommandoen.
 - **Svar på norsk.**
 
+## Slik leser du databasen
+
+Det finnes ingen direkte tilkobling: ingen `psql`, ingen MCP-server. Lesing går
+via Supabase sitt REST-API med anon-nøkkelen, som følger radnivåsikkerheten. Den
+slipper gjennom til `festivals` og `festival_editions`, og til `profiles`
+(visningsnavn er offentlige med vilje, så et bidrag kan vise «foreslått av» —
+men tabellen har også `is_admin`, så skriv ikke ut innholdet uten grunn).
+`submissions` og resten gir ingenting.
+
+Bruk skriptet. Det leser nøkkelen fra `.env.local` selv, så du verken ser eller
+skriver den:
+
+```bash
+node --env-file=.env.local scripts/les-db.mjs festivals select=slug,name slug=eq.neopop
+node --env-file=.env.local scripts/les-db.mjs festivals size_band=is.null --antall
+node --env-file=.env.local scripts/les-db.mjs festivals "select=*,festival_editions(*)" --ut=/tmp/festivaler.json
+```
+
+Alle valg og flere eksempler står øverst i `scripts/les-db.mjs`. Spørringsspråket
+er PostgREST: `eq.`, `in.(a,b)`, `is.null`, `cs.{Metal}`, `or=(...)`, og
+`festival_editions(year,date_from)` henter utgavene i samme kall. Store uttrekk
+går til en fil med `--ut=` og analyseres derfra.
+
+Finner skriptet ikke `.env.local`, sier det fra. Det gjelder skyøkter — fila er
+git-ignorert med vilje — og betyr at du ikke har tilgang til databasen: skriv
+spørringen som SQL og be Michelle kjøre den i SQL Editor. Gjett aldri på data du
+ikke har lest.
+
 ## Hvordan endringer når produksjon
 
 - **Kode:** push til `main`, så bygger og publiserer Vercel. Det finnes ingen
@@ -35,7 +63,7 @@ godt, men skriver ikke kode og er ikke hjemme i terminalen.
 - **`.env.local`** har `SUPABASE_SERVICE_ROLE_KEY` (robotskriptet og
   `/api/watch` bruker den). Den går
   forbi all tilgangskontroll: skriv den aldri ut, lim den aldri inn noe sted, og
-  bruk den ikke til å skrive data. Til lesing holder anon-nøkkelen.
+  bruk den ikke til å skrive data. Til lesing holder anon-nøkkelen, se over.
 
 ## Regler som har kostet noe å lære
 

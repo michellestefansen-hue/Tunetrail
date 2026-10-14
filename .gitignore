@@ -51,3 +51,7 @@ forslag/
 
 # Kontaktliste til arrangoerer. 587 e-postadresser -- repoet er offentlig.
 docs/arrangor-eposter.xlsx
+
+# Uttrekk fra databasen (scripts/les-db.mjs --ut=). Arbeidsfiler, og kan
+# inneholde hele festivaltabellen. Det er den eneste mappen skriptet skriver i.
+uttrekk/

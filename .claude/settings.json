@@ -6,7 +6,9 @@
       "Bash(node --env-file=.env.local scripts/robot-nightly.mjs:*)",
       "Bash(node --env-file=.env.local scripts/robot-nightly.mjs *)",
       "Write(//tmp/**)",
-      "Bash(mkdir -p /tmp/tunetrail-forslag)"
+      "Bash(mkdir -p /tmp/tunetrail-forslag)",
+      "Bash(node --env-file=.env.local scripts/les-db.mjs:*)",
+      "Bash(node --env-file=.env.local scripts/les-db.mjs *)"
     ]
   }
 }

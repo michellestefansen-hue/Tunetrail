@@ -36,13 +36,16 @@ skriver den:
 ```bash
 node --env-file=.env.local scripts/les-db.mjs festivals select=slug,name slug=eq.neopop
 node --env-file=.env.local scripts/les-db.mjs festivals size_band=is.null --antall
-node --env-file=.env.local scripts/les-db.mjs festivals "select=*,festival_editions(*)" --ut=/tmp/festivaler.json
+node --env-file=.env.local scripts/les-db.mjs festivals select=slug,name "--tagg=Rock,Metal"
+node --env-file=.env.local scripts/les-db.mjs festivals "select=*,festival_editions(*)" --ut=uttrekk/festivaler.json
 ```
 
 Alle valg og flere eksempler står øverst i `scripts/les-db.mjs`. Spørringsspråket
-er PostgREST: `eq.`, `in.(a,b)`, `is.null`, `cs.{Metal}`, `or=(...)`, og
-`festival_editions(year,date_from)` henter utgavene i samme kall. Store uttrekk
-går til en fil med `--ut=` og analyseres derfra.
+er PostgREST: `eq.`, `in.(a,b)`, `is.null`, `ilike.*tekst*`, og
+`festival_editions(year,date_from)` henter utgavene i samme kall. Bruk `--tagg=`
+til tagger i stedet for PostgREST sin array-syntaks. Store uttrekk går til en fil
+med `--ut=`, som bare kan skrive i `uttrekk/` (git-ignorert, og bare `.json`),
+og analyseres derfra.
 
 Finner skriptet ikke `.env.local`, sier det fra. Det gjelder skyøkter — fila er
 git-ignorert med vilje — og betyr at du ikke har tilgang til databasen: skriv

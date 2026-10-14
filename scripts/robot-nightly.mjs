@@ -16,6 +16,7 @@
  * Roboten skriver aldri til festivals eller festival_editions. Den skriver
  * forslag, som ligger i køen til de er godkjent.
  *
+ *   node --env-file=.env.local scripts/robot-nightly.mjs sjekk
  *   node --env-file=.env.local scripts/robot-nightly.mjs pick [--count 8] [--year 2027]
  *   node --env-file=.env.local scripts/robot-nightly.mjs read <slug> [--url <adresse>]
  *   node --env-file=.env.local scripts/robot-nightly.mjs propose <forslag.json>
@@ -1076,7 +1077,14 @@ function positional(args) {
 // tekstbehandlingen, og skal ikke utløse en kjøring av det.
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [command, ...rest] = process.argv.slice(2);
-  const commands = { pick, read, propose, note, "watch-url": watchUrl };
+  // Sier bare om nøklene finnes, aldri hva de er. Erstatter `node -e`, som
+  // må godkjennes for hånd fordi den kan kjøre hva som helst.
+  const sjekk = async () => {
+    const funnet = { NEXT_PUBLIC_SUPABASE_URL: !!SB_URL, SUPABASE_SERVICE_ROLE_KEY: !!SB_KEY };
+    for (const [navn, satt] of Object.entries(funnet)) console.log(`${navn}: ${satt ? "satt" : "MANGLER"}`);
+    if (!SB_URL || !SB_KEY) throw new Error("Nøkler mangler. Stopp og si fra.");
+  };
+  const commands = { sjekk, pick, read, propose, note, "watch-url": watchUrl };
 
   if (!commands[command]) {
     console.error(`Ukjent kommando «${command ?? ""}». Se kommentaren øverst i denne fila.`);

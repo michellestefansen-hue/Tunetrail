@@ -14,14 +14,33 @@ uklart — særlig punkt 2 og 8.
 
 ## Før du begynner
 
-Sjekk at `SUPABASE_SERVICE_ROLE_KEY` og `NEXT_PUBLIC_SUPABASE_URL` er satt.
-Er de ikke det, stopp og si fra — ikke prøv å komme rundt det.
+Sjekk at nøklene er satt med denne kommandoen, og ingen annen:
+
+```bash
+node --env-file=.env.local scripts/robot-nightly.mjs sjekk
+```
+
+Står det «MANGLER», stopp og si fra — ikke prøv å komme rundt det.
 
 Alle kommandoer kjøres slik:
 
 ```bash
 node --env-file=.env.local scripts/robot-nightly.mjs <kommando>
 ```
+
+### Hold deg innenfor det som er forhåndsgodkjent
+
+Natta har ingen som kan klikke «tillat». Gjør du noe utenfor lista i
+`.claude/settings.json`, står jobben stille til morgenen. Derfor:
+
+- **Kjør fra prosjektmappen, aldri med `cd`.** Du står allerede riktig. En
+  kommando som starter med `cd ... &&` blir stoppet.
+- **Én kommando om gangen.** Ikke lenk dem med `&&`.
+- **Forslagsfilene skrives til `forslag/<slug>.json`** i prosjektmappen
+  (git-ignorert), aldri til Downloads, `/tmp` eller andre steder.
+- **Ikke slett filer.** Skriv ny fil over den gamle, eller la den ligge.
+- **Ikke bruk `node -e`** eller andre egne skript. Trenger du noe skriptet ikke
+  kan, skriv det i oppsummeringen i stedet.
 
 ## Slik går en natt
 
@@ -193,7 +212,7 @@ Deretter:
 
 ### 4. Send forslaget
 
-Skriv en JSON-fil og send den:
+Skriv en JSON-fil til `forslag/<slug>.json` og send den:
 
 ```json
 {
@@ -212,7 +231,7 @@ Skriv en JSON-fil og send den:
 ```
 
 ```bash
-node --env-file=.env.local scripts/robot-nightly.mjs propose forslag.json
+node --env-file=.env.local scripts/robot-nightly.mjs propose forslag/roskilde-festival.json
 ```
 
 `dates` utelates hvis året allerede finnes med riktige datoer. `add` utelates

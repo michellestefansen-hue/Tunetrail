@@ -17,7 +17,7 @@ uklart — særlig punkt 2 og 8.
 Sjekk at nøklene er satt med denne kommandoen, og ingen annen:
 
 ```bash
-node --env-file=.env.local scripts/robot-nightly.mjs sjekk
+node --env-file-if-exists=.env.local scripts/robot-nightly.mjs sjekk
 ```
 
 Står det «MANGLER», stopp og si fra — ikke prøv å komme rundt det.
@@ -25,7 +25,7 @@ Står det «MANGLER», stopp og si fra — ikke prøv å komme rundt det.
 Alle kommandoer kjøres slik:
 
 ```bash
-node --env-file=.env.local scripts/robot-nightly.mjs <kommando>
+node --env-file-if-exists=.env.local scripts/robot-nightly.mjs <kommando>
 ```
 
 ### Hold deg innenfor det som er forhåndsgodkjent
@@ -47,7 +47,7 @@ Natta har ingen som kan klikke «tillat». Gjør du noe utenfor lista i
 ### 1. Hent nattens utvalg
 
 ```bash
-node --env-file=.env.local scripts/robot-nightly.mjs pick --count 8 --year 2027
+node --env-file-if-exists=.env.local scripts/robot-nightly.mjs pick --count 8 --year 2027
 ```
 
 Du får en liste med `reason` på hver: `siden har endret seg`, `ingen
@@ -64,7 +64,7 @@ på noen uker er normalt; et avvik på et halvt år er en feil.
 ### 2. Les siden
 
 ```bash
-node --env-file=.env.local scripts/robot-nightly.mjs read <slug>
+node --env-file-if-exists=.env.local scripts/robot-nightly.mjs read <slug>
 ```
 
 Legg på `--kort` når et menneske skal lese svaret: da vises bare
@@ -132,14 +132,14 @@ Det den **ikke** gjør, er å lete videre enn ett hopp. Er `known_artists` og
 bak en kalenderwidget), les videre for hånd:
 
 ```bash
-node --env-file=.env.local scripts/robot-nightly.mjs read <slug> --url <lenken>
+node --env-file-if-exists=.env.local scripts/robot-nightly.mjs read <slug> --url <lenken>
 ```
 
 Fant du siden der lineupen faktisk bor, **lagre den** — da peker både
 endringsvakten og du selv rett på riktig side neste gang:
 
 ```bash
-node --env-file=.env.local scripts/robot-nightly.mjs watch-url <slug> <lenken>
+node --env-file-if-exists=.env.local scripts/robot-nightly.mjs watch-url <slug> <lenken>
 ```
 
 Dette er noe av det mest verdifulle du gjør. Ei riktig lagret adresse sparer
@@ -231,7 +231,7 @@ Skriv en JSON-fil til `forslag/<slug>.json` og send den:
 ```
 
 ```bash
-node --env-file=.env.local scripts/robot-nightly.mjs propose forslag/roskilde-festival.json
+node --env-file-if-exists=.env.local scripts/robot-nightly.mjs propose forslag/roskilde-festival.json
 ```
 
 `dates` utelates hvis året allerede finnes med riktige datoer. `add` utelates
@@ -245,7 +245,7 @@ du fant det, og hva du var usikker på.
 ### 5. Eller si at det ikke ble noe
 
 ```bash
-node --env-file=.env.local scripts/robot-nightly.mjs note <slug> "fant bare 2026-plakaten, ingen 2027-datoer publisert" --reason gammel-plakat
+node --env-file-if-exists=.env.local scripts/robot-nightly.mjs note <slug> "fant bare 2026-plakaten, ingen 2027-datoer publisert" --reason gammel-plakat
 ```
 
 **Dette er en like god utgang som et forslag.** Du har lov til å gi opp, og du

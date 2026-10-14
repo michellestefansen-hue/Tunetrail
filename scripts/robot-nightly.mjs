@@ -16,11 +16,11 @@
  * Roboten skriver aldri til festivals eller festival_editions. Den skriver
  * forslag, som ligger i køen til de er godkjent.
  *
- *   node --env-file=.env.local scripts/robot-nightly.mjs sjekk
- *   node --env-file=.env.local scripts/robot-nightly.mjs pick [--count 8] [--year 2027]
- *   node --env-file=.env.local scripts/robot-nightly.mjs read <slug> [--url <adresse>]
- *   node --env-file=.env.local scripts/robot-nightly.mjs propose <forslag.json>
- *   node --env-file=.env.local scripts/robot-nightly.mjs note <slug> "hvorfor det ikke ble noe"
+ *   node --env-file-if-exists=.env.local scripts/robot-nightly.mjs sjekk
+ *   node --env-file-if-exists=.env.local scripts/robot-nightly.mjs pick [--count 8] [--year 2027]
+ *   node --env-file-if-exists=.env.local scripts/robot-nightly.mjs read <slug> [--url <adresse>]
+ *   node --env-file-if-exists=.env.local scripts/robot-nightly.mjs propose <forslag.json>
+ *   node --env-file-if-exists=.env.local scripts/robot-nightly.mjs note <slug> "hvorfor det ikke ble noe"
  *
  * Krever SUPABASE_SERVICE_ROLE_KEY og NEXT_PUBLIC_SUPABASE_URL i miljøet.
  */

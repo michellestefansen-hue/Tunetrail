@@ -1,14 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cd /Users/michellestefansen/Downloads/tunetrail && node --env-file=.env.local scripts/robot-nightly.mjs:*)",
-      "Bash(cd /Users/michellestefansen/Downloads/tunetrail && node --env-file=.env.local scripts/robot-nightly.mjs *)",
-      "Bash(node --env-file=.env.local scripts/robot-nightly.mjs:*)",
-      "Bash(node --env-file=.env.local scripts/robot-nightly.mjs *)",
-      "Write(//tmp/**)",
-      "Bash(mkdir -p /tmp/tunetrail-forslag)",
+      "Bash(node --env-file-if-exists=.env.local scripts/robot-nightly.mjs:*)",
       "Bash(node --env-file=.env.local scripts/les-db.mjs:*)",
-      "Bash(node --env-file=.env.local scripts/les-db.mjs *)"
+      "Bash(mkdir -p forslag)",
+      "Write(forslag/**)"
     ]
   }
 }

@@ -3,7 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { guideLineup, type SizeGroup, type SubgenreGroup } from "@/lib/guideFestivals";
-import { currentEdition, dateRangeLabel, type Festival } from "@/lib/festivals";
+import {
+  currentEdition,
+  dateRangeLabel,
+  hasUpcomingDate,
+  type Festival,
+} from "@/lib/festivals";
 
 /**
  * A whole genre, grouped by how big the festivals are.
@@ -52,7 +57,12 @@ export async function GuideBySize({
   function row(f: Festival) {
     const edition = currentEdition(f);
     const lineup = guideLineup(f, 4);
-    const dates = dateRangeLabel(f, locale, year);
+    // A date that has already happened is not an announcement. Festivals with no
+    // upcoming edition say so rather than showing last year's dates, which read
+    // as upcoming under a guide titled with the coming year.
+    const dates = hasUpcomingDate(f)
+      ? dateRangeLabel(f, locale, { alwaysYear: true })
+      : null;
     const edFrom = edition?.date_from ?? null;
     const place = [f.city, f.country ? tCountries(f.country) : null]
       .filter(Boolean)
@@ -86,13 +96,11 @@ export async function GuideBySize({
 
         <p className="mt-0.5 text-xs text-stone-500">
           {place}
+          {place ? " · " : ""}
           {dates ? (
-            <>
-              {" · "}
-              <time dateTime={edFrom ?? undefined}>{dates}</time>
-            </>
+            <time dateTime={edFrom ?? undefined}>{dates}</time>
           ) : (
-            ""
+            tg("dateNotAnnounced")
           )}
         </p>
 

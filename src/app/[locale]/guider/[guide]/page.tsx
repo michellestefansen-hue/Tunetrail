@@ -20,6 +20,7 @@ import { GuideBySize } from "@/components/GuideBySize";
 import {
   currentEdition,
   dateRangeLabel,
+  hasUpcomingDate,
   BCP47_LOCALE,
   type Festival,
 } from "@/lib/festivals";
@@ -125,7 +126,7 @@ export default async function GuidePage({
     q: item.q.replaceAll("{year}", String(year)),
     a: item.a.replaceAll("{year}", String(year)),
   }));
-  const months = groupByMonth(festivals, locale, year);
+  const months = groupByMonth(festivals, locale);
   const listed = browse ? browse.flatMap((g) => g.festivals) : festivals;
   const guideUrl = `${SITE_URL}${getPathname({ locale, href: guidePath(key) })}`;
   const updated = new Date().toISOString();
@@ -185,13 +186,13 @@ export default async function GuidePage({
   }
 
   /**
-   * Date range for a guide row. `dateRangeLabel` decides for itself whether the
-   * year needs spelling out, given the year this guide is titled with — it used
-   * to be appended here as well, which is how five rows came to read
-   * "17 – 20. juni 2027 2027".
+   * Date range for a guide row, always with its year. A festival whose latest
+   * edition has already happened reads "not announced" instead of last year's
+   * dates -- under a guide titled with the coming year those read as upcoming.
    */
   function dateLabel(f: Festival): string {
-    return dateRangeLabel(f, locale, year) ?? "—";
+    if (!hasUpcomingDate(f)) return tg("dateNotAnnounced");
+    return dateRangeLabel(f, locale, { alwaysYear: true }) ?? tg("dateNotAnnounced");
   }
 
   return (

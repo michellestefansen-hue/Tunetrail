@@ -4,6 +4,7 @@ import {
   FESTIVAL_SELECT,
   SIZE_BANDS,
   currentEdition,
+  hasUpcomingDate,
   programmeEdition,
   BCP47_LOCALE,
   type Festival,
@@ -102,30 +103,28 @@ export function guideLineup(festival: Festival, limit = 5): GuideLineup {
 /**
  * Groups festivals by the month their edition starts, in calendar order. The
  * key stays year-scoped (YYYY-MM) so the same month in two different years
- * doesn't collapse into one bucket.
+ * doesn't collapse into one bucket, and every heading carries its year.
+ *
+ * Festivals with no upcoming date are left out. They read "not announced" in
+ * the table above, and filing them under "July 2026" in a guide about the
+ * coming year would contradict that.
  */
 export function groupByMonth(
   festivals: Festival[],
   locale: string,
-  guideYear: number,
 ): { key: string; month: string; festivals: Festival[] }[] {
   const bcp = BCP47_LOCALE[locale] ?? BCP47_LOCALE.nb;
   const buckets = new Map<string, { label: string; festivals: Festival[] }>();
-  const thisMonth = new Date().toISOString().slice(0, 7);
 
   for (const f of festivals) {
+    if (!hasUpcomingDate(f)) continue;
     const from = currentEdition(f)?.date_from;
     if (!from) continue;
     const key = from.slice(0, 7);
-    const date = new Date(from);
-    // Spell out the year for months outside the guide's own year, so two
-    // buckets don't both read "July" -- and for months that have already been
-    // and gone, since a bare "July" in September reads as next summer. The
-    // bucket key is a whole month, so it is past only when the month is.
-    const label =
-      key.slice(0, 4) === String(guideYear) && key >= thisMonth
-        ? date.toLocaleDateString(bcp, { month: "long" })
-        : date.toLocaleDateString(bcp, { month: "long", year: "numeric" });
+    const label = new Date(from).toLocaleDateString(bcp, {
+      month: "long",
+      year: "numeric",
+    });
     if (!buckets.has(key)) buckets.set(key, { label, festivals: [] });
     buckets.get(key)!.festivals.push(f);
   }

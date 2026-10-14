@@ -257,11 +257,30 @@ export const BCP47_LOCALE: Record<string, string> = {
   es: "es-ES",
 };
 
+/**
+ * Whether the festival has a date still ahead of it.
+ *
+ * `currentEdition` falls back to the most recent edition when nothing newer
+ * exists, so "has an edition" is not the same as "has announced one": a
+ * festival whose only edition ended last July still returns a date, and showing
+ * it reads as though it were upcoming. Guides use this to print "not
+ * announced" in place of a date that has already happened.
+ *
+ * A date still ahead in the current year counts as announced. Only dates that
+ * have passed -- or an edition with no date at all -- do not.
+ */
+export function hasUpcomingDate(festival: Festival): boolean {
+  const edition = currentEdition(festival);
+  const end = edition?.date_to ?? edition?.date_from;
+  if (!end) return false;
+  return end >= new Date().toISOString().slice(0, 10);
+}
+
 /** Returns null when the festival has no date set — caller renders its own localized fallback. */
 export function dateRangeLabel(
   festival: Festival,
   locale: string,
-  contextYear: number = new Date().getFullYear(),
+  options: { alwaysYear?: boolean } = {},
 ): string | null {
   const edition = currentEdition(festival);
   const from = edition?.date_from;
@@ -272,17 +291,20 @@ export function dateRangeLabel(
   const first = new Date(from);
   const last = new Date(to ?? from);
 
-  // The year is spelled out unless the dates belong to the year the surrounding
-  // page is about *and* haven't happened yet. Two separate failures made that
-  // the rule: "23 – 26 June" under a 2027 heading read as 2027 when the edition
-  // was in fact 2026, and a finished edition rendered as "29 July – 1 August"
-  // with no year at all -- six weeks in the past, reading as upcoming.
+  // By default the year is left off only for a date that is still ahead in the
+  // current calendar year -- "23 – 26 June" reads as this summer, so it must be
+  // this summer. Anything else spells it out: a date in another year, and a
+  // finished edition, which without a year rendered as "29 July – 1 August" six
+  // weeks after it happened and read as upcoming.
   //
-  // `contextYear` defaults to the current year, which is what every caller
-  // except the guides wants; a guide passes the year it is titled with.
+  // `alwaysYear` is for the guides. A guide is titled with a year, but its rows
+  // are not all in that year, so every date carries its own and none can be
+  // read as belonging to the title.
   const today = new Date().toISOString().slice(0, 10);
   const needsYear =
-    from.slice(0, 4) !== String(contextYear) || (to ?? from) < today;
+    options.alwaysYear ||
+    from.slice(0, 4) !== String(new Date().getFullYear()) ||
+    (to ?? from) < today;
 
   const dayMonth: Intl.DateTimeFormatOptions = { day: "numeric", month: "long" };
   const withYear: Intl.DateTimeFormatOptions = needsYear
@@ -293,6 +315,19 @@ export function dateRangeLabel(
     return first.toLocaleDateString(bcp, withYear);
   }
   if (first.getMonth() === last.getMonth()) {
+    // Same month. Day-first languages read "5 – 7. august", built by putting the
+    // first day in front of the full closing date. English puts the month first,
+    // and the same construction gave "5 – August 7, 2027", which nobody writes --
+    // so for a month-first locale the formatter does the whole range itself.
+    // Detected from the locale rather than hard-coded, and only used where it is
+    // needed: in the other four languages formatRange's punctuation differs from
+    // what the site already shows ("5.–7." against "5 – 7.").
+    const order = new Intl.DateTimeFormat(bcp, dayMonth)
+      .formatToParts(first)
+      .map((part) => part.type);
+    if (order.indexOf("month") < order.indexOf("day")) {
+      return new Intl.DateTimeFormat(bcp, withYear).formatRange(first, last);
+    }
     return `${first.getDate()} – ${last.toLocaleDateString(bcp, withYear)}`;
   }
   // The year belongs on the closing date only. Carrying it on both gave

@@ -2,12 +2,17 @@
 
 Skrevet 31. august 2026, som overlevering til neste sesjon.
 
+> **Øyeblikksbilde fra 31. august.** Lastes ikke lenger automatisk ved
+> oppstart — det som gjelder hele prosjektet, står i `CLAUDE.md`. Nattjobben er
+> tatt i bruk siden, så «Neste steg» under beskriver situasjonen den gang, ikke
+> nå. Fellene og kommandoene gjelder fortsatt.
+
 Dette er ikke planen — den er `docs/plan-2027-oppdatering.md`, og den er
 fortsatt riktig. Dette er hva som faktisk er bygget, hva som er prøvd mot ekte
 nettsteder, og hva som gjenstår.
 
-**Arbeidet ligger på branchen `claude/festival-2027-db-automation-dr4nw7`,
-ikke på `main`.**
+*Arbeidet lå på branchen `claude/festival-2027-db-automation-dr4nw7` da dette
+ble skrevet. Den er senere merget inn i `main`.*
 
 ---
 

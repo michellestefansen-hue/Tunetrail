@@ -2,8 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(node --env-file-if-exists=.env.local scripts/robot-nightly.mjs:*)",
+      "Bash(node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs:*)",
       "Bash(node --env-file=.env.local scripts/les-db.mjs:*)",
       "Bash(mkdir -p forslag)",
+      "Bash(mkdir -p forslag/nye)",
       "Write(forslag/**)"
     ]
   }

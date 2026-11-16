@@ -135,6 +135,12 @@ utgave med program, merket med året. Guideåret utledes av kommende utgaver
 - Nattjobben, roboten som foreslår datoer og program:
   `.claude/skills/nattlig-oppdatering/SKILL.md` og `scripts/robot-nightly.mjs`.
   Overleveringen fra august: `docs/nattjobb-status.md`.
+- Letingen etter nye festivaler, bare som tørrkjøring (ingenting sendes):
+  `.claude/skills/nattlig-nye-festivaler/SKILL.md` og
+  `scripts/robot-nye-festivaler.mjs`. Roboten får gjette størrelse, sjanger og
+  tagger, men hver gjetning må stå med begrunnelse i notatet. Å åpne for å
+  sende kommer først etter at tørrkjøringene er vurdert, og krever at
+  `guard_robot_submission` endres for `festival_new`.
 - Research av publikumstall: `docs/prompt-publikumstall.md`, ferdige bolker i
   `docs/bolker/`.
 - Planer og bakgrunn: `docs/`. Tidligere SQL-rettinger: `supabase/`.

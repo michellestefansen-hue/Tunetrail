@@ -46,11 +46,12 @@ async function fetchPage(url: string): Promise<string> {
       signal: controller.signal,
       redirect: "follow",
       headers: {
-        // Ærlig om hvem vi er, med en adresse den som lurer kan skrive til.
-        // 669 nettsteder én gang i måneden er svært lite trafikk, men de skal
-        // kunne se hvem det er i loggene sine.
-        "user-agent":
-          "TunetrailWatch/1.0 (+https://tune-trail.org; kontakt: michellestefansen@gmail.com)",
+        // Ærlig om hvem vi er, med nettstedet, så de kan se hvem det er i
+        // loggene sine. En kontaktadresse står ikke i koden; settes
+        // TUNETRAIL_KONTAKT i Vercel, kommer den med.
+        "user-agent": `TunetrailWatch/1.0 (+https://tune-trail.org${
+          process.env.TUNETRAIL_KONTAKT ? `; kontakt: ${process.env.TUNETRAIL_KONTAKT}` : ""
+        })`,
         accept: "text/html,application/xhtml+xml",
       },
     });

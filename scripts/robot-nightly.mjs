@@ -33,10 +33,13 @@ import "./miljo.mjs";
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Samme adresse som endringsvakten oppgir. 669 nettsteder én gang i måneden er
-// svært lite trafikk, men de skal kunne se hvem det er i loggene sine.
-const USER_AGENT =
-  "TunetrailWatch/1.0 (+https://tune-trail.org; kontakt: michellestefansen@gmail.com)";
+// Samme navnelapp som endringsvakten. Ærlig om at vi er en robot, og med
+// nettstedet, så de kan se hvem det er i loggene sine. En e-postadresse står
+// ikke i koden: den sendes til hvert festivalnettsted, og personvernsperren i
+// Claude Code stoppet hele nattkjøringen på den. Vil du ha en kontaktadresse
+// med, settes den som TUNETRAIL_KONTAKT i .env.local.
+const KONTAKT = process.env.TUNETRAIL_KONTAKT;
+const USER_AGENT = `TunetrailWatch/1.0 (+https://tune-trail.org${KONTAKT ? `; kontakt: ${KONTAKT}` : ""})`;
 
 const FETCH_TIMEOUT_MS = 15000;
 

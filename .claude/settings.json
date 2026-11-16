@@ -1,5 +1,8 @@
 {
   "permissions": {
+    "additionalDirectories": [
+      "/Users/michellestefansen/Downloads/tunetrail/forslag"
+    ],
     "allow": [
       "Bash(node --env-file-if-exists=.env.local scripts/robot-nightly.mjs:*)",
       "Bash(node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs:*)",
@@ -8,6 +11,8 @@
       "Bash(mkdir -p forslag/nye)",
       "Edit(forslag/**)",
       "Write(forslag/**)",
+      "Edit(//Users/michellestefansen/Downloads/tunetrail/forslag/**)",
+      "Write(//Users/michellestefansen/Downloads/tunetrail/forslag/**)",
       "WebSearch"
     ]
   }

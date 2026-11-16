@@ -34,11 +34,10 @@ Natta har ingen som kan klikke «tillat». Derfor:
 - **Bli i mappen du starter i, og bruk aldri `cd`.** Du kan stå i en egen
   arbeidskopi av prosjektet og ikke i selve `tunetrail`-mappen. Det er riktig:
   skriptet finner `.env.local` i hovedmappen selv. Går du dit, stopper jobben.
-- **Skriv ingen filer.** Kandidaten sendes rett i kommandoen, som JSON i enkle
-  anførselstegn. En fil, særlig med full sti (`/Users/...`, `~/...`), peker ut
-  av mappen du står i og stopper jobben på en dialog.
-- **En apostrof inne i JSON-en skrives `\u0027`**, for eksempel
-  `"Rock\u0027n\u0027Roll Fest"`. En vanlig apostrof avslutter kommandoen.
+- **Skriv kandidaten til en fil med kort sti: `forslag/nye/<slug>.json`**, og
+  gi filen til kommandoene. Ikke legg JSON inn i selve kommandoen: lange tekster
+  med «» og andre tegn gjør kommandoen uleselig for godkjenningen («Parse
+  error»), og da stopper jobben. Aldri full sti (`/Users/...`, `~/...`).
 - **Én kommando om gangen**, ikke slett filer, og ikke bruk `node -e`.
 - **Nettsøk er godkjent. Les sider bare med `les`**, ikke med WebFetch.
 - **Står `sjekk` på «MANGLER», stopp.** Ikke let etter `.env.local` selv.
@@ -85,11 +84,12 @@ Har du ikke nettsøk, si fra i oppsummeringen. Ikke finn på kandidater.
 
 ### 3. Sjekk mot basen FØR du gjør noe tungt
 
-For hver kandidat, send det du vet så langt (navn, land, by og festivalens
-eget nettsted) rett i kommandoen:
+For hver kandidat, skriv det du vet så langt (navn, land, by og festivalens
+eget nettsted) til `forslag/nye/<slug>.json`, for eksempel
+`forslag/nye/nyfest.json`, og kjør:
 
 ```bash
-node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs kjenner '{"name":"Nyfest","country":"Tyskland","city":"Hamburg","website_url":"https://nyfest.example/"}'
+node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs kjenner forslag/nye/nyfest.json
 ```
 
 Får du et treff med `"reason": "website"` eller et navn som er helt likt, finnes
@@ -148,7 +148,7 @@ Er datoene foreløpige, sett `"dates_status": "forelopig"`.
 
 ### 8. Sett sammen kandidaten
 
-Slik ser en komplett kandidat ut. Den sendes som én linje i kommandoene under.
+Slik ser en komplett kandidat ut. Skriv den til samme fil, `forslag/nye/<slug>.json`.
 
 ```json
 {
@@ -193,10 +193,8 @@ kopier tekst fra siden.
 ### 9. Bygg og les svaret
 
 ```bash
-node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs bygg '{"name":"Nyfest","source_url":"https://nyfest.example/","website_url":"https://nyfest.example/","country":"Tyskland","city":"Hamburg","latitude":53.5965,"longitude":10.0087,"date_from":"2027-07-09","date_to":"2027-07-11","image_url":"https://nyfest.example/media/nyfest.jpg","tags":["Elektronisk & Dans"],"category":"Elektronisk & Dans","size_band":"2000_10000","sources":{"coordinates":"JSON-LD på forsiden","dates":"JSON-LD på forsiden","image_url":"og:image på forsiden","location":"JSON-LD på forsiden"},"guesses":{"size_band":{"basis":"Tre scener og camping ifølge /om-oss."},"category":{"basis":"Alle ni bekreftede artister er techno og house."},"tags":{"basis":"Samme grunnlag: line-upen er ren techno."}}}'
+node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs bygg forslag/nye/nyfest.json
 ```
-
-Samme JSON som i punkt 8, på én linje. Eksempelet over er forkortet.
 
 Skriptet sjekker alt, og bildet og landet kontrolleres mot nettet. Svaret har:
 
@@ -215,10 +213,10 @@ Står det `klar: false`, sier `feil` og `mangler` nøyaktig hva som må til.
 ### 10. Send de som er klare
 
 ```bash
-node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs send '{"name":"Nyfest","source_url":"https://nyfest.example/","website_url":"https://nyfest.example/","country":"Tyskland","city":"Hamburg","latitude":53.5965,"longitude":10.0087,"date_from":"2027-07-09","date_to":"2027-07-11","image_url":"https://nyfest.example/media/nyfest.jpg","tags":["Elektronisk & Dans"],"category":"Elektronisk & Dans","size_band":"2000_10000","sources":{"coordinates":"JSON-LD på forsiden","dates":"JSON-LD på forsiden","image_url":"og:image på forsiden","location":"JSON-LD på forsiden"},"guesses":{"size_band":{"basis":"Tre scener og camping ifølge /om-oss."},"category":{"basis":"Alle ni bekreftede artister er techno og house."},"tags":{"basis":"Samme grunnlag: line-upen er ren techno."}}}'
+node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs send forslag/nye/nyfest.json
 ```
 
-Send nøyaktig samme JSON som du sendte til `bygg`.
+Send samme fil som du bygget.
 
 `send` gjør hele sjekken på nytt, med nett, og sender bare hvis kandidaten er
 `klar`. Svaret er `"sendt": true` og et `submission_id`. Da ligger forslaget i

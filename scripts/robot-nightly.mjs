@@ -27,6 +27,8 @@
 
 import { readFileSync, realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+// Finner .env.local også fra en arbeidskopi. Se miljo.mjs.
+import "./miljo.mjs";
 
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;

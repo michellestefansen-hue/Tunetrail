@@ -33,11 +33,19 @@ node --env-file-if-exists=.env.local scripts/robot-nightly.mjs <kommando>
 Natta har ingen som kan klikke «tillat». Gjør du noe utenfor lista i
 `.claude/settings.json`, står jobben stille til morgenen. Derfor:
 
-- **Kjør fra prosjektmappen, aldri med `cd`.** Du står allerede riktig. En
-  kommando som starter med `cd ... &&` blir stoppet.
+- **Bli i mappen du starter i, og bruk aldri `cd`.** Du kan stå i en egen
+  arbeidskopi av prosjektet og ikke i selve `tunetrail`-mappen. Det er riktig,
+  og alt virker derfra: skriptet finner `.env.local` i hovedmappen selv. Går du
+  til hovedmappen, er du utenfor mappen du har lov til å skrive i, og jobben
+  stopper på en dialog.
 - **Én kommando om gangen.** Ikke lenk dem med `&&`.
-- **Forslagsfilene skrives til `forslag/<slug>.json`** i prosjektmappen
-  (git-ignorert), aldri til Downloads, `/tmp` eller andre steder.
+- **Skriv forslagsfilene med relativ sti: `forslag/<slug>.json`.** Aldri en full
+  sti som begynner med `/Users`, `~` eller `/tmp`. En full sti peker ut av
+  mappen du står i, og blir stoppet.
+- **Står `sjekk` på «MANGLER», stopp.** Ikke let etter `.env.local` selv.
+  Skriptet har allerede lett både der du står og i hovedmappen.
+- **Bruk bare kommandoene i denne fila.** Ikke WebFetch eller nettsøk:
+  `read` henter sidene.
 - **Ikke slett filer.** Skriv ny fil over den gamle, eller la den ligge.
 - **Ikke bruk `node -e`** eller andre egne skript. Trenger du noe skriptet ikke
   kan, skriv det i oppsummeringen i stedet.

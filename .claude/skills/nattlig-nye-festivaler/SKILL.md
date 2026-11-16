@@ -29,9 +29,16 @@ node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs <kommando>
 
 ### Hold deg innenfor det som er forhåndsgodkjent
 
-Natta har ingen som kan klikke «tillat». Derfor, som i den andre nattjobben:
-kjør fra prosjektmappen uten `cd`, én kommando om gangen, skriv filer bare til
-`forslag/nye/<slug>.json`, ikke slett filer, og ikke bruk `node -e`.
+Natta har ingen som kan klikke «tillat». Derfor:
+
+- **Bli i mappen du starter i, og bruk aldri `cd`.** Du kan stå i en egen
+  arbeidskopi av prosjektet og ikke i selve `tunetrail`-mappen. Det er riktig:
+  skriptet finner `.env.local` i hovedmappen selv. Går du dit, stopper jobben.
+- **Skriv filer med relativ sti: `forslag/nye/<slug>.json`.** Aldri en full sti
+  som begynner med `/Users`, `~` eller `/tmp`.
+- **Én kommando om gangen**, ikke slett filer, og ikke bruk `node -e`.
+- **Nettsøk er godkjent. Les sider bare med `les`**, ikke med WebFetch.
+- **Står `sjekk` på «MANGLER», stopp.** Ikke let etter `.env.local` selv.
 
 ## Hva som er en festival her
 

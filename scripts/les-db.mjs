@@ -44,6 +44,8 @@
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve, sep } from "node:path";
+// Finner .env.local også fra en arbeidskopi. Se miljo.mjs.
+import "./miljo.mjs";
 
 const FEIL_BRUK = 2;
 const FEIL_SVAR = 1;

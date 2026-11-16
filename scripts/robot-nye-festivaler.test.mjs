@@ -460,3 +460,16 @@ test("kandidaten kan sendes rett i kommandoen, uten fil", async () => {
   assert.throws(() => lesKandidat("{ikke json"), /\\u0027/);
   assert.throws(() => lesKandidat(undefined), /Mangler kandidaten/);
 });
+
+test("en side uten bilde oppgir ikke forsiden som bilde", () => {
+  // Funnet i en ende-til-ende-kjøring: uten twitter:image og uten bilde i de
+  // strukturerte dataene ble sidens egen adresse oppgitt som bilde.
+  const r = extractStructured(
+    `<script type="application/ld+json">{"@type":"MusicEvent","name":"X","startDate":"2027-01-01"}</script>`,
+    "https://x.example/",
+  );
+  assert.equal(r.og_bilde, null);
+  assert.equal(r.twitter_bilde, null);
+  assert.equal(r.canonical, null);
+  assert.equal(r.strukturerte_data[0].bilde, null);
+});

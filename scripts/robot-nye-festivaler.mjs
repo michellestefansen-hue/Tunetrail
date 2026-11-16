@@ -362,7 +362,12 @@ function meta(html, ...navn) {
   return null;
 }
 
-const ABS = (u, base) => { try { return new URL(u, base).href; } catch { return null; } };
+// Tom inn gir null ut. Uten det ble en manglende adresse gjort om til selve
+// siden: en side uten twitter:image fikk forsiden oppgitt som bilde.
+const ABS = (u, base) => {
+  if (!u || !String(u).trim()) return null;
+  try { return new URL(u, base).href; } catch { return null; }
+};
 
 function enBilde(img) {
   if (!img) return null;
@@ -406,7 +411,7 @@ export function extractStructured(html, baseUrl) {
           : typeof n.address === "string" ? n.address : null,
         lat: geo?.latitude != null ? Number(geo.latitude) : null,
         lon: geo?.longitude != null ? Number(geo.longitude) : null,
-        bilde: ABS(enBilde(n.image) ?? "", baseUrl) || null,
+        bilde: ABS(enBilde(n.image), baseUrl),
         url: n.url ? ABS(n.url, baseUrl) : null,
       };
     })
@@ -426,9 +431,9 @@ export function extractStructured(html, baseUrl) {
     tittel: title,
     sprak: lang,
     beskrivelse: meta(html, "og:description", "description"),
-    og_bilde: ABS(meta(html, "og:image", "og:image:url") ?? "", baseUrl) || null,
-    twitter_bilde: ABS(meta(html, "twitter:image", "twitter:image:src") ?? "", baseUrl) || null,
-    canonical: ABS(html.match(/<link[^>]+rel=["']canonical["'][^>]*href=["']([^"']+)["']/i)?.[1] ?? "", baseUrl) || null,
+    og_bilde: ABS(meta(html, "og:image", "og:image:url"), baseUrl),
+    twitter_bilde: ABS(meta(html, "twitter:image", "twitter:image:src"), baseUrl),
+    canonical: ABS(html.match(/<link[^>]+rel=["']canonical["'][^>]*href=["']([^"']+)["']/i)?.[1], baseUrl),
     strukturerte_data: relevante,
     lenker: lenker.slice(0, 40),
   };

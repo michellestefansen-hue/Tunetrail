@@ -86,8 +86,13 @@ ikke har lest.
 4. **Ingenting irreversibelt uten et klart ja.** Aldri `delete from festivals`.
    Sletting av en utgave leveres som egen fil, aldri sammen med annet.
 5. **Automatikk skriver aldri rett i tabellene,** bare via `submissions` og
-   moderering. Roboten er sperret i databasen fra å fjerne eller flytte artister
-   og fra å opprette festivaler (`guard_robot_submission`).
+   moderering. Roboten er sperret i databasen fra å opprette festivaler
+   (`guard_robot_submission`). Den kan *foreslå* å fjerne eller flytte artister
+   (åpnet i `20261116_robot_may_remove.sql`), men bare etter reglene i
+   `robot_removal_problem`: høy sikkerhet, begrunnelse per endring, tak på
+   antall og andel, og programmer et menneske sist rørte er fredet. Et menneske
+   godkjenner hver endring i køen. Å stenge det igjen er å sette
+   `robot_may_remove` tilbake til `false`.
    Ticketmaster-berikelsen er slått av fordi den ødela data i august.
 6. **Tagger sier hvilke sjangre som forekommer, ikke hva festivalen er.** Om en
    festival hører hjemme i en guide, avgjøres på line-up, ikke på navn eller

@@ -11,7 +11,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps, splitOnSeparators, lineupLinks, matchEditions, yearLines, scanText, isProvisional } from "./robot-nightly.mjs";
+import { toText, cleanName, nameKey, candidates, isDate, decodeEntities, buildOps, splitOnSeparators, lineupLinks, matchEditions, yearLines, scanText, isProvisional, describeChanges } from "./robot-nightly.mjs";
 
 test("manus og stil forsvinner, teksten blir igjen", () => {
   const html = `
@@ -368,15 +368,159 @@ test("nye datoer avgjør spennet for tilføyelsene", () => {
   assert.equal(ops.add.length, 1);
 });
 
-test("roboten kommer ikke rundt fjerning ved å be pent", () => {
+/* ------------------------------------------------ fjerning og flytting ---- */
+
+// Ti navn: nok til at taket på 20 % (to av ti) kan prøves uten å stoppe alt.
+// Fiksturen over har bare to, og da er en fjerning 50 %.
+const TEN = {
+  date_from: "2027-06-10",
+  date_to: "2027-06-12",
+  program: [
+    {
+      date: "2027-06-10",
+      artists: ["Aurora", "Björk", "CMAT", "Dua Lipa", "Enslaved", "Fever Ray", "Gojira", "Heilung", "Idles"].map(
+        (name) => ({ name }),
+      ),
+    },
+    { date: "9999-12-31", artists: [{ name: "Jungle" }] },
+  ],
+};
+
+const CANCEL = {
+  ...BASE,
+  found_count: 10,
+  remove: [{ date: "2027-06-10", name: "Aurora", reason: "Festivalen melder avlysning på /news" }],
+};
+
+test("en begrunnet fjerning blir en operasjon, med lagret navn og found_count", () => {
+  // «aurora» med små bokstaver: svaret skal bruke det lagrede navnet.
+  const { ops } = buildOps({ ...CANCEL, remove: [{ ...CANCEL.remove[0], name: "aurora" }] }, TEN);
+  assert.deepEqual(ops.remove, [
+    { date: "2027-06-10", name: "Aurora", reason: "Festivalen melder avlysning på /news" },
+  ]);
+  assert.equal(ops.found_count, 10);
+});
+
+test("et forslag med bare tilføyelser har ikke found_count", () => {
+  const { ops } = buildOps({ ...BASE, add: [{ date: "2027-06-11", name: "CMAT" }] }, EDITION);
+  assert.ok(!("found_count" in ops));
+});
+
+test("en flytting fra «dag ikke bestemt» til en ekte dag er den vanlige", () => {
+  const { ops } = buildOps(
+    {
+      ...BASE,
+      found_count: 10,
+      move: [{ from: "9999-12-31", to: "2027-06-11", name: "Jungle", reason: "Programsiden setter dem på lørdag" }],
+    },
+    TEN,
+  );
+  assert.deepEqual(ops.move, [
+    { from: "9999-12-31", to: "2027-06-11", name: "Jungle", reason: "Programsiden setter dem på lørdag" },
+  ]);
+});
+
+test("en ren avlysning slipper gjennom: siden gir ett navn mindre enn basen", () => {
+  // Basen har 10. Én fjernet betyr at siden må gi minst 9 -- ikke 10, som den
+  // gamle regelen krevde og som stengte ute akkurat de fjerningene den skulle
+  // gjøre mulig.
+  assert.doesNotThrow(() => buildOps({ ...CANCEL, found_count: 9 }, TEN));
+});
+
+test("en side som ikke ble lest, fjerner ingenting", () => {
+  // 8 navn mot 10 i basen, og ett skal bort: siden viser ikke alle som blir
+  // stående, så den er ikke lest ordentlig.
+  assert.throws(() => buildOps({ ...CANCEL, found_count: 8 }, TEN), /for få/);
+});
+
+test("fjerning krever høy sikkerhet, found_count og begrunnelse", () => {
+  assert.throws(() => buildOps({ ...CANCEL, confidence: "low" }, TEN), /confidence.*high/);
+  assert.throws(() => buildOps({ ...CANCEL, found_count: undefined }, TEN), /found_count/);
   assert.throws(
-    () => buildOps({ ...BASE, remove: [{ date: "2027-06-10", name: "Aurora" }] }, EDITION),
-    /fjerner og flytter ikke/,
+    () => buildOps({ ...CANCEL, remove: [{ date: "2027-06-10", name: "Aurora" }] }, TEN),
+    /mangler begrunnelse/,
   );
   assert.throws(
-    () => buildOps({ ...BASE, move: [{ from: "2027-06-10", to: "2027-06-11", name: "Aurora" }] }, EDITION),
-    /fjerner og flytter ikke/,
+    () => buildOps({ ...CANCEL, remove: [{ date: "2027-06-10", name: "Aurora", reason: "   " }] }, TEN),
+    /mangler begrunnelse/,
   );
+});
+
+test("man kan ikke fjerne det som ikke står der", () => {
+  assert.throws(
+    () => buildOps({ ...CANCEL, remove: [{ date: "2027-06-10", name: "Ukjent Band", reason: "avlyst" }] }, TEN),
+    /ingenting å fjerne/,
+  );
+  // Riktig navn, feil dag.
+  assert.throws(
+    () => buildOps({ ...CANCEL, remove: [{ date: "2027-06-11", name: "Aurora", reason: "avlyst" }] }, TEN),
+    /ingenting å fjerne/,
+  );
+  assert.throws(() => buildOps({ ...CANCEL }, null), /ingen 2027-utgave/);
+});
+
+test("taket gjelder fjerning og flytting samlet", () => {
+  const three = ["Aurora", "Björk", "CMAT"].map((name) => ({ date: "2027-06-10", name, reason: "avlyst" }));
+  // Tre av ti er 30 %.
+  assert.throws(() => buildOps({ ...CANCEL, remove: three }, TEN), /Høyst 20 %/);
+  // To fjerninger og to flyttinger er fire endringer av ti: over 20 %, selv om
+  // ingen av listene alene er det.
+  assert.throws(
+    () =>
+      buildOps(
+        {
+          ...CANCEL,
+          remove: three.slice(0, 2),
+          move: [{ from: "9999-12-31", to: "2027-06-11", name: "Jungle", reason: "r" }, { from: "2027-06-10", to: "2027-06-11", name: "CMAT", reason: "r" }],
+        },
+        TEN,
+      ),
+    /Høyst 20 %/,
+  );
+  // To av ti er akkurat 20 %, og det er lov.
+  assert.doesNotThrow(() => buildOps({ ...CANCEL, found_count: 8, remove: three.slice(0, 2) }, TEN));
+});
+
+test("det samme navnet kan ikke både fjernes og flyttes", () => {
+  assert.throws(
+    () =>
+      buildOps(
+        {
+          ...CANCEL,
+          found_count: 20,
+          move: [{ from: "2027-06-10", to: "2027-06-11", name: "Aurora", reason: "r" }],
+        },
+        { ...TEN, program: [{ date: "2027-06-10", artists: Array.from({ length: 20 }, (_, i) => ({ name: i === 0 ? "Aurora" : `Band ${i}` })) }] },
+      ),
+    /to ganger/,
+  );
+});
+
+test("en flytting må lande innenfor festivalens dager, og ikke der navnet allerede står", () => {
+  const move = { from: "2027-06-10", name: "Aurora", reason: "Programsiden viser lørdag" };
+  const base = { ...BASE, found_count: 10 };
+  assert.throws(() => buildOps({ ...base, move: [{ ...move, to: "2027-08-01" }] }, TEN), /utenfor/);
+  assert.throws(() => buildOps({ ...base, move: [{ ...move, to: "2027-06-10" }] }, TEN), /samme dag/);
+  assert.throws(() => buildOps({ ...base, move: [{ ...move, to: "2027-06-11", reason: "" }] }, TEN), /mangler begrunnelse/);
+  assert.throws(
+    () => buildOps({ ...base, move: [{ ...move, from: "2027-06-11", to: "2027-06-12" }] }, TEN),
+    /kan ikke flyttes derfra/,
+  );
+});
+
+test("begrunnelsene følger med i notatet, så du ser dem i køen", () => {
+  const { ops } = buildOps(
+    {
+      ...BASE,
+      found_count: 10,
+      remove: [{ date: "2027-06-10", name: "Aurora", reason: "Festivalen melder avlysning" }],
+      move: [{ from: "9999-12-31", to: "2027-06-11", name: "Jungle", reason: "Programsiden viser lørdag" }],
+    },
+    TEN,
+  );
+  const text = describeChanges(ops);
+  assert.match(text, /Fjernes: «Aurora» \(2027-06-10\) -- Festivalen melder avlysning/);
+  assert.match(text, /Flyttes: «Jungle» fra dag ikke bestemt til 2027-06-11 -- Programsiden viser lørdag/);
 });
 
 test("et forslag uten kilde eller sikkerhet stoppes før det når basen", () => {

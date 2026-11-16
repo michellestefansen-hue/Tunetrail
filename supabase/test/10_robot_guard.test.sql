@@ -148,21 +148,32 @@ $$);
 
 /* --------------------------------------------------------- og det ikke ---- */
 
+-- Fjerning er åpnet, men Testfests program har ingen revisjonsrad, altså er
+-- det håndarbeid, og håndarbeid er fredet. Alt annet i forslaget er i orden,
+-- så det er fredningen som stopper det.
 select pg_temp.expect_error($$
   insert into public.submissions (kind, festival_id, edition_year, payload, submitted_by, source_url, confidence)
   values ('program_edit', 'aaaaaaaa-0000-0000-0000-000000000001', 2027,
-          '{"add":[],"remove":[{"date":"2027-06-10","name":"Aurora","reason":"avlyst"}],"move":[]}'::jsonb,
+          '{"add":[],"remove":[{"date":"2027-06-10","name":"Aurora","reason":"avlyst"}],"move":[],"found_count":5}'::jsonb,
           '22222222-2222-2222-2222-222222222222', 'https://testfest.example/lineup', 'high')
-$$, 'kan ikke fjerne artister');
+$$, 'menneske');
 
 -- En flytting er en fjerning med et ekstra steg. Den skal ikke være
--- smutthullet rundt sperren over.
+-- smutthullet rundt reglene over: samme fredning gjelder.
 select pg_temp.expect_error($$
   insert into public.submissions (kind, festival_id, edition_year, payload, submitted_by, source_url, confidence)
   values ('program_edit', 'aaaaaaaa-0000-0000-0000-000000000001', 2027,
-          '{"add":[],"remove":[],"move":[{"from":"2027-06-10","to":"2027-06-11","name":"Aurora"}]}'::jsonb,
+          '{"add":[],"remove":[],"move":[{"from":"2027-06-10","to":"2027-06-11","name":"Aurora","reason":"dagen er publisert"}],"found_count":5}'::jsonb,
           '22222222-2222-2222-2222-222222222222', 'https://testfest.example/lineup', 'high')
-$$, 'kan ikke flytte');
+$$, 'menneske');
+
+-- ...og flytting krever found_count på lik linje med fjerning.
+select pg_temp.expect_error($$
+  insert into public.submissions (kind, festival_id, edition_year, payload, submitted_by, source_url, confidence)
+  values ('program_edit', 'aaaaaaaa-0000-0000-0000-000000000001', 2027,
+          '{"add":[],"remove":[],"move":[{"from":"2027-06-10","to":"2027-06-11","name":"Aurora","reason":"dagen er publisert"}]}'::jsonb,
+          '22222222-2222-2222-2222-222222222222', 'https://testfest.example/lineup', 'high')
+$$, 'found_count');
 
 /* ----------------------------------------------------------- utvalget ---- */
 
@@ -281,9 +292,8 @@ select 'robotvakten holder' as resultat;
 
 /* ------------------------------------- reglene for den dagen den åpnes ---- */
 
--- guard_robot_submission avviser all fjerning i dag, så reglene under den
--- ville aldri blitt kjørt. Derfor bor de i robot_removal_problem, og prøves
--- her direkte -- lenge før dagen de skal begynne å gjelde.
+-- Reglene bor i robot_removal_problem, ikke i triggeren, så de kan prøves
+-- direkte her. Triggeren som faktisk møter roboten, prøves nederst.
 
 create or replace function pg_temp.removal(p_n int, p_found int, p_reason boolean)
 returns jsonb
@@ -399,12 +409,92 @@ begin
 end;
 $$;
 
--- Og selv da er den stengt i triggeren, som er der den faktisk møter roboten.
-select pg_temp.expect_error($$
+-- En ren avlysning gir ett navn MINDRE på siden enn i basen. Det skal slippe
+-- gjennom så lenge siden viser alle som blir stående: tre fjernet av tretti
+-- betyr at siden må gi minst 27. (Før 16. november krevde regelen 30, og
+-- stengte da ute akkurat de fjerningene den skulle gjøre mulig.)
+do $$
+declare got text;
+begin
+  got := public.robot_removal_problem('aaaaaaaa-0000-0000-0000-000000000005', 2027,
+           pg_temp.removal(3, 27, true));
+  if got is not null then
+    raise exception 'Ren avlysning skulle gått gjennom, men: %', got;
+  end if;
+end;
+$$;
+
+-- Ett navn mindre enn det som må stå igjen: siden er ikke lest ordentlig.
+select pg_temp.expect_problem(pg_temp.removal(3, 26, true), 'for få');
+
+/* ----------------------------------------------- triggeren, ende til ende -- */
+
+-- Og så der den faktisk møter roboten. En velbegrunnet fjerning slipper nå
+-- gjennom til køen, og havner som et forslag, ikke som en endring i programmet.
+select pg_temp.expect_ok($$
   insert into public.submissions (kind, festival_id, edition_year, payload, submitted_by, source_url, confidence)
   values ('program_edit', 'aaaaaaaa-0000-0000-0000-000000000005', 2027,
           (select pg_temp.removal(3, 30, true)),
           '22222222-2222-2222-2222-222222222222', 'https://storfest.example', 'high')
-$$, 'kan ikke fjerne artister');
+$$);
+
+do $$
+declare n int;
+begin
+  select jsonb_array_length(payload->'remove') into n
+    from public.submissions
+   where festival_id = 'aaaaaaaa-0000-0000-0000-000000000005'
+     and status = 'pending' and payload ? 'remove' and jsonb_array_length(payload->'remove') = 3;
+  if n is distinct from 3 then
+    raise exception 'Fjerningsforslaget skulle lagt seg i køen med 3 fjerninger, fikk %', n;
+  end if;
+  -- Forslaget skal bare ligge i køen. Programmet er urørt til et menneske
+  -- godkjenner det.
+  select jsonb_array_length(program->0->'artists') into n
+    from public.festival_editions
+   where festival_id = 'aaaaaaaa-0000-0000-0000-000000000005' and year = 2027;
+  if n <> 30 then raise exception 'Programmet skulle vært urørt (30 navn), fikk %', n; end if;
+end;
+$$;
+
+-- En flytting med begrunnelse slipper gjennom på Storfest, som roboten selv
+-- har bygget...
+select pg_temp.expect_ok($$
+  insert into public.submissions (kind, festival_id, edition_year, payload, submitted_by, source_url, confidence)
+  values ('program_edit', 'aaaaaaaa-0000-0000-0000-000000000005', 2027,
+          '{"add":[],"remove":[],"found_count":30,
+            "move":[{"from":"9999-12-31","to":"2027-09-02","name":"Artist 4","reason":"programsiden viser dagen"}]}'::jsonb,
+          '22222222-2222-2222-2222-222222222222', 'https://storfest.example', 'high')
+$$);
+
+-- ...men uten begrunnelse gjør den ikke det. Flytting er ikke et smutthull.
+select pg_temp.expect_error($$
+  insert into public.submissions (kind, festival_id, edition_year, payload, submitted_by, source_url, confidence)
+  values ('program_edit', 'aaaaaaaa-0000-0000-0000-000000000005', 2027,
+          '{"add":[],"remove":[],"found_count":30,
+            "move":[{"from":"9999-12-31","to":"2027-09-02","name":"Artist 5"}]}'::jsonb,
+          '22222222-2222-2222-2222-222222222222', 'https://storfest.example', 'high')
+$$, 'mangler begrunnelse');
+
+-- Taket gjelder fjerning og flytting samlet: tre fjerninger og tre flyttinger
+-- er seks endringer, og det er over fem.
+select pg_temp.expect_error($$
+  insert into public.submissions (kind, festival_id, edition_year, payload, submitted_by, source_url, confidence)
+  values ('program_edit', 'aaaaaaaa-0000-0000-0000-000000000005', 2027,
+          jsonb_set(pg_temp.removal(3, 30, true), '{move}',
+            '[{"from":"9999-12-31","to":"2027-09-02","name":"Artist 10","reason":"r"},
+              {"from":"9999-12-31","to":"2027-09-02","name":"Artist 11","reason":"r"},
+              {"from":"9999-12-31","to":"2027-09-02","name":"Artist 12","reason":"r"}]'::jsonb),
+          '22222222-2222-2222-2222-222222222222', 'https://storfest.example', 'high')
+$$, 'høyst 5 navn');
+
+-- Tvil er ikke grunn nok til å ta noe bort: low avvises selv om alt annet er i
+-- orden.
+select pg_temp.expect_error($$
+  insert into public.submissions (kind, festival_id, edition_year, payload, submitted_by, source_url, confidence)
+  values ('program_edit', 'aaaaaaaa-0000-0000-0000-000000000005', 2027,
+          (select pg_temp.removal(3, 30, true)),
+          '22222222-2222-2222-2222-222222222222', 'https://storfest.example', 'low')
+$$, 'confidence');
 
 select 'fjerningsreglene holder' as resultat;

@@ -313,8 +313,12 @@ praksis eller om den merker alt `high`. Deretter skrus automatikken på.
   viser at roboten fortjener det. Å bygge en vei utenom godkjenningen før man
   vet hvordan roboten faktisk oppfører seg, er å bygge nøyaktig den typen
   regel ingen vet om virker.
-- **`remove` åpnes** — reglene står og er prøvd, sperren i
-  `guard_robot_submission` er lukket. Å åpne er å endre én linje.
+- ~~**`remove` åpnes**~~ — åpnet 16. november 2026 i
+  `20261116_robot_may_remove.sql`, for både fjerning og flytting. To ting ble
+  rettet samtidig: en flytting slapp gjennom uten noen av reglene (nå teller den
+  som en fjerning), og `found_count`-regelen stengte ute alle reelle
+  avlysninger (nå: siden må vise alle navnene som blir stående, ikke alle som er
+  lagret). Å stenge igjen er å sette `robot_may_remove` til `false`.
 
 ## 10. Slik settes det opp
 

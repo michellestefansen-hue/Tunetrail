@@ -107,6 +107,9 @@ Du får tilbake:
   ferdig plakat, og bør ikke sendes med `"confidence": "high"`.
 - `known_artists` — navn som allerede finnes i databasen. Disse trenger nesten
   ingen vurdering fra deg; de *er* artistnavn.
+- `found_count` — antall `known_artists`. Trengs bare hvis du skal foreslå
+  fjerning eller flytting; se under «Fjerning og flytting». Kopier det
+  uendret, ikke tell selv.
 - `uncertain_matches` — også registrerte navn, men tre bokstaver eller færre
   («SP» på Kirkenes Lives forside var et ekte navn i basen, brukt to ganger
   fra før — og fortsatt et tilfeldig treff verdt et ekstra blikk). Behandle
@@ -242,6 +245,60 @@ hvis du bare fant datoene. Minst én av dem må være der. `"date": null` betyr
 har å gå på når det skal avgjøre om det skal stole på deg. Skriv hvor på siden
 du fant det, og hva du var usikker på.
 
+### Fjerning og flytting — sjelden, og bare med bevis
+
+Du kan foreslå å ta en artist bort eller flytte den til en annen dag. Det er et
+forslag som alle andre: ingenting endres i programmet før et menneske har
+godkjent det, og hver artist har sin egen hake i køen. Men det er det eneste du
+gjør som kan ta noe bort, så terskelen er høy. De fleste netter skal ikke ha
+noen fjerning i det hele tatt.
+
+**Bruk det når du har bevis for at noe er galt:**
+
+- Festivalen melder selv at en artist er avlyst. Skriv hvor: overskriften, eller
+  lenken.
+- Programsiden setter en artist du tidligere la på «dag ikke bestemt»
+  (`9999-12-31`) på en ekte dag. Dette er den vanligste flyttingen.
+- Et navn i programmet er ikke en artist (en journalist, en sponsor, et
+  scenenavn), og du kan peke på hvor det står.
+
+**Aldri fordi et navn «ikke sto på siden».** Fravær er ikke bevis. Siden kan
+være en forside, en cookie-vegg eller fjorårets plakat. Viser `edition_match` høy
+`share` for et tidligere år, eller er `provisional` satt, er siden uegnet som
+grunnlag for fjerning.
+
+**Reglene.** Skriptet og databasen avviser forslaget hvis ett av dem brytes:
+
+- `"confidence": "high"`. Er du i tvil, send ikke fjerningen.
+- `found_count` fra `read`, kopiert uendret. Siden må vise alle navnene som blir
+  stående; en side som ikke ble lest ordentlig kan ikke fjerne noe.
+- `reason` på hver fjerning og flytting, med hvor du fant beviset.
+- Høyst 5 endringer og høyst 20 % av programmet, fjerning og flytting samlet.
+- Navnet må stå i det lagrede programmet, på den dagen du oppgir.
+- **Programmer et menneske sist rørte er fredet.** Får du «sist endret av et
+  menneske», er det ikke en feil å gå rundt. Legg til det som skal legges til,
+  og skriv resten i `note`.
+
+```json
+{
+  "slug": "roskilde-festival",
+  "year": 2027,
+  "source_url": "https://www.roskilde-festival.dk/en/news/",
+  "confidence": "high",
+  "found_count": 174,
+  "note": "Festivalen melder at Aurora har avlyst. Jungle har fått dag.",
+  "remove": [
+    { "date": "2027-06-26", "name": "Aurora", "reason": "Avlyst, se nyhetssaken «Aurora cancels» på /en/news/" }
+  ],
+  "move": [
+    { "from": "9999-12-31", "to": "2027-06-27", "name": "Jungle", "reason": "Programsiden setter Jungle på lørdag" }
+  ]
+}
+```
+
+Begrunnelsene legges automatisk ved notatet i køen, så den som godkjenner ser
+dem uten å lete.
+
 ### 5. Eller si at det ikke ble noe
 
 ```bash
@@ -273,10 +330,11 @@ samme siden opp igjen i morgen, og du bruker natta på nytt på det samme.
 Disse håndheves i databasen, ikke her. Prøver du likevel, får du en
 feilmelding og ingenting skjer:
 
-- **Du fjerner ikke artister.** Ikke fordi det aldri er riktig, men fordi et
+- **Du fjerner og flytter bare etter reglene i «Fjerning og flytting».** Et
   program kan være bygget av mennesker som vet mer enn nettsiden. En
-  bidragsyter kan ha vært der. Du legger til.
-- **Du flytter ikke artister.** En flytting er en fjerning med et ekstra steg.
+  bidragsyter kan ha vært der. Er programmet menneskebygd, er det fredet, og du
+  legger bare til. En flytting er en fjerning med et ekstra steg, og følger de
+  samme reglene.
 - **Du oppretter ikke festivaler.** Duplikater er hovedrisikoen der, og det er
   en annen jobb.
 - **Du må oppgi `source_url`.** Et forslag ingen kan etterprøve er verdiløst.

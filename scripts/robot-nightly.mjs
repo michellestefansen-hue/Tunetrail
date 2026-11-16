@@ -688,6 +688,9 @@ async function read(args) {
         // en festival uten lineup. Da er lenkene under det viktigste i svaret.
         lineup_links: links,
         known_artists: [...known.keys()].sort(),
+        // Tallet databasen krever ved fjerning og flytting (`found_count`). Det
+        // er med vilje ikke noe modellen teller selv: kopier det uendret.
+        found_count: known.size,
         // Kjente navn på tre bokstaver eller færre -- ekte registrerte navn,
         // men korte nok til at et tilfeldig treff ser ut som et ekte funn
         // («SP» på Kirkenes Lives forside). Samme vurdering som et ukjent
@@ -732,6 +735,7 @@ async function read(args) {
           nyhetsoverskrifter: result.news_headlines,
           tekst_lengde: text.length,
           kjente_artister: result.known_artists,
+          found_count: result.found_count,
           // Korte, ekte registrerte navn -- samme vurdering som et ukjent
           // navn, ikke en automatisk godkjenning. Se scanText.
           usikre_treff: result.uncertain_matches,
@@ -800,10 +804,6 @@ export function buildOps(input, edition) {
   if (input.confidence !== "high" && input.confidence !== "low") {
     throw new Error("Forslaget mangler confidence: «high» eller «low».");
   }
-  if (input.remove?.length || input.move?.length) {
-    throw new Error("Roboten fjerner og flytter ikke. Se docs/plan-2027-oppdatering.md punkt 2.");
-  }
-
   // Datoene først: de avgjør hvilket spenn tilføyelsene måles mot.
   if (input.dates) {
     const { from, to } = input.dates;
@@ -874,13 +874,134 @@ export function buildOps(input, edition) {
     ops.add.push({ date, name });
   }
 
-  if (!ops.add.length && !ops.dates) {
+  buildChanges(input, edition, range, ops);
+
+  if (!ops.add.length && !ops.dates && !ops.remove.length && !ops.move.length) {
     throw new Error(
       "Ingenting å foreslå. Bruk «note» i stedet, så festivalen ikke kommer opp igjen i morgen.",
     );
   }
 
   return { ops, warnings };
+}
+
+// Samme tall som robot_removal_problem i databasen. Databasen er fasiten; at de
+// står her også er for at en feil skal komme med en gang og si hva som må
+// rettes, ikke som en avvisning fra en trigger etter at forslaget er skrevet.
+const MAX_CHANGES = 5;
+const MAX_CHANGE_FRACTION = 0.2;
+
+/**
+ * Fjerning og flytting, lagt i `ops`. Se robot_removal_problem for reglene, og
+ * 20261116_robot_may_remove.sql for hvorfor de ser slik ut.
+ *
+ * Det som ikke kan sjekkes her er fredningen av menneskebygde programmer: den
+ * avgjøres av revisjonslogg i databasen. Da avviser triggeren forslaget ved
+ * innsending, og det er riktig utfall -- roboten kan legge til, ikke endre.
+ */
+function buildChanges(input, edition, range, ops) {
+  const removals = input.remove ?? [];
+  const moves = input.move ?? [];
+  if (!removals.length && !moves.length) return;
+
+  // Tvil er ikke grunn nok til å ta noe bort (plan-2027-oppdatering.md punkt 8).
+  if (input.confidence !== "high") {
+    throw new Error(
+      "Fjerning og flytting krever \"confidence\": \"high\". Er du i tvil, send ingenting av det: bruk «note».",
+    );
+  }
+  if (!Number.isInteger(input.found_count) || input.found_count < 0) {
+    throw new Error(
+      "Fjerning og flytting krever found_count: tallet `found_count` fra `read`, kopiert uendret.",
+    );
+  }
+  if (!edition) {
+    throw new Error(`Festivalen har ingen ${input.year}-utgave, så det finnes ingenting å fjerne eller flytte.`);
+  }
+
+  // Det som står der nå, slik databasen har det. Navnet i svaret er det lagrede,
+  // ikke modellens skrivemåte av det.
+  const stored = new Map();
+  let storedCount = 0;
+  for (const day of edition.program ?? []) {
+    for (const a of day.artists ?? []) {
+      stored.set(`${day.date}|${nameKey(a.name ?? "")}`, a.name);
+      storedCount++;
+    }
+  }
+
+  const changes = removals.length + moves.length;
+  if (changes > MAX_CHANGES) {
+    throw new Error(`Høyst ${MAX_CHANGES} fjerninger og flyttinger om gangen (du ba om ${changes}). Et stort tall er nesten alltid en side som ikke ble lest riktig.`);
+  }
+  if (storedCount > 0 && changes / storedCount > MAX_CHANGE_FRACTION) {
+    throw new Error(`Høyst ${MAX_CHANGE_FRACTION * 100} % av programmet kan endres i ett forslag (${changes} av ${storedCount}).`);
+  }
+  // Siden må vise alle navnene som blir stående. En flytting beholder navnet.
+  if (input.found_count < storedCount - removals.length) {
+    throw new Error(
+      `Siden ga ${input.found_count} navn, basen har ${storedCount} og ${removals.length} skal fjernes -- for få til at en endring kan stoles på. Les siden på nytt, eller bruk «note».`,
+    );
+  }
+
+  const reasonOf = (item, what) => {
+    const reason = String(item.reason ?? "").trim();
+    if (!reason) {
+      throw new Error(`${what} av «${item.name}» mangler begrunnelse. «Sto ikke på siden» er ikke en begrunnelse -- si hvor det står.`);
+    }
+    return reason;
+  };
+  const touched = new Set();
+  const claim = (key, name) => {
+    if (touched.has(key)) throw new Error(`«${name}» er nevnt to ganger i fjerning/flytting.`);
+    touched.add(key);
+  };
+
+  for (const item of removals) {
+    if (!isDate(item.date)) throw new Error(`Fjerning av «${item.name}»: «${item.date}» er ikke en dato.`);
+    const key = `${item.date}|${nameKey(item.name ?? "")}`;
+    if (!stored.has(key)) {
+      throw new Error(`«${item.name}» står ikke i programmet ${item.date}, så det er ingenting å fjerne. Sjekk dato og stavemåte mot det lagrede programmet.`);
+    }
+    claim(key, item.name);
+    ops.remove.push({ date: item.date, name: stored.get(key), reason: reasonOf(item, "Fjerning") });
+  }
+
+  for (const item of moves) {
+    if (!isDate(item.from) || !isDate(item.to)) {
+      throw new Error(`Flytting av «${item.name}»: from og to må være ÅÅÅÅ-MM-DD.`);
+    }
+    if (item.from === item.to) throw new Error(`Flytting av «${item.name}»: from og to er samme dag.`);
+    // Samme vern som tilføyelser: en dag utenfor festivalens periode er usynlig i appen.
+    if (item.to < range.from || item.to > range.to) {
+      throw new Error(`Flytting av «${item.name}» til ${item.to}: utenfor ${range.from}–${range.to}. En slik dag vises aldri i appen.`);
+    }
+    const key = `${item.from}|${nameKey(item.name ?? "")}`;
+    if (!stored.has(key)) {
+      throw new Error(`«${item.name}» står ikke i programmet ${item.from}, så den kan ikke flyttes derfra.`);
+    }
+    if (stored.has(`${item.to}|${nameKey(item.name ?? "")}`)) {
+      throw new Error(`«${item.name}» står allerede ${item.to}. Da er dette en fjerning fra ${item.from}, ikke en flytting.`);
+    }
+    claim(key, item.name);
+    ops.move.push({ from: item.from, to: item.to, name: stored.get(key), reason: reasonOf(item, "Flytting") });
+  }
+
+  ops.found_count = input.found_count;
+}
+
+const showDay = (d) => (d === UNSCHEDULED_DATE ? "dag ikke bestemt" : d);
+
+/**
+ * Begrunnelsene som tekst, til notatfeltet. Køvisningen viser navn og dag per
+ * fjerning, men ikke `reason` -- og begrunnelsen er det eneste du har å gå på
+ * når du skal avgjøre om en fjerning er riktig. Derfor legges den ved notatet.
+ */
+export function describeChanges(ops) {
+  return [
+    ...ops.remove.map((o) => `Fjernes: «${o.name}» (${showDay(o.date)}) -- ${o.reason}`),
+    ...ops.move.map((o) => `Flyttes: «${o.name}» fra ${showDay(o.from)} til ${showDay(o.to)} -- ${o.reason}`),
+  ].join("\n");
 }
 
 async function propose(args) {
@@ -914,7 +1035,7 @@ async function propose(args) {
         base_snapshot: {},
         source_url: input.source_url,
         confidence: input.confidence,
-        note: input.note ?? null,
+        note: [input.note, describeChanges(ops)].filter(Boolean).join("\n\n") || null,
         submitted_by: await robotId(),
         status: "pending",
       },
@@ -942,6 +1063,8 @@ function summarise(ops) {
   const parts = [];
   if (ops.dates) parts.push(`datoer ${ops.dates.from}–${ops.dates.to}`);
   if (ops.add.length) parts.push(`+${ops.add.length}`);
+  if (ops.remove.length) parts.push(`−${ops.remove.length}`);
+  if (ops.move.length) parts.push(`${ops.move.length} flyttet`);
   return parts.join(", ") || "ingenting";
 }
 

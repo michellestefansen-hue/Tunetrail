@@ -52,6 +52,7 @@ MIGRATIONS=(
   20260825_robot_identity.sql
   20260825_ai_queue.sql
   20260831_ai_queue_order.sql
+  20261116_robot_may_remove.sql
 )
 
 echo "→ stillas"

@@ -1,18 +1,17 @@
 ---
 name: nattlig-nye-festivaler
-description: Let etter nye europeiske festivaler som ikke finnes i Tunetrail, bygg en komplett oppføring av hver fra festivalens eget nettsted, og lagre den som en kandidatfil. TØRRKJØRING — ingenting sendes til godkjenningskøen.
+description: Let etter nye europeiske festivaler som ikke finnes i Tunetrail, bygg en komplett oppføring av hver fra festivalens eget nettsted, og send de som er klare som forslag til godkjenning i /admin. Høyst tre per natt.
 ---
 
 # Nattlig leting etter nye festivaler
 
-Du finner festivaler som mangler i Tunetrail og bygger en komplett oppføring av
-hver, så et menneske raskt kan se om den stemmer.
+Du finner festivaler som mangler i Tunetrail, bygger en komplett oppføring av
+hver, og sender de som er klare som **forslag** til godkjenningskøen i
+`/admin`. Du oppretter aldri en festival selv: ingenting blir synlig på
+tune-trail.org før et menneske har godkjent det.
 
-**Dette er en tørrkjøring.** Du sender ingenting. Skriptet har ingen funksjon som
-kan skrive til databasen eller køen, og databasen avviser festivalforslag fra
-roboten. Resultatet er filer i `forslag/nye/` og en oppsummering. Først når et
-menneske har lest et titalls av dem og sett at stedet, bildet og
-duplikatsjekken stemmer, åpnes det for å sende.
+**Høyst tre nye per natt, og høyst fem som venter i køen.** Databasen håndhever
+det. Et lavt tall er meningen: hvert forslag skal leses ordentlig.
 
 ## Før du begynner
 
@@ -197,8 +196,25 @@ Skriptet sjekker alt, og bildet og landet kontrolleres mot nettet. Svaret har:
 - **`advarsler`**: ting et menneske bør se på.
 - **`note`**: slik notatet vil se ut i køen.
 
-Er svaret `klar`, er du ferdig med den kandidaten. Står det `klar: false`, sier
-`feil` og `mangler` nøyaktig hva som må til.
+Står det `klar: false`, sier `feil` og `mangler` nøyaktig hva som må til.
+
+### 10. Send de som er klare
+
+```bash
+node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs send forslag/nye/<slug>.json
+```
+
+`send` gjør hele sjekken på nytt, med nett, og sender bare hvis kandidaten er
+`klar`. Svaret er `"sendt": true` og et `submission_id`. Da ligger forslaget i
+`/admin`, med notatet, bildet og gjetningene merket.
+
+Avviser databasen forslaget, står grunnen i feilmeldingen: duplikat, tak nådd,
+eller noe som mangler belegg. **Det er ikke en feil å gå rundt.** Er taket nådd,
+er natta ferdig for nye forslag: la resten av filene ligge, så kan en senere
+natt sende dem.
+
+Send ikke en kandidat du selv er i tvil om, selv om skriptet sier `klar`. Da
+lar du filen ligge og skriver hvorfor i oppsummeringen.
 
 ## Gjetting
 
@@ -234,9 +250,9 @@ slik at den som leser køen ser hva som er lest og hva som er gjettet.
 
 ## Reglene du ikke kommer rundt
 
-- **Du sender ingenting.** Det finnes ingen kommando for det, og du skal ikke
-  lete etter en vei.
-- **Du bruker aldri service-nøkkelen eller skriver til databasen.**
+- **Du sender bare med `send`, og bare kandidater som er `klar`.** Du oppretter
+  aldri en festival, og skriver aldri noe annet sted i databasen.
+- **Du bruker aldri service-nøkkelen selv.** `send` bruker den til én ting.
 - **Ingen koordinater, bilde-adresser, datoer eller land fra hukommelsen.**
 - **Ingen festival du ikke har lest festivalens eget nettsted for.** En
   nyhetssak om en festival er et spor, ikke en kilde.
@@ -248,10 +264,10 @@ slik at den som leser køen ser hva som er lest og hva som er gjettet.
 Skriv en kort oppsummering:
 
 - hvor ruten gikk (land og sjanger), og hvor mange kandidater du fant
-- hvor mange som var `klar`, hvor mange som `mangler` noe (og hva), og hvor
-  mange som var duplikater
-- for hver `klar` kandidat: navn, og **alle gjetningene med begrunnelse**, så et
-  menneske kan vurdere dem uten å åpne filene
+- hvor mange du sendte til `/admin` (med navn), hvor mange som `mangler` noe
+  (og hva), og hvor mange som var duplikater
+- for hver sendte festival: **alle gjetningene med begrunnelse**, så det er
+  lett å se om de holder når forslaget godkjennes
 - om noe ikke virket: nettsøk som manglet, sider som blokkerte, geokoderen som
   ikke svarte
 

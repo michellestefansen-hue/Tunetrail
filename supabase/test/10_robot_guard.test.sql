@@ -125,7 +125,10 @@ select pg_temp.expect_error($$
   insert into public.submissions (kind, payload, submitted_by, source_url, confidence)
   values ('festival_new', '{"name":"Oppdiktet festival"}'::jsonb,
           '22222222-2222-2222-2222-222222222222', 'https://example.org', 'high')
-$$, 'kan ikke opprette festivaler');
+$$, 'mangler country');
+-- Fra 18. november 2026 kan roboten foreslå nye festivaler, men bare
+-- fullstendige og belagte. En festival med bare et navn er en oppdiktet en.
+-- Alle reglene prøves i 20_new_festival.test.sql.
 
 /* ------------------------------------------------ det roboten faktisk får - */
 

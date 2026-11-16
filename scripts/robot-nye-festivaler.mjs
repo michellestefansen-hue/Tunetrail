@@ -3,11 +3,12 @@
  * Hendene til jobben som leter etter nye festivaler. Hodet er Claude Code --
  * se .claude/skills/nattlig-nye-festivaler/SKILL.md.
  *
- * TØRRKJØRING. Dette skriptet skriver ingenting: ikke til databasen, ikke til
- * køen. Det finnes ingen funksjon her som kan det. Det leser (festivalsider,
- * geokoder, bilder, og festivallista med anon-nøkkelen), og det sier om en
- * kandidat er komplett. Å sende forslag kommer først når noen har lest et
- * titalls tørrkjøringer og sett at stedet, bildet og duplikatsjekken stemmer.
+ * Alt leses med anon-nøkkelen (festivalsider, geokoder, bilder, festivallista).
+ * Den ENESTE skrivingen er `send`: den legger et forslag i godkjenningskøen,
+ * aldri rett i festivaltabellen, og bare når kandidaten er `klar`. Databasen
+ * (robot_new_festival_problem i 20261118_robot_may_propose_festivals.sql)
+ * sjekker det samme én gang til, og tar tak på tre per døgn og fem i køen.
+ * Ingenting blir en festival før et menneske har godkjent det i /admin.
  *
  * Prinsippet er at INTET FELT STÅR UTEN BEVIS. Roboten skriver aldri
  * koordinater, bilde-adresser eller datoer fra hukommelsen: de kommer fra et
@@ -21,9 +22,11 @@
  *   node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs bilde <adresse>
  *   node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs kjenner <kandidat.json>
  *   node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs bygg <kandidat.json> [--uten-nett]
+ *   node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs send <kandidat.json>
  *
- * Krever NEXT_PUBLIC_SUPABASE_URL og NEXT_PUBLIC_SUPABASE_ANON_KEY. Bruker
- * aldri service-nøkkelen. Valgfritt: TUNETRAIL_KONTAKT (en e-postadresse eller
+ * Krever NEXT_PUBLIC_SUPABASE_URL og NEXT_PUBLIC_SUPABASE_ANON_KEY. `send`
+ * krever i tillegg SUPABASE_SERVICE_ROLE_KEY, og bruker den bare til å finne
+ * robotprofilen og legge én rad i køen. Valgfritt: TUNETRAIL_KONTAKT (en e-postadresse eller
  * nettside) legges inn i User-Agent, slik geokoderen kan nå oss. Settes i
  * .env.local, aldri i koden.
  */
@@ -33,6 +36,9 @@ import { fileURLToPath } from "node:url";
 
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Bare for `send`. Går forbi all tilgangskontroll, så den brukes ett sted:
+// tilKoen(), som bare kan legge en festival_new i køen.
+const SB_SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const KONTAKT = process.env.TUNETRAIL_KONTAKT;
 
 // Ærlig om at vi er en robot, som festivalvaktene. Kontakten er valgfri og
@@ -659,6 +665,27 @@ export function composeNote(c, gjetninger, gjettet = new Set(gjetninger.map((g) 
   return linjer.join("\n");
 }
 
+/**
+ * Raden som legges i køen. Ren funksjon, og den nekter å bygge en rad av en
+ * kandidat som ikke er klar: da finnes det ingen vei fra en ufullstendig
+ * kandidat til køen, uansett hva som kaller den.
+ */
+export function byggRad(c, svar) {
+  if (!svar?.klar) {
+    throw new Error("Ikke sendt: kandidaten er ikke klar. Se mangler, feil og blokkert.");
+  }
+  return {
+    kind: "festival_new",
+    festival_id: null,
+    payload: svar.payload,
+    base_snapshot: {},
+    source_url: c.source_url,
+    confidence: svar.confidence,
+    note: svar.note,
+    status: "pending",
+  };
+}
+
 /* ------------------------------------------------------------- databasen -- */
 
 async function sb(path) {
@@ -679,8 +706,37 @@ async function alleFestivaler() {
   return ut;
 }
 
+/**
+ * Den eneste skrivingen i fila. Én rad i køen, aldri noe annet sted. Avviser
+ * databasen forslaget (duplikat, tak, manglende belegg), står grunnen i feilen.
+ */
+async function tilKoen(rad) {
+  if (!SB_URL || !SB_SERVICE) {
+    throw new Error("send krever SUPABASE_SERVICE_ROLE_KEY i .env.local. Den skal aldri skrives ut eller sjekkes inn.");
+  }
+  const headers = { apikey: SB_SERVICE, authorization: `Bearer ${SB_SERVICE}`, "content-type": "application/json" };
+  const robot = await fetch(`${SB_URL}/rest/v1/profiles?is_robot=is.true&select=id&limit=1`, { headers });
+  if (!robot.ok) throw new Error(`Fant ikke robotprofilen (HTTP ${robot.status}).`);
+  const [profil] = await robot.json();
+  if (!profil) throw new Error("Fant ingen robotprofil. Kjør scripts/create_robot.py først.");
+
+  if (rad.kind !== "festival_new") throw new Error("tilKoen sender bare forslag om ny festival.");
+  const res = await fetch(`${SB_URL}/rest/v1/submissions`, {
+    method: "POST",
+    headers: { ...headers, prefer: "return=representation" },
+    body: JSON.stringify([{ ...rad, submitted_by: profil.id }]),
+  });
+  const tekst = await res.text();
+  if (!res.ok) {
+    let grunn = tekst;
+    try { grunn = JSON.parse(tekst).message ?? tekst; } catch { /* rå tekst */ }
+    throw new Error(`Databasen avviste forslaget: ${grunn}`);
+  }
+  return JSON.parse(tekst)[0];
+}
+
 const lesKandidat = (fil) => {
-  if (!fil) throw new Error("Mangler fil. Bruk: bygg forslag/nye/<navn>.json");
+  if (!fil) throw new Error("Mangler fil. Bruk: bygg forslag/nye/<navn>.json (eller send).");
   return JSON.parse(readFileSync(fil, "utf8"));
 };
 
@@ -720,9 +776,8 @@ async function kjenner(args) {
   console.log(JSON.stringify(treff.length ? treff : "ingen treff", null, 2));
 }
 
-async function bygg(args) {
-  const c = lesKandidat(positional(args)[0]);
-  const utenNett = args.includes("--uten-nett");
+/** Samme vurdering for `bygg` og `send`, så de aldri kan være uenige. */
+async function vurder(c, { utenNett = false } = {}) {
   const alle = await alleFestivaler();
   const ctx = {
     countries: [...new Set(alle.map((f) => f.country).filter(Boolean))].sort(),
@@ -734,13 +789,36 @@ async function bygg(args) {
       try { ctx.geoCountry = await reverseCountry(c.latitude, c.longitude); } catch { /* advarsel under */ }
     }
   }
-  const svar = checkCandidate(c, ctx);
-  console.log(JSON.stringify({ torrkjoering: "Ingenting er sendt. Dette skriptet kan ikke sende.", ...svar }, null, 2));
+  return checkCandidate(c, ctx);
+}
+
+async function bygg(args) {
+  const c = lesKandidat(positional(args)[0]);
+  const svar = await vurder(c, { utenNett: args.includes("--uten-nett") });
+  console.log(JSON.stringify({ sendt: false, ...svar }, null, 2));
+}
+
+async function send(args) {
+  const c = lesKandidat(positional(args)[0]);
+  // Alltid med nett: et bilde og et land som ikke er sjekket, sendes ikke.
+  const svar = await vurder(c);
+  if (!svar.klar) {
+    console.log(JSON.stringify({ sendt: false, ...svar }, null, 2));
+  }
+  const lagret = await tilKoen(byggRad(c, svar));
+  console.log(JSON.stringify({
+    sendt: true,
+    submission_id: lagret.id,
+    festival: c.name,
+    confidence: svar.confidence,
+    gjetninger: svar.gjetninger.map((g) => `${g.felt}: ${g.basis}`),
+    advarsler: svar.advarsler,
+  }, null, 2));
 }
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [kommando, ...rest] = process.argv.slice(2);
-  const kommandoer = { sjekk, les, geokode, bilde, kjenner, bygg };
+  const kommandoer = { sjekk, les, geokode, bilde, kjenner, bygg, send };
   if (!kommandoer[kommando]) {
     console.error(`Ukjent kommando «${kommando ?? ""}». Se kommentaren øverst i denne fila.`);
     process.exit(2);

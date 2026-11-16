@@ -222,7 +222,9 @@ export default async function ReviewPage({
           {s.note && (
             <p>
               <span className="text-[#2D1A12]/50">Merknad: </span>
-              <span className="text-[#2D1A12]/80">{s.note}</span>
+              {/* pre-line: notatet fra roboten har linjeskift og avsnitt
+                  (hentet / gjettet), som ellers flyter sammen til én tekst. */}
+              <span className="whitespace-pre-line text-[#2D1A12]/80">{s.note}</span>
             </p>
           )}
         </div>

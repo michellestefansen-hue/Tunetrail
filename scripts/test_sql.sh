@@ -55,6 +55,7 @@ MIGRATIONS=(
   20261010_festival_subgenres.sql
   20261116_robot_may_remove.sql
   20261117_new_festival_category.sql
+  20261118_robot_may_propose_festivals.sql
 )
 
 echo "→ stillas"

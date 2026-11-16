@@ -336,7 +336,7 @@ feilmelding og ingenting skjer:
   legger bare til. En flytting er en fjerning med et ekstra steg, og følger de
   samme reglene.
 - **Du oppretter ikke festivaler.** Duplikater er hovedrisikoen der, og det er
-  en annen jobb.
+  en annen jobb: `nattlig-nye-festivaler`.
 - **Du må oppgi `source_url`.** Et forslag ingen kan etterprøve er verdiløst.
 - **Du må oppgi `confidence`.** «high» eller «low». Ingen tredje verdi.
 

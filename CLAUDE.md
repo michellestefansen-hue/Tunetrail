@@ -86,13 +86,15 @@ ikke har lest.
 4. **Ingenting irreversibelt uten et klart ja.** Aldri `delete from festivals`.
    Sletting av en utgave leveres som egen fil, aldri sammen med annet.
 5. **Automatikk skriver aldri rett i tabellene,** bare via `submissions` og
-   moderering. Roboten er sperret i databasen fra å opprette festivaler
-   (`guard_robot_submission`). Den kan *foreslå* å fjerne eller flytte artister
+   moderering. Roboten oppretter aldri festivaler selv. Den kan *foreslå* nye
+   (åpnet i `20261118_robot_may_propose_festivals.sql`), men bare fullstendige
+   og belagte, høyst tre per døgn og fem i køen, etter reglene i
+   `robot_new_festival_problem`. Den kan også *foreslå* å fjerne eller flytte artister
    (åpnet i `20261116_robot_may_remove.sql`), men bare etter reglene i
    `robot_removal_problem`: høy sikkerhet, begrunnelse per endring, tak på
    antall og andel, og programmer et menneske sist rørte er fredet. Et menneske
    godkjenner hver endring i køen. Å stenge det igjen er å sette
-   `robot_may_remove` tilbake til `false`.
+   `robot_may_remove` eller `robot_may_create` tilbake til `false`.
    Ticketmaster-berikelsen er slått av fordi den ødela data i august.
 6. **Tagger sier hvilke sjangre som forekommer, ikke hva festivalen er.** Om en
    festival hører hjemme i en guide, avgjøres på line-up, ikke på navn eller
@@ -135,12 +137,11 @@ utgave med program, merket med året. Guideåret utledes av kommende utgaver
 - Nattjobben, roboten som foreslår datoer og program:
   `.claude/skills/nattlig-oppdatering/SKILL.md` og `scripts/robot-nightly.mjs`.
   Overleveringen fra august: `docs/nattjobb-status.md`.
-- Letingen etter nye festivaler, bare som tørrkjøring (ingenting sendes):
+- Letingen etter nye festivaler, som sender forslag til `/admin`:
   `.claude/skills/nattlig-nye-festivaler/SKILL.md` og
   `scripts/robot-nye-festivaler.mjs`. Roboten får gjette størrelse, sjanger og
-  tagger, men hver gjetning må stå med begrunnelse i notatet. Å åpne for å
-  sende kommer først etter at tørrkjøringene er vurdert, og krever at
-  `guard_robot_submission` endres for `festival_new`.
+  tagger, men hver gjetning må stå med begrunnelse i notatet, og
+  godkjenningssiden merker de gjettede feltene.
 - Research av publikumstall: `docs/prompt-publikumstall.md`, ferdige bolker i
   `docs/bolker/`.
 - Planer og bakgrunn: `docs/`. Tidligere SQL-rettinger: `supabase/`.

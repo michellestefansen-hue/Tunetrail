@@ -13,7 +13,7 @@ import { readFileSync } from "node:fs";
 import {
   SIZE_BANDS, TAGS, CATEGORIES, SUBGENRES, LAND_ISO,
   hostOf, dupKey, findDuplicates, imageDimensions, checkImage, geocode,
-  extractStructured, checkCandidate, composeNote,
+  extractStructured, checkCandidate, composeNote, byggRad,
 } from "./robot-nye-festivaler.mjs";
 
 const lesFil = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
@@ -36,13 +36,19 @@ test("ordlistene er de samme som i appen", () => {
   assert.deepEqual(CATEGORIES, kat, "hovedsjangrene");
 });
 
-test("skriptet har ingen måte å skrive på", () => {
-  // Hele poenget med en tørrkjøring: det finnes ingen funksjon som kan sende
-  // noe, så en feil kan ikke ende i køen din.
+test("skriptet skriver ett sted: én rad i godkjenningskøen", () => {
+  // Alt annet er lesing. Kommer det et nytt skrivende kall, skal det være et
+  // bevisst valg, ikke noe som sniker seg inn.
   const kilde = lesFil("./robot-nye-festivaler.mjs");
-  assert.ok(!/method:\s*["'](POST|PATCH|PUT|DELETE)/i.test(kilde), "ingen skrivende HTTP-kall");
-  assert.ok(!/SERVICE_ROLE/.test(kilde), "ingen service-nøkkel");
+  const skriv = [...kilde.matchAll(/method:\s*["'](POST|PATCH|PUT|DELETE)/gi)];
+  assert.equal(skriv.length, 1, "nøyaktig ett skrivende HTTP-kall");
+  assert.equal(skriv[0][1], "POST");
+  // ...og det går til køen, ikke til festivaltabellen.
+  const rundt = kilde.slice(Math.max(0, skriv[0].index - 200), skriv[0].index);
+  assert.match(rundt, /\/rest\/v1\/submissions/);
   assert.ok(!/rpc\//.test(kilde), "ingen databasefunksjoner");
+  // Service-nøkkelen leses ett sted.
+  assert.equal([...kilde.matchAll(/process\.env\.SUPABASE_SERVICE_ROLE_KEY/g)].length, 1);
 });
 
 test("alle landene i lista har en landkode", () => {
@@ -419,6 +425,25 @@ test("det som ikke er sjekket, sies det fra om", () => {
   const r = checkCandidate(KANDIDAT, { today: "2026-11-17", countries: ["Tyskland"] });
   assert.match(r.advarsler.join("\n"), /Landet ble ikke kontrollert mot koordinatene/);
   assert.match(r.advarsler.join("\n"), /Bildet ble ikke sjekket/);
+});
+
+test("en kandidat som ikke er klar, kommer aldri i køen", () => {
+  const ufullstendig = checkCandidate({ ...KANDIDAT, image_url: undefined }, CTX);
+  assert.throws(() => byggRad(KANDIDAT, ufullstendig), /ikke klar/);
+  const duplikat = checkCandidate(KANDIDAT, { ...CTX, duplicates: [{ slug: "x", reason: "website", exact: true }] });
+  assert.throws(() => byggRad(KANDIDAT, duplikat), /ikke klar/);
+  assert.throws(() => byggRad(KANDIDAT, undefined), /ikke klar/);
+});
+
+test("en klar kandidat blir et forslag om ny festival, med notatet du ser i /admin", () => {
+  const rad = byggRad(KANDIDAT, checkCandidate(KANDIDAT, CTX));
+  assert.equal(rad.kind, "festival_new");
+  assert.equal(rad.status, "pending", "bare et forslag, ingenting opprettes");
+  assert.equal(rad.festival_id, null);
+  assert.equal(rad.source_url, "https://nyfest.example/");
+  assert.match(rad.note, /GJETTET \(står ikke på siden\)/, "databasen krever at gjetningene står i notatet");
+  assert.match(rad.payload.guesses.size_band, /Camping/, "og i forslaget, så adminsiden kan merke feltet");
+  assert.ok(!("submitted_by" in rad), "robotprofilen settes ved sending, ikke her");
 });
 
 test("notatet kan brukes alene", () => {

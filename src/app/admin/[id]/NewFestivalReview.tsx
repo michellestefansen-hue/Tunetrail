@@ -15,7 +15,14 @@ export type NewFestivalPayload = {
   description: string | null;
   image_url: string | null;
   tags: string[] | null;
+  category?: string | null;
+  subgenres?: string[] | null;
   size_band: string | null;
+  /**
+   * Hva roboten har gjettet, og hva den bygger på. Nøkkelen er feltet
+   * (size_band, category, tags, subgenres). Skjemaet sender aldri dette.
+   */
+  guesses?: Record<string, string> | null;
   latitude: number | null;
   longitude: number | null;
   date_from: string;
@@ -38,6 +45,16 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
       <dt className="text-sm text-[#2D1A12]/50">{label}</dt>
       <dd className="text-sm break-words text-[#2D1A12]">{children}</dd>
     </div>
+  );
+}
+
+/** Merket under et felt roboten har gjettet, med det gjetningen bygger på. */
+function Gjettet({ basis }: { basis?: string }) {
+  if (!basis) return null;
+  return (
+    <p className="mt-1 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-900">
+      <span className="font-medium">Gjettet</span> — {basis}
+    </p>
   );
 }
 
@@ -140,8 +157,24 @@ export function NewFestivalReview({
             "–"
           )}
         </Row>
-        <Row label="Sjangre">{p.tags?.join(", ") || "–"}</Row>
-        <Row label="Størrelse">{p.size_band ? SIZE_LABEL[p.size_band] ?? p.size_band : "–"}</Row>
+        <Row label="Hovedsjanger">
+          {p.category || "–"}
+          <Gjettet basis={p.guesses?.category} />
+        </Row>
+        <Row label="Sjangre">
+          {p.tags?.join(", ") || "–"}
+          <Gjettet basis={p.guesses?.tags} />
+        </Row>
+        {(p.subgenres?.length || p.guesses?.subgenres) && (
+          <Row label="Undersjangre">
+            {p.subgenres?.join(", ") || "–"}
+            <Gjettet basis={p.guesses?.subgenres} />
+          </Row>
+        )}
+        <Row label="Størrelse">
+          {p.size_band ? SIZE_LABEL[p.size_band] ?? p.size_band : "–"}
+          <Gjettet basis={p.guesses?.size_band} />
+        </Row>
         <Row label="Koordinater">
           {p.latitude != null ? (
             <a
@@ -159,14 +192,25 @@ export function NewFestivalReview({
         <Row label="Beskrivelse">{p.description ?? "–"}</Row>
         <Row label="Bilde">
           {p.image_url ? (
-            <a
-              href={p.image_url}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="text-[#FF4E50] underline"
-            >
-              {p.image_url}
-            </a>
+            <>
+              {/* Bildet vises her, ikke bare lenken: å godkjenne en festival
+                  uten å ha sett motivet er å godkjenne halvparten av kortet. */}
+              <img
+                src={p.image_url}
+                alt=""
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                className="mb-2 h-36 w-auto max-w-full rounded-lg bg-black/5 object-cover"
+              />
+              <a
+                href={p.image_url}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-[#FF4E50] underline"
+              >
+                {p.image_url}
+              </a>
+            </>
           ) : (
             "–"
           )}

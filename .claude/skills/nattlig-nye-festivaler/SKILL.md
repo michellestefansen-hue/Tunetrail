@@ -34,8 +34,11 @@ Natta har ingen som kan klikke «tillat». Derfor:
 - **Bli i mappen du starter i, og bruk aldri `cd`.** Du kan stå i en egen
   arbeidskopi av prosjektet og ikke i selve `tunetrail`-mappen. Det er riktig:
   skriptet finner `.env.local` i hovedmappen selv. Går du dit, stopper jobben.
-- **Skriv filer med relativ sti: `forslag/nye/<slug>.json`.** Aldri en full sti
-  som begynner med `/Users`, `~` eller `/tmp`.
+- **Skriv ingen filer.** Kandidaten sendes rett i kommandoen, som JSON i enkle
+  anførselstegn. En fil, særlig med full sti (`/Users/...`, `~/...`), peker ut
+  av mappen du står i og stopper jobben på en dialog.
+- **En apostrof inne i JSON-en skrives `\u0027`**, for eksempel
+  `"Rock\u0027n\u0027Roll Fest"`. En vanlig apostrof avslutter kommandoen.
 - **Én kommando om gangen**, ikke slett filer, og ikke bruk `node -e`.
 - **Nettsøk er godkjent. Les sider bare med `les`**, ikke med WebFetch.
 - **Står `sjekk` på «MANGLER», stopp.** Ikke let etter `.env.local` selv.
@@ -49,7 +52,7 @@ klubbkvelder, konferanser, turneer og rene matfestivaler.
 ## Prinsippet: intet felt uten bevis
 
 Du skriver aldri koordinater, bilde-adresser, datoer eller land fra hukommelsen.
-De kommer fra et verktøy, og kandidatfila sier hvor. Det eneste du får gjette,
+De kommer fra et verktøy, og kandidaten sier hvor. Det eneste du får gjette,
 er det en festivalside sjelden sier rett ut: **størrelse, hovedsjanger, tagger
 og undersjanger.** Hver gjetning må stå med en begrunnelse som sier hva den
 bygger på. Se «Gjetting» under.
@@ -82,11 +85,11 @@ Har du ikke nettsøk, si fra i oppsummeringen. Ikke finn på kandidater.
 
 ### 3. Sjekk mot basen FØR du gjør noe tungt
 
-For hver kandidat, skriv en liten fil `forslag/nye/<slug>.json` med bare det du
-vet så langt (navn, land, by og festivalens eget nettsted), og kjør:
+For hver kandidat, send det du vet så langt (navn, land, by og festivalens
+eget nettsted) rett i kommandoen:
 
 ```bash
-node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs kjenner forslag/nye/<slug>.json
+node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs kjenner '{"name":"Nyfest","country":"Tyskland","city":"Hamburg","website_url":"https://nyfest.example/"}'
 ```
 
 Får du et treff med `"reason": "website"` eller et navn som er helt likt, finnes
@@ -118,7 +121,7 @@ node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs geokode "S
 ```
 
 Bruk et treff med `"presisjon": "sted"`. Er det bare `"by"`, ligger punktet midt
-i byen og ikke på arenaen: sett `"location_precision": "by"` i kandidatfila, så
+i byen og ikke på arenaen: sett `"location_precision": "by"` i kandidaten, så
 får forslaget lav sikkerhet og en advarsel.
 
 Landet må skrives akkurat slik basen skriver det («Tyskland», ikke «Germany»).
@@ -143,7 +146,9 @@ Bare datoer festivalen selv har kunngjort, for en utgave som ikke har vært.
 «Save the date», en nedtelling og et hotelltilbud er ikke en kunngjøring.
 Er datoene foreløpige, sett `"dates_status": "forelopig"`.
 
-### 8. Skriv kandidatfila
+### 8. Sett sammen kandidaten
+
+Slik ser en komplett kandidat ut. Den sendes som én linje i kommandoene under.
 
 ```json
 {
@@ -188,15 +193,17 @@ kopier tekst fra siden.
 ### 9. Bygg og les svaret
 
 ```bash
-node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs bygg forslag/nye/<slug>.json
+node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs bygg '{"name":"Nyfest","source_url":"https://nyfest.example/","website_url":"https://nyfest.example/","country":"Tyskland","city":"Hamburg","latitude":53.5965,"longitude":10.0087,"date_from":"2027-07-09","date_to":"2027-07-11","image_url":"https://nyfest.example/media/nyfest.jpg","tags":["Elektronisk & Dans"],"category":"Elektronisk & Dans","size_band":"2000_10000","sources":{"coordinates":"JSON-LD på forsiden","dates":"JSON-LD på forsiden","image_url":"og:image på forsiden","location":"JSON-LD på forsiden"},"guesses":{"size_band":{"basis":"Tre scener og camping ifølge /om-oss."},"category":{"basis":"Alle ni bekreftede artister er techno og house."},"tags":{"basis":"Samme grunnlag: line-upen er ren techno."}}}'
 ```
+
+Samme JSON som i punkt 8, på én linje. Eksempelet over er forkortet.
 
 Skriptet sjekker alt, og bildet og landet kontrolleres mot nettet. Svaret har:
 
 - **`klar`**: komplett, belagt og ikke et duplikat. Dette er det et menneske
   skal få se.
 - **`mangler`**: felt vi må ha, men ikke har. Prøv å skaffe dem. Lykkes du ikke,
-  la filen stå og skriv det i oppsummeringen. Det er ikke en feil.
+  skriv det i oppsummeringen. Det er ikke en feil.
 - **`feil`**: noe er galt eller ikke belagt. Rett det og bygg på nytt.
 - **`blokkert`**: festivalen finnes trolig allerede. Gå videre.
 - **`duplikater`**: mulige treff å se på selv.
@@ -208,8 +215,10 @@ Står det `klar: false`, sier `feil` og `mangler` nøyaktig hva som må til.
 ### 10. Send de som er klare
 
 ```bash
-node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs send forslag/nye/<slug>.json
+node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs send '{"name":"Nyfest","source_url":"https://nyfest.example/","website_url":"https://nyfest.example/","country":"Tyskland","city":"Hamburg","latitude":53.5965,"longitude":10.0087,"date_from":"2027-07-09","date_to":"2027-07-11","image_url":"https://nyfest.example/media/nyfest.jpg","tags":["Elektronisk & Dans"],"category":"Elektronisk & Dans","size_band":"2000_10000","sources":{"coordinates":"JSON-LD på forsiden","dates":"JSON-LD på forsiden","image_url":"og:image på forsiden","location":"JSON-LD på forsiden"},"guesses":{"size_band":{"basis":"Tre scener og camping ifølge /om-oss."},"category":{"basis":"Alle ni bekreftede artister er techno og house."},"tags":{"basis":"Samme grunnlag: line-upen er ren techno."}}}'
 ```
+
+Send nøyaktig samme JSON som du sendte til `bygg`.
 
 `send` gjør hele sjekken på nytt, med nett, og sender bare hvis kandidaten er
 `klar`. Svaret er `"sendt": true` og et `submission_id`. Da ligger forslaget i
@@ -217,11 +226,11 @@ node --env-file-if-exists=.env.local scripts/robot-nye-festivaler.mjs send forsl
 
 Avviser databasen forslaget, står grunnen i feilmeldingen: duplikat, tak nådd,
 eller noe som mangler belegg. **Det er ikke en feil å gå rundt.** Er taket nådd,
-er natta ferdig for nye forslag: la resten av filene ligge, så kan en senere
-natt sende dem.
+er natta ferdig for nye forslag. Skriv de som var klare i oppsummeringen, så kan
+en senere natt sende dem.
 
 Send ikke en kandidat du selv er i tvil om, selv om skriptet sier `klar`. Da
-lar du filen ligge og skriver hvorfor i oppsummeringen.
+skriver du hvorfor i oppsummeringen.
 
 ## Gjetting
 

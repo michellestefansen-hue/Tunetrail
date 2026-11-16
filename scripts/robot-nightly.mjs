@@ -1006,10 +1006,26 @@ export function describeChanges(ops) {
   ].join("\n");
 }
 
+/**
+ * Forslaget, enten rett fra kommandoen (`propose '{"slug": ...}'`) eller fra
+ * en fil. Rett fra kommandoen er det som brukes om natta: da finnes det ingen
+ * fil å skrive, og dermed ingen godkjenningsdialog for den, uansett hvilken
+ * mappe økten starter i.
+ */
+export function lesForslag(raw) {
+  if (!raw) throw new Error("Mangler forslaget. Bruk: propose '{\"slug\": ...}'");
+  const tekst = raw.trim().startsWith("{") ? raw : readFileSync(raw, "utf8");
+  try {
+    return JSON.parse(tekst);
+  } catch (err) {
+    throw new Error(
+      `Forslaget er ikke gyldig JSON (${err.message}). En apostrof i et navn skrives \\u0027 inne i JSON-en.`,
+    );
+  }
+}
+
 async function propose(args) {
-  const [file] = positional(args);
-  if (!file) throw new Error("Mangler fil. Bruk: propose <forslag.json>");
-  const input = JSON.parse(readFileSync(file, "utf8"));
+  const input = lesForslag(positional(args)[0]);
 
   const [festival] = await sb(
     `/rest/v1/festivals?slug=eq.${encodeURIComponent(input.slug ?? "")}&select=id,name`,

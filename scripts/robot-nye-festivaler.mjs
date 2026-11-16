@@ -737,10 +737,20 @@ async function tilKoen(rad) {
   return JSON.parse(tekst)[0];
 }
 
-const lesKandidat = (fil) => {
-  if (!fil) throw new Error("Mangler fil. Bruk: bygg forslag/nye/<navn>.json (eller send).");
-  return JSON.parse(readFileSync(fil, "utf8"));
-};
+/**
+ * Kandidaten, enten rett fra kommandoen (`bygg '{"name": ...}'`) eller fra en
+ * fil. Rett fra kommandoen er det som brukes om natta: da finnes det ingen fil
+ * å skrive, og dermed ingen godkjenningsdialog, uansett hvor økten starter.
+ */
+export function lesKandidat(raw) {
+  if (!raw) throw new Error("Mangler kandidaten. Bruk: bygg '{\"name\": ...}' (eller kjenner, send).");
+  const tekst = raw.trim().startsWith("{") ? raw : readFileSync(raw, "utf8");
+  try {
+    return JSON.parse(tekst);
+  } catch (err) {
+    throw new Error(`Kandidaten er ikke gyldig JSON (${err.message}). En apostrof skrives \\u0027 inne i JSON-en.`);
+  }
+}
 
 const koord = (c) => (Number.isFinite(c.latitude) && Number.isFinite(c.longitude) ? [c.latitude, c.longitude] : null);
 

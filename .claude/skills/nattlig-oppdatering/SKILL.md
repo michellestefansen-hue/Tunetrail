@@ -39,14 +39,14 @@ Natta har ingen som kan klikke «tillat». Gjør du noe utenfor lista i
   til hovedmappen, er du utenfor mappen du har lov til å skrive i, og jobben
   stopper på en dialog.
 - **Én kommando om gangen.** Ikke lenk dem med `&&`.
-- **Skriv forslagsfilene med relativ sti: `forslag/<slug>.json`.** Aldri en full
-  sti som begynner med `/Users`, `~` eller `/tmp`. En full sti peker ut av
-  mappen du står i, og blir stoppet.
+- **Skriv ingen filer.** Forslaget sendes rett i kommandoen, se punkt 4. En fil,
+  særlig med full sti (`/Users/...`, `~/...`), peker ut av mappen du står i og
+  stopper jobben på en dialog. Det har skjedd flere netter.
 - **Står `sjekk` på «MANGLER», stopp.** Ikke let etter `.env.local` selv.
   Skriptet har allerede lett både der du står og i hovedmappen.
 - **Bruk bare kommandoene i denne fila.** Ikke WebFetch eller nettsøk:
   `read` henter sidene.
-- **Ikke slett filer.** Skriv ny fil over den gamle, eller la den ligge.
+- **Ikke slett filer.**
 - **Ikke bruk `node -e`** eller andre egne skript. Trenger du noe skriptet ikke
   kan, skriv det i oppsummeringen i stedet.
 
@@ -223,7 +223,8 @@ Deretter:
 
 ### 4. Send forslaget
 
-Skriv en JSON-fil til `forslag/<slug>.json` og send den:
+Forslaget er JSON, og det sendes **rett i kommandoen, i enkle anførselstegn**.
+Ikke skriv det til en fil. Slik ser innholdet ut:
 
 ```json
 {
@@ -242,8 +243,13 @@ Skriv en JSON-fil til `forslag/<slug>.json` og send den:
 ```
 
 ```bash
-node --env-file-if-exists=.env.local scripts/robot-nightly.mjs propose forslag/roskilde-festival.json
+node --env-file-if-exists=.env.local scripts/robot-nightly.mjs propose '{"slug":"roskilde-festival","year":2027,"source_url":"https://www.roskilde-festival.dk/en/line-up/","confidence":"high","note":"Sto under «Line-up 2027». Datoene bekreftet på forsiden.","dates":{"from":"2027-06-26","to":"2027-07-03"},"add":[{"date":"2027-06-26","name":"Fever Ray"},{"date":"2027-06-27","name":"CMAT"},{"date":null,"name":"Moillrock"}]}'
 ```
+
+Hele JSON-en står på én linje, mellom to enkle anførselstegn (`'`). **En
+apostrof inne i et navn eller i notatet skrives `'`**, for eksempel
+`"Guns N' Roses"`. En vanlig apostrof ville avsluttet kommandoen midt i.
+Skriptet gjør `'` om til en vanlig apostrof før noe lagres.
 
 `dates` utelates hvis året allerede finnes med riktige datoer. `add` utelates
 hvis du bare fant datoene. Minst én av dem må være der. `"date": null` betyr

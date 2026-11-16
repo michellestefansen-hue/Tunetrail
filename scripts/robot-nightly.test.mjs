@@ -806,3 +806,20 @@ test("finnes det et nøkkelordtreff, brukes ikke reservelisten", () => {
   const urls = lineupLinks(html, "https://fest.no/").map((l) => l.url);
   assert.deepEqual(urls, ["https://fest.no/program"]);
 });
+
+/* ---------------------------------------- forslaget rett i kommandoen ---- */
+
+test("forslaget kan sendes rett i kommandoen, uten fil", async () => {
+  // Om natta skal ingen fil skrives: en fil utenfor mappen økten startet i
+  // stoppet hele kjøringen på en godkjenningsdialog.
+  const { lesForslag } = await import("./robot-nightly.mjs");
+  const f = lesForslag('{"slug":"testfest","year":2027,"add":[{"date":"2027-06-10","name":"Guns N\\u0027 Roses"}]}');
+  assert.equal(f.slug, "testfest");
+  assert.equal(f.add[0].name, "Guns N' Roses", "\\u0027 blir en vanlig apostrof");
+});
+
+test("ugyldig JSON gir en melding som sier hvordan apostrofer skrives", async () => {
+  const { lesForslag } = await import("./robot-nightly.mjs");
+  assert.throws(() => lesForslag('{"slug": "x",}'), /\\u0027/);
+  assert.throws(() => lesForslag(undefined), /Mangler forslaget/);
+});

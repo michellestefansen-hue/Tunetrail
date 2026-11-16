@@ -451,3 +451,12 @@ test("notatet kan brukes alene", () => {
   assert.match(n, /^Nytt i 2027, første utgave\./);
   assert.match(n, /GJETTET/);
 });
+
+test("kandidaten kan sendes rett i kommandoen, uten fil", async () => {
+  const { lesKandidat } = await import("./robot-nye-festivaler.mjs");
+  const k = lesKandidat(JSON.stringify({ ...KANDIDAT, name: "Rock'n'Roll Fest" }));
+  assert.equal(k.name, "Rock'n'Roll Fest");
+  assert.deepEqual(k.sources, KANDIDAT.sources);
+  assert.throws(() => lesKandidat("{ikke json"), /\\u0027/);
+  assert.throws(() => lesKandidat(undefined), /Mangler kandidaten/);
+});

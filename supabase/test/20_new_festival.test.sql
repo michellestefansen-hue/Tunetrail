@@ -231,4 +231,26 @@ select pg_temp.expect_ok($$
           '{}'::jsonb, '44444444-4444-4444-4444-444444444444', 'pending')
 $$);
 
+-- Robotens liste over hovedsjangre skal være nøyaktig den databasen godtar.
+-- Clam Rock fikk «Rock & Metal», som roboten godtok og databasen ikke, og
+-- forslaget kunne ikke godkjennes.
+delete from public.submissions where submitted_by = '55555555-5555-5555-5555-555555555555';
+do $$
+declare v text; problem text; n int := 0;
+begin
+  for v in
+    select (regexp_matches(pg_get_constraintdef(c.oid), '''([^'']+)''', 'g'))[1]
+      from pg_constraint c where c.conname = 'festivals_category_check'
+  loop
+    n := n + 1;
+    problem := public.robot_new_festival_problem(pg_temp.forslag(jsonb_build_object('category', v)), 'GJETTET', '55555555-5555-5555-5555-555555555555');
+    if problem like '%hovedsjanger%' then
+      raise exception 'Databasen godtar «%», men roboten avviser den.', v;
+    end if;
+  end loop;
+  if n < 5 then raise exception 'Fant ikke lista i festivals_category_check (bare % verdier).', n; end if;
+end;
+$$;
+select pg_temp.expect_error($$select pg_temp.send(pg_temp.forslag('{"category":"Rock & Metal"}'))$$, 'ikke en hovedsjanger');
+
 select 'roboten foreslår nye festivaler på strenge vilkår' as resultat;

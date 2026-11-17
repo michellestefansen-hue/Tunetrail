@@ -56,6 +56,7 @@ MIGRATIONS=(
   20261116_robot_may_remove.sql
   20261117_new_festival_category.sql
   20261118_robot_may_propose_festivals.sql
+  20261119_robot_category_list.sql
 )
 
 echo "→ stillas"

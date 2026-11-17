@@ -164,7 +164,7 @@ Slik ser en komplett kandidat ut. Skriv den til samme fil, `forslag/nye/<slug>.j
   "date_to": "2027-07-11",
   "image_url": "https://nyfest.example/media/nyfest.jpg",
   "ticket_url": "https://nyfest.example/tickets",
-  "description": "Ny elektronisk festival i Stadtpark, første utgave.",
+  "description": "New electronic music festival in Hamburg's Stadtpark, first edition in 2027.",
   "tags": ["Elektronisk & Dans", "Techno & House"],
   "category": "Elektronisk & Dans",
   "subgenres": ["techno", "house"],
@@ -187,8 +187,16 @@ Slik ser en komplett kandidat ut. Skriv den til samme fil, `forslag/nye/<slug>.j
 }
 ```
 
-`description` er valgfri. Skriv den med egne ord, høyst rundt 300 tegn. Ikke
-kopier tekst fra siden.
+`description` er valgfri, men skriv den når du kan. **Den skal være på
+engelsk**, med egne ord, høyst rundt 300 tegn. Ikke kopier tekst fra siden.
+Notatet (`note`) og begrunnelsene skrives fortsatt på norsk: de er til den
+som godkjenner.
+
+`category` (hovedsjanger) må være én av disse, skrevet nøyaktig slik:
+Pop & Mainstream, Rock & Alternativ, Metal, Punk & Hardcore, Indie,
+Elektronisk & Dans, Techno & House, Hip-Hop & R&B, Jazz & Soul, Klassisk,
+Folk & Americana, Reggae & World, Blandet/Flersjanger. Tagger er en annen
+liste, se `src/lib/festivals.ts`.
 
 ### 9. Bygg og les svaret
 

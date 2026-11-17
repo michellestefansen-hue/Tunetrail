@@ -9,7 +9,7 @@
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import {
   SIZE_BANDS, TAGS, CATEGORIES, SUBGENRES, LAND_ISO,
   hostOf, dupKey, findDuplicates, imageDimensions, checkImage, geocode,
@@ -31,8 +31,17 @@ test("ordlistene er de samme som i appen", () => {
   const sub = (n) => strenger(ts.match(new RegExp(`${n}:\\s*\\[([\\s\\S]*?)\\]`))[1]);
   assert.deepEqual(SUBGENRES, [...sub("elektronisk"), ...sub("tungt")], "undersjangrene");
 
-  const sql = lesFil("../supabase/migrations/20260703020000_add_festival_category.sql");
-  const kat = strenger(sql.match(/category in \(([\s\S]*?)\)\)/)[1]);
+  // Den SISTE definisjonen av CHECK-en gjelder. Den første lista ble erstattet
+  // da Tunetrail ble europeisk, og å sjekke mot den slapp gjennom «Rock &
+  // Metal», som stoppet godkjenningen av Clam Rock 17. november 2026.
+  const dir = new URL("../supabase/migrations/", import.meta.url);
+  const filer = readdirSync(dir).filter((f) => f.endsWith(".sql")).sort();
+  let kat;
+  for (const f of filer) {
+    const m = readFileSync(new URL(f, dir), "utf8").match(/festivals_category_check check \(\s*category in \(([\s\S]*?)\)\s*\)/);
+    if (m) kat = strenger(m[1]);
+  }
+  assert.ok(kat?.length, "fant CHECK-en");
   assert.deepEqual(CATEGORIES, kat, "hovedsjangrene");
 });
 

@@ -52,8 +52,9 @@ const MIN_BILDEBREDDE = 800;
 const MAKS_DAGER = 60;
 
 /* ------------------------------------------------------------ ordlistene -- */
-// Kopier av src/lib/festivals.ts og supabase/migrations/20260703020000_
-// add_festival_category.sql. Skriptet kjører utenfor Next-appen og kan ikke
+// Kopier av src/lib/festivals.ts og den SISTE definisjonen av
+// festivals_category_check i supabase/migrations/ (i dag
+// 20260703030000_europe_expansion.sql, som erstattet den første lista). Skriptet kjører utenfor Next-appen og kan ikke
 // importere dem. At de ikke driver fra hverandre, avgjøres av en test som
 // leser de to filene.
 
@@ -66,8 +67,9 @@ export const TAGS = [
 ];
 
 export const CATEGORIES = [
-  "Rock & Metal", "Pop & Mainstream", "Elektronisk & Dans",
-  "Hip-Hop & R&B", "Folk & Vise", "Blandet/Flersjanger",
+  "Pop & Mainstream", "Rock & Alternativ", "Metal", "Punk & Hardcore", "Indie",
+  "Elektronisk & Dans", "Techno & House", "Hip-Hop & R&B", "Jazz & Soul",
+  "Klassisk", "Folk & Americana", "Reggae & World", "Blandet/Flersjanger",
 ];
 
 export const SUBGENRES = [
